@@ -5,35 +5,42 @@
 //  Created by HanSeung on 3/20/25.
 //
 
+import SwiftUI
+
 enum TabbedItems: Int, CaseIterable {
-    case explore = 0
-    case message
-    case wishList
+    case community = 0
+    case book
+    case home
+    case collection
     case profile
     
     var title: String {
         switch self {
-        case .explore:
-            return "검색"
-        case .message:
-            return "메시지"
-        case .wishList:
-            return "위시리스트"
+        case .community:
+            return "커뮤니티"
+        case .book:
+            return "도감"
+        case .home:
+            return "지도"
+        case .collection:
+            return "도감"
         case .profile:
-            return "프로필"
+            return "MY"
         }
     }
     
-    var iconName: String {
+    var icon: Image.SRIconSet {
         switch self {
-        case .explore:
-            return "magnifyingglass"
-        case .message:
-            return "bubble"
-        case .wishList:
-            return "heart"
+        case .community:
+            return Image.SRIconSet.ellipsisMessage
+        case .book:
+            return Image.SRIconSet.book
+        case .home:
+            return Image.SRIconSet.house
+        case .collection:
+            return Image.SRIconSet.heart
         case .profile:
-            return "person.circle"
+            return Image.SRIconSet.person
         }
     }
 }

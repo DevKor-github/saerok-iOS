@@ -12,6 +12,13 @@ extension Image {
         case iconAdd
         case down
         
+        // Tabbar
+        case ellipsisMessage
+        case book
+        case heart
+        case house
+        case person
+        
         // MARK: - Metric
         
         enum Metric: String {
@@ -87,6 +94,16 @@ extension Image.SRIconSet {
         switch self {
         case .down:
             return Image(.chevronDown)
+        case .book:
+            return Image(.book)
+        case .ellipsisMessage:
+            return Image(.ellipsisMessage)
+        case .heart:
+            return Image(.heart)
+        case .person:
+            return Image(.person)
+        case .house:
+            return Image(.house)
         default:
             return Image(self.rawValue, bundle: Image.SRIconSet.bundle)
         }

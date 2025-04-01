@@ -8,34 +8,47 @@
 import SwiftUI
 
 struct TabItemView: View {
-    let imageName: String
+    let icon: Image.SRIconSet
     let title: String
     let isActive: Bool
     
-    init(imageName: String, title: String, isActive: Bool) {
-        self.imageName = imageName
-        self.title = title
-        self.isActive = isActive
+    var body: some View {
+        VStack(spacing: 4) {
+            indicator
+            tabIcon
+            titleText
+        }
+        .frame(width: 51)
+        .background(.clear)
+    }
+}
+
+// MARK: - UI Components
+
+extension TabItemView {
+    private var indicator: some View {
+        RoundedRectangle
+            .init(cornerRadius: 4)
+            .frame(height: 8)
+            .foregroundStyle(isActive ? .main : .clear)
+            .clipShape(.rect.offset(y: 4))
+            .offset(y: -4)
     }
     
-    var body: some View {
-        HStack(spacing: 10) {
-            Spacer()
-            Image(systemName: imageName)
-                .resizable()
-                .renderingMode(.template)
-                .foregroundColor(isActive ? .white : .gray)
-                .frame(width: 20, height: 20)
-            if isActive {
-                Text(title)
-                    .font(.system(size: 14))
-                    .foregroundColor(isActive ? .white : .gray)
-            }
-            Spacer()
-        }
-        .frame(height: 60)
-        .frame(width: isActive ? 140 : 60)
-        .background(isActive ? .orange : .clear)
-        .cornerRadius(30)
+    private var tabIcon: some View {
+        icon
+            .frame(.defaultIconSize)
+            .foregroundColor(isActive ? Color.main : Color.gray)
     }
+    
+    private var titleText: some View {
+        Text(title)
+            .font(isActive ? .SRFontSet.tabbarSelected : .SRFontSet.tabbar)
+            .bold(isActive ? true : false)
+            .foregroundColor(isActive ? .main : .gray)
+    }
+}
+
+#Preview {
+    ContentView()
 }

@@ -10,6 +10,8 @@ import SwiftUICore
 extension Font {
     enum SRFontSet {
         static let h1: Font = .custom(Pretendard.regular.rawValue, size: 24.0).weight(.semibold)
+        static let tabbar: Font = .system(size: 11, weight: .regular)
+        static let tabbarSelected: Font = .system(size: 11, weight: .bold)
     }
 }
 
