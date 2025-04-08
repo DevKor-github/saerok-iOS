@@ -5,11 +5,11 @@
 //  Created by HanSeung on 4/8/25.
 //
 
+
 import Foundation
 import SwiftData
 
 extension Local {
-    
     @Model
     final class FieldGuide {
         var birds: [Bird]             // 포함된 새들
@@ -24,7 +24,6 @@ extension Local {
         }
     }
 }
-
 
 // MARK: - Mock Data
 

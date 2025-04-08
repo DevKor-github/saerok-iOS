@@ -5,8 +5,8 @@
 //  Created by HanSeung on 4/8/25.
 //
 
-import SwiftData
 
+import SwiftData
 
 protocol FieldGuideInteractor {
     func refreshFieldGuide() async throws
@@ -25,9 +25,7 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
 }
 
 struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
-    func refreshFieldGuide() async throws {
-//        try await localRepository.store(Local.Bird.mockData)
-    }
+    func refreshFieldGuide() async throws {}
     
     func loadBirdDetails(birdName: String) throws -> Local.Bird {
         return Local.Bird.mockData[0]

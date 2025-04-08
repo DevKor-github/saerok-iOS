@@ -1,5 +1,5 @@
 //
-//  DBModel.swift
+//  Schema.swift
 //  saerok
 //
 //  Created by HanSeung on 4/8/25.

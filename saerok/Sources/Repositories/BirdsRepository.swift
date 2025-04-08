@@ -6,8 +6,8 @@
 //
 
 
-import SwiftData
 import Foundation
+import SwiftData
 
 protocol BirdsRepository {
     @MainActor
@@ -34,19 +34,3 @@ extension MainRepository: BirdsRepository {
         }
     }
 }
-
-//enum ApiModel { }
-
-//internal extension ApiModel.Country {
-//    func dbModel() -> DBModel.Country {
-//        return .init(name: name, translations: translations,
-//                     population: population, flag: flag,
-//                     alpha3Code: alpha3Code)
-//    }
-//}
-
-//internal extension ApiModel.Currency {
-//    func dbModel() -> DBModel.Currency {
-//        return .init(code: code, symbol: symbol, name: name)
-//    }
-//}

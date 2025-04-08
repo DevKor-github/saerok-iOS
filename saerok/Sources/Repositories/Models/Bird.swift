@@ -5,6 +5,7 @@
 //  Created by HanSeung on 4/8/25.
 //
 
+
 import Foundation
 import SwiftData
 
@@ -30,7 +31,6 @@ enum BirdSize: String, Codable, CaseIterable {
 }
 
 extension Local {
-    
     @Model
     final class Bird {
         var name: String              // 국명
