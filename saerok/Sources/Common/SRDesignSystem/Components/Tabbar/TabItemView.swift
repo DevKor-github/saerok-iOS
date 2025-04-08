@@ -14,9 +14,13 @@ struct TabItemView: View {
     
     var body: some View {
         VStack(spacing: 4) {
-            indicator
+            if isActive {
+                indicator
+            }
             tabIcon
-            titleText
+            if isActive {
+                titleText
+            }
         }
         .frame(width: 51)
         .background(.clear)
@@ -44,7 +48,6 @@ extension TabItemView {
     private var titleText: some View {
         Text(title)
             .font(isActive ? .SRFontSet.tabbarSelected : .SRFontSet.tabbar)
-            .bold(isActive ? true : false)
             .foregroundColor(isActive ? .main : .gray)
     }
 }

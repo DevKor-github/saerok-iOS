@@ -14,6 +14,12 @@ struct ContentView: View {
         ZStack(alignment: .bottom){
             Group {
                 switch selectedTab {
+                case 2:
+                    VStack{
+                        Text("가나다라마바사\nHello World!")
+                            .font(.SRFontSet.h1)
+                    }
+                
                 default:
                     Rectangle()
                         .foregroundStyle(.white)
