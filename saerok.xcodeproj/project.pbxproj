@@ -10,9 +10,22 @@
 		219F722D2D89ABEB00C04738 /* saerok.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = saerok.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		21D0D2332D9E1F6D00A7F26E /* Exceptions for "saerok" folder in "saerok" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 219F722C2D89ABEB00C04738 /* saerok */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		219F722F2D89ABEB00C04738 /* saerok */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				21D0D2332D9E1F6D00A7F26E /* Exceptions for "saerok" folder in "saerok" target */,
+			);
 			path = saerok;
 			sourceTree = "<group>";
 		};
@@ -258,6 +271,7 @@
 				DEVELOPMENT_TEAM = B6AJR944A6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = saerok/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "새록";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -293,6 +307,7 @@
 				DEVELOPMENT_TEAM = B6AJR944A6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = saerok/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "새록";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
