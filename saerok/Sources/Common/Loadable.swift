@@ -13,33 +13,34 @@ typealias LoadableSubject<T> = Binding<Loadable<T>>
 
 enum Loadable<T> {
     case notRequested
-    case isLoading(last: T?, cancelBag: CancelBag)
+    case isLoading(last: T?, cancelBag: CancleBag)
     case loaded(T)
     case failed(Error)
-
+    
     var value: T? {
         switch self {
-        case let .loaded(value): return value
-        case let .isLoading(last, _): return last
+        case .loaded(let value): return value
+        case .isLoading(let last, _): return last
         default: return nil
         }
     }
+    
     var error: Error? {
         switch self {
-        case let .failed(error): return error
+        case .failed(let error): return error
         default: return nil
         }
     }
 }
 
 extension Loadable {
-    mutating func setIsLoading(cancelBag: CancelBag) {
+    mutating func setIsLoading(cancelBag: CancleBag) {
         self = .isLoading(last: value, cancelBag: cancelBag)
     }
     
     mutating func cancelLoading() {
         switch self {
-        case let .isLoading(last, cancelBag):
+        case .isLoading(let last, let cancelBag):
             cancelBag.cancel()
             if let last = last {
                 self = .loaded(last)
@@ -56,12 +57,13 @@ extension Loadable {
     func map<V>(_ transform: (T) throws -> V) -> Loadable<V> {
         do {
             switch self {
-            case .notRequested: return .notRequested
-            case let .failed(error): return .failed(error)
-            case let .isLoading(value, cancelBag):
-                return .isLoading(last: try value.map { try transform($0) },
-                                  cancelBag: cancelBag)
-            case let .loaded(value):
+            case .notRequested:
+                return .notRequested
+            case .failed(let error):
+                return .failed(error)
+            case .isLoading(let value, let cancelBag):
+                return .isLoading(last: try value.map { try transform($0) }, cancelBag: cancelBag)
+            case .loaded(let value):
                 return .loaded(try transform(value))
             }
         } catch {
@@ -84,7 +86,7 @@ struct ValueIsMissingError: Error {
 extension Optional: SomeOptional {
     func unwrap() throws -> Wrapped {
         switch self {
-        case let .some(value): return value
+        case .some(let value): return value
         case .none: throw ValueIsMissingError()
         }
     }
@@ -112,8 +114,7 @@ extension Loadable: Equatable where T: Equatable {
 
 extension LoadableSubject {
     func load<T>(_ resource: @escaping () async throws -> T) where Value == Loadable<T> {
-        let cancelBag = CancelBag()
-        wrappedValue.setIsLoading(cancelBag: cancelBag)
+        let cancelBag = CancleBag()
         let task = Task {
             do {
                 wrappedValue = .loaded(try await resource())
@@ -122,5 +123,7 @@ extension LoadableSubject {
             }
         }
         task.store(in: cancelBag)
+        
+        wrappedValue.setIsLoading(cancelBag: cancelBag)
     }
 }

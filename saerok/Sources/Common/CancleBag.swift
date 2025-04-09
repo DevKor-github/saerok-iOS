@@ -5,10 +5,11 @@
 //  Created by HanSeung on 4/8/25.
 //
 
+
 import Combine
 
-final class CancelBag {
-    fileprivate(set) var subscriptions = [any Cancellable]()
+final class CancleBag {
+    fileprivate(set) var cancellables = [any Cancellable]()
     private let equalToAny: Bool
     
     init(equalToAny: Bool = false) {
@@ -16,18 +17,17 @@ final class CancelBag {
     }
     
     func cancel() {
-        subscriptions.removeAll()
+        cancellables.removeAll()
     }
     
-    func isEqual(to other: CancelBag) -> Bool {
+    func isEqual(to other: CancleBag) -> Bool {
         return other === self || other.equalToAny || self.equalToAny
     }
 }
 
 extension Cancellable {
-    
-    func store(in cancelBag: CancelBag) {
-        cancelBag.subscriptions.append(self)
+    func store(in cancelBag: CancleBag) {
+        cancelBag.cancellables.append(self)
     }
 }
 
