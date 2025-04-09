@@ -12,8 +12,8 @@ import SwiftData
 extension Local {
     @Model
     final class FieldGuide {
-        var birds: [Bird]             // 포함된 새들
-        var updatedAt: Date           // 생성 일시
+        @Relationship(deleteRule: .cascade) var birds: [Bird]
+        var updatedAt: Date               
         
         init(
             _ birds: [Bird] = [],
