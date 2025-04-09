@@ -14,13 +14,9 @@ struct TabItemView: View {
     
     var body: some View {
         VStack(spacing: 4) {
-            if isActive {
-                indicator
-            }
+            indicator
             tabIcon
-            if isActive {
-                titleText
-            }
+            titleText
         }
         .frame(width: 51)
         .background(.clear)

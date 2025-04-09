@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TabbarView: View {
-    @State var selectedTab: Int
+    @Binding var selectedTab: Int
     
     var body: some View {
         VStack {
