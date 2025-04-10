@@ -10,9 +10,19 @@ import SwiftData
 
 @main
 struct saerokApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            appDelegate.rootView
         }
+    }
+}
+
+extension AppEnvironment {
+    var rootView: some View {
+        ContentView()
+            .modelContainer(modelContainer)
+            .inject(diContainer)
     }
 }

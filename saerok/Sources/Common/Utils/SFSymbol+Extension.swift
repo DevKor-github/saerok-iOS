@@ -20,6 +20,8 @@ enum SFSymbol: String {
     case person
     case heart
     case book
+    case bookmark
+    case bookmarkFill = "bookmark.fill"
 }
 
 extension Image {

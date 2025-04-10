@@ -8,43 +8,54 @@
 import SwiftUI
 
 struct TabbarView: View {
-    @State var selectedTab: Int
-    
+    var selectedTab: Int
+    @Environment(\.injected) var injected
+
     var body: some View {
         VStack {
             Spacer()
             ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.black.opacity(0.15), Color.clear]),
-                    startPoint: .bottom,
-                    endPoint: .top
-                )
-                .frame(height: 100)
-                .offset(y: -30)
-                
-                HStack {
-                    ForEach((TabbedItems.allCases), id: \.self){ item in
-                        Button{
-                            selectedTab = item.rawValue
-                        } label: {
-                            HStack {
-                                Spacer()
-                                TabItemView(
-                                    icon: item.icon,
-                                    title: item.title,
-                                    isActive: (selectedTab == item.rawValue)
-                                )
-                                Spacer()
-                            }
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 68, alignment: .top)
-                .padding(.horizontal, 16)
-                .background(Color.background)
-                .cornerRadius(18)
+                shadow
+                tabItems
             }
         }
+    }
+    
+    // MARK: - UI Components
+
+    private let shadow: some View = {
+        LinearGradient(
+            gradient: Gradient(colors: [Color.white, Color.clear]),
+            startPoint: .bottom,
+            endPoint: .top
+        )
+        .frame(height: 94)
+        .offset(y: -30)
+        .allowsHitTesting(false)
+    }()
+    
+    private var tabItems: some View {
+        HStack {
+            ForEach((TabbedItems.allCases), id: \.self){ item in
+                Button {
+                    injected.appState[\.routing.contentView.tabSelection] = item.rawValue
+                } label: {
+                    HStack {
+                        Spacer()
+                        TabItemView(
+                            icon: item.icon,
+                            title: item.title,
+                            isActive: (selectedTab == item.rawValue)
+                        )
+                        Spacer()
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 94, alignment: .top)
+        .padding(.horizontal, 16)
+        .background(Color.white)
+        .cornerRadius(18)
     }
 }
