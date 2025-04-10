@@ -88,59 +88,14 @@ private extension FieldGuideView {
     @ViewBuilder
     func loadedView() -> some View {
         VStack(spacing: 0) {
-            HStack(spacing: 16) {
-                Text("도감")
-                    .font(.SRFontSet.h1)
-                Spacer()
-                
-                Group {
-                    Button {
-                        isAllBookmarked.toggle()
-                        
-                    } label: {
-                        Image(isAllBookmarked ? .bookmarkFill : .bookmark)
-                            .foregroundStyle(isAllBookmarked ? .main : .black)
-                    }
-                    Button {
-                        
-                    } label: {
-                        Image(.magnifyingglass)
-                    }
-                }
-                .font(.system(size: 24))
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
-            .padding(.vertical, 17)
-            
+            navigationBar
+
             if fieldGuide.isEmpty {
                 Text("No matches found")
                     .font(.SRFontSet.h3)
                     .frame(maxHeight: .infinity)
             } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 15),
-                            GridItem(.flexible(), spacing: 15)
-                        ],
-                        spacing: 15
-                    ) {
-                        ForEach(fieldGuide) { bird in
-                            NavigationLink(value: bird) {
-                                BirdCardView(bird)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        Rectangle()
-                            .foregroundStyle(.clear)
-                            .frame(height: 80)
-                        Rectangle()
-                            .foregroundStyle(.clear)
-                            .frame(height: 80)
-                    }
-                    .padding(SRDesignConstant.defaultPadding)
-                }
+                gridView
                 .background(Color.background)
                 .navigationDestination(for: Local.Bird.self, destination: { bird in
                     Text(bird.name)
@@ -163,6 +118,58 @@ private extension FieldGuideView {
                     }
                 })
             }
+        }
+    }
+    
+    var navigationBar: some View {
+        NavigationBar(
+            leading: {
+                Text("도감")
+                    .font(.SRFontSet.h1)
+            },
+            trailing: {
+                HStack(spacing: 12) {
+                    Button {
+                        isAllBookmarked.toggle()
+                        
+                    } label: {
+                        Image(isAllBookmarked ? .bookmarkFill : .bookmark)
+                            .foregroundStyle(isAllBookmarked ? .main : .black)
+                    }
+                    Button {
+                        
+                    } label: {
+                        Image(.magnifyingglass)
+                    }
+                }
+                .font(.system(size: 24))
+            }
+        )
+    }
+    
+    var gridView: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: 15),
+                    GridItem(.flexible(), spacing: 15)
+                ],
+                spacing: 15
+            ) {
+                ForEach(fieldGuide) { bird in
+                    NavigationLink(value: bird) {
+                        BirdCardView(bird)
+                    }
+                    .buttonStyle(.plain)
+                }
+                Rectangle()
+                    .foregroundStyle(.clear)
+                    .frame(height: 80)
+                Rectangle()
+                    .foregroundStyle(.clear)
+                    .frame(height: 80)
+            }
+            .padding(SRDesignConstant.defaultPadding)
         }
     }
 }

@@ -11,7 +11,6 @@ import SwiftData
 @main
 struct saerokApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
     
     var body: some Scene {
         WindowGroup {

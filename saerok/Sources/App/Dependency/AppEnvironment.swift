@@ -32,7 +32,8 @@ private extension AppEnvironment {
     /// 설정 중 오류가 발생하면 미리보기 전용 컨테이너로 대체됩니다.
     static func configuredModelContainer() -> ModelContainer {
         do {
-            return try ModelContainer.appModelContainer()
+//            return try ModelContainer.appModelContainer()
+            return ModelContainer.previewable
         } catch {
             return ModelContainer.previewable
         }
