@@ -7,8 +7,12 @@
 
 import SwiftUI
 
-struct BirdCard: View {
-    let bird: Local.Bird
+struct BirdCardView: View {
+    private let bird: Local.Bird
+    
+    init(_ bird: Local.Bird) {
+        self.bird = bird
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

@@ -16,7 +16,9 @@ protocol FieldGuideInteractor {
 struct FieldGuideInteractorImpl: FieldGuideInteractor {
     let repository: BirdsRepository
 
-    func refreshFieldGuide() async throws {}
+    func refreshFieldGuide() async throws {
+        try await repository.store(Local.Bird.mockData)
+    }
 
     @MainActor
     func loadBirdDetails(birdName: String) throws -> Local.Bird {
