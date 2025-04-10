@@ -82,6 +82,15 @@ extension Local.Bird {
             size: .sparrow
         ),
         .init(
+            name: "붉은배지느러미발도요",
+            scientificName: "Phalaropus fulicarius",
+            detail: "작고 흔하게 볼 수 있는 새로, 도시와 농촌 어디에서나 관찰 가능하다.",
+            classification: "조류 > 참새목 > 참새과",
+            seasons: [.spring, .summer, .autumn, .winter],
+            habitats: [.urban, .farmland],
+            size: .sparrow
+        ),
+        .init(
             name: "까치",
             scientificName: "Pica pica",
             detail: "흑백의 깃털이 특징이며, 지능이 높은 새로 알려져 있다.",
@@ -107,6 +116,33 @@ extension Local.Bird {
             seasons: [.autumn, .winter],
             habitats: [.forest, .coastal],
             size: .eagle
+        ),
+        .init(
+            name: "물닭",
+            scientificName: "Fulica atra",
+            detail: "검은 깃털과 흰 부리가 특징이며, 연못이나 하천에서 쉽게 볼 수 있다.",
+            classification: "조류 > 두루미목 > 뜸부기과",
+            seasons: [.spring, .summer],
+            habitats: [.wetland, .farmland],
+            size: .pigeon
+        ),
+        .init(
+            name: "물닭",
+            scientificName: "Fulica atra",
+            detail: "검은 깃털과 흰 부리가 특징이며, 연못이나 하천에서 쉽게 볼 수 있다.",
+            classification: "조류 > 두루미목 > 뜸부기과",
+            seasons: [.spring, .summer],
+            habitats: [.wetland, .farmland],
+            size: .pigeon
+        ),
+        .init(
+            name: "물닭",
+            scientificName: "Fulica atra",
+            detail: "검은 깃털과 흰 부리가 특징이며, 연못이나 하천에서 쉽게 볼 수 있다.",
+            classification: "조류 > 두루미목 > 뜸부기과",
+            seasons: [.spring, .summer],
+            habitats: [.wetland, .farmland],
+            size: .pigeon
         ),
         .init(
             name: "물닭",

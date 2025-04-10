@@ -25,8 +25,8 @@ struct TabItemView: View {
 
 // MARK: - UI Components
 
-extension TabItemView {
-    private var indicator: some View {
+private extension TabItemView {
+    var indicator: some View {
         RoundedRectangle
             .init(cornerRadius: 4)
             .frame(height: 8)
@@ -35,13 +35,13 @@ extension TabItemView {
             .offset(y: -4)
     }
     
-    private var tabIcon: some View {
+    var tabIcon: some View {
         icon
             .frame(.defaultIconSize)
-            .foregroundColor(isActive ? Color.main : Color.gray)
+            .foregroundColor(isActive ? .main : .gray)
     }
     
-    private var titleText: some View {
+    var titleText: some View {
         Text(title)
             .font(isActive ? .SRFontSet.tabbarSelected : .SRFontSet.tabbar)
             .foregroundColor(isActive ? .main : .gray)
