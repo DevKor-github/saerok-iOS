@@ -31,6 +31,7 @@ struct TabbarView: View {
         )
         .frame(height: 94)
         .offset(y: -30)
+        .allowsHitTesting(false)
     }()
     
     private var tabItems: some View {

@@ -47,7 +47,3 @@ private extension TabItemView {
             .foregroundColor(isActive ? .main : .gray)
     }
 }
-
-#Preview {
-    ContentView()
-}

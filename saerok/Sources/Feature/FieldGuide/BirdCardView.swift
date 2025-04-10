@@ -23,21 +23,9 @@ struct BirdCardView: View {
             
             VStack(alignment: .leading) {
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
-                        Text(bird.name)
-                            .font(.SRFontSet.h3)
-                        Text(bird.scientificName)
-                            .font(.SRFontSet.h4)
-                            .foregroundStyle(.secondary)
-                    }
+                    nameSection
                     Spacer()
-                    Button {
-                        bird.isBookmarked.toggle()
-                    } label: {
-                        Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
-                            .font(.system(size: 24, weight: bird.isBookmarked ? .regular : .light))
-                            .foregroundStyle(bird.isBookmarked ? .main : .gray)
-                    }
+                    bookmarkButton
                 }
             }
             .frame(alignment: .leading)
@@ -50,6 +38,30 @@ struct BirdCardView: View {
         .overlay {
             RoundedRectangle(cornerRadius: SRDesignConstant.cardCornerRadius)
                 .stroke(Color.border, lineWidth: 1)
+        }
+    }
+}
+
+// MARK: - UI Components
+
+private extension BirdCardView {
+    var nameSection: some View {
+        VStack(alignment: .leading) {
+            Text(bird.name)
+                .font(.SRFontSet.h3)
+            Text(bird.scientificName)
+                .font(.SRFontSet.h4)
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    var bookmarkButton: some View {
+        Button {
+            bird.isBookmarked.toggle()
+        } label: {
+            Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
+                .font(.system(size: 24, weight: bird.isBookmarked ? .regular : .light))
+                .foregroundStyle(bird.isBookmarked ? .main : .gray)
         }
     }
 }
