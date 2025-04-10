@@ -11,5 +11,6 @@ enum SRConstant {
 
 enum SRDesignConstant {
     static let cornerRadius = 24.0
+    static let cardCornerRadius = 8.0
     static let defaultPadding = 16.0
 }
