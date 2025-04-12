@@ -67,6 +67,7 @@ struct FieldGuideView: Routable {
         .onReceive(routingUpdate) { self.routingState = $0 }
     }
     
+    
     @ViewBuilder
     private var content: some View {
         switch fieldGuideState {
@@ -89,34 +90,31 @@ private extension FieldGuideView {
     func loadedView() -> some View {
         VStack(spacing: 0) {
             navigationBar
-
+            
             if fieldGuide.isEmpty {
                 Text("No matches found")
                     .font(.SRFontSet.h3)
                     .frame(maxHeight: .infinity)
             } else {
                 gridView
-                .background(Color.background)
-                .navigationDestination(for: Local.Bird.self, destination: { bird in
-                    Text(bird.name)
-                        .onAppear {
-                            injected.appState[\.routing.contentView.isTabbarHidden] = true
-                        }
-                })
-                .onAppear {
-                    injected.appState[\.routing.contentView.isTabbarHidden] = false
-                }
-                .onChange(of: routingState.birdName, initial: true, { _, name in
-                    guard let name,
-                          let bird = fieldGuide.first(where: { $0.name == name })
-                    else { return }
-                    navigationPath.append(bird)
-                })
-                .onChange(of: navigationPath, { _, path in
-                    if !path.isEmpty {
-                        routingBinding.wrappedValue.birdName = nil
+                    .background(Color.background)
+                    .navigationDestination(for: Local.Bird.self, destination: { bird in
+                        BirdDetailView(bird, path: $navigationPath)
+                    })
+                    .onAppear {
+                        injected.appState[\.routing.contentView.isTabbarHidden] = false
                     }
-                })
+                    .onChange(of: routingState.birdName, initial: true, { _, name in
+                        guard let name,
+                              let bird = fieldGuide.first(where: { $0.name == name })
+                        else { return }
+                        navigationPath.append(bird)
+                    })
+                    .onChange(of: navigationPath, { _, path in
+                        if !path.isEmpty {
+                            routingBinding.wrappedValue.birdName = nil
+                        }
+                    })
             }
         }
     }
@@ -131,7 +129,6 @@ private extension FieldGuideView {
                 HStack(spacing: 12) {
                     Button {
                         isAllBookmarked.toggle()
-                        
                     } label: {
                         Image(isAllBookmarked ? .bookmarkFill : .bookmark)
                             .foregroundStyle(isAllBookmarked ? .main : .black)
@@ -157,7 +154,9 @@ private extension FieldGuideView {
                 spacing: 15
             ) {
                 ForEach(fieldGuide) { bird in
-                    NavigationLink(value: bird) {
+                    Button {
+                        injected.appState[\.routing.fieldGuideView.birdName] = bird.name
+                    } label: {
                         BirdCardView(bird)
                     }
                     .buttonStyle(.plain)

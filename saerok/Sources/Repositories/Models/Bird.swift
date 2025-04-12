@@ -10,24 +10,24 @@ import Foundation
 import SwiftData
 
 enum Season: String, Codable, CaseIterable {
-    case spring
-    case summer
-    case autumn
-    case winter
+    case spring = "봄"
+    case summer = "여름"
+    case autumn = "가을"
+    case winter = "겨울"
 }
 
 enum Habitat: String, Codable, CaseIterable {
-    case forest
-    case wetland
-    case urban
-    case coastal
-    case farmland
+    case forest = "산"
+    case wetland = "하천/호수"
+    case urban = "도시"
+    case coastal = "해안"
+    case farmland = "농경"
 }
 
 enum BirdSize: String, Codable, CaseIterable {
-    case sparrow
-    case pigeon
-    case eagle
+    case hummingbird = "벌새 크기"
+    case pigeon = "비둘기 크기"
+    case eagle = "독수리 크기"
 }
 
 extension Local {
@@ -73,13 +73,22 @@ extension Local {
 extension Local.Bird {
     static let mockData: [Local.Bird] = [
         .init(
+            name: "청딱따구리",
+            scientificName: "Picus canus",
+            detail: "청딱따구리는 길이가 25~26cm로 딱따구리 중에서 큰 편에 속하는 새이고, 날개 폭이 38~40cm이며, 무게는 약 125g이다.  청딱따구리는 윗부분이 올리브 녹색으로 균일하고 목을 가로질러 밝은 회색으로 변하며 머리는 후자의 색이다. 전형적인 딱따구리 표시는 작고 특별히 눈에 띄지 않는다. 회색 머리에 검은 콧수염이 있고, 수컷은 붉은 왕관을 갖고 있다. ",
+            classification: "딱따구리목 > 딱따구리과 > 딱따구리속",
+            seasons: [.spring, .summer],
+            habitats: [.wetland],
+            size: .hummingbird
+        ),
+        .init(
             name: "참새",
             scientificName: "Passer montanus",
-            detail: "작고 흔하게 볼 수 있는 새로, 도시와 농촌 어디에서나 관찰 가능하다.",
+            detail: "참새는 길이가 25~26cm로 딱따구리 중에서 큰 편에 속하는 새이고, 날개 폭이 38~40cm이며, 무게는 약 125g이다.  청딱따구리는 윗부분이 올리브 녹색으로 균일하고 목을 가로질러 밝은 회색으로 변하며 머리는 후자의 색이다. 전형적인 딱따구리 표시는 작고 특별히 눈에 띄지 않는다. 회색 머리에 검은 콧수염이 있고, 수컷은 붉은 왕관을 갖고 있다. ",
             classification: "조류 > 참새목 > 참새과",
             seasons: [.spring, .summer, .autumn, .winter],
             habitats: [.urban, .farmland],
-            size: .sparrow
+            size: .hummingbird
         ),
         .init(
             name: "붉은배지느러미발도요",
@@ -88,7 +97,7 @@ extension Local.Bird {
             classification: "조류 > 참새목 > 참새과",
             seasons: [.spring, .summer, .autumn, .winter],
             habitats: [.urban, .farmland],
-            size: .sparrow
+            size: .hummingbird
         ),
         .init(
             name: "까치",
