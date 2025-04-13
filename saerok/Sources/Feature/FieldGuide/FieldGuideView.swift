@@ -67,7 +67,6 @@ struct FieldGuideView: Routable {
         .onReceive(routingUpdate) { self.routingState = $0 }
     }
     
-    
     @ViewBuilder
     private var content: some View {
         switch fieldGuideState {

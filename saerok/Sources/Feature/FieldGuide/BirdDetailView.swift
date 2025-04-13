@@ -24,7 +24,7 @@ struct BirdDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
             navigationBar
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 30) {
                     birdImageWithTag
                     classification
@@ -42,11 +42,13 @@ struct BirdDetailView: View {
     
     private var birdImageWithTag: some View {
         VStack(alignment: .leading, spacing: 13) {
-            Image(.birdPreview)
-                .resizable()
-                .frame(height: 248)
-                .aspectRatio(contentMode: .fit)
-                .cornerRadius(10)
+            if let url = bird.imageURL {
+                ReactiveAsyncImage(url: url, scale: .large, quality: 1, downsampling: false)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .cornerRadius(10)
+            }
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 5) {
                     ForEach(bird.seasons, id: \.rawValue) { season in

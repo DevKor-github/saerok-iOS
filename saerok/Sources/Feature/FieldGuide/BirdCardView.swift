@@ -1,9 +1,10 @@
 //
-//  BirdCard.swift
+//  BirdCardView.swift
 //  saerok
 //
 //  Created by HanSeung on 4/10/25.
 //
+
 
 import SwiftUI
 
@@ -16,11 +17,16 @@ struct BirdCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Image(.birdPreview)
-                .resizable()
-                .frame(height: 142)
-                .aspectRatio(contentMode: .fit)
-            
+            if let url = bird.imageURL {
+                AsyncImage(
+                    url: url,
+                    size: CGSize(width: 120, height: 142),
+                    scale: .medium,
+                    quality: 0.8,
+                    downsampling: true
+                )
+            }
+
             VStack(alignment: .leading) {
                 HStack(alignment: .top) {
                     nameSection
@@ -64,4 +70,9 @@ private extension BirdCardView {
                 .foregroundStyle(bird.isBookmarked ? .main : .gray)
         }
     }
+}
+
+#Preview {
+    BirdCardView(Local.Bird.mockData[0])
+        .frame(width: 170)
 }
