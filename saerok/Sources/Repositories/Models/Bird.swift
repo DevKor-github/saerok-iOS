@@ -9,14 +9,14 @@
 import Foundation
 import SwiftData
 
-enum Season: String, Codable, CaseIterable {
+enum Season: String, Codable, CaseIterable, Equatable {
     case spring = "봄"
     case summer = "여름"
     case autumn = "가을"
     case winter = "겨울"
 }
 
-enum Habitat: String, Codable, CaseIterable {
+enum Habitat: String, Codable, CaseIterable, Equatable {
     case forest = "산"
     case wetland = "하천/호수"
     case urban = "도시"
@@ -24,7 +24,7 @@ enum Habitat: String, Codable, CaseIterable {
     case farmland = "농경"
 }
 
-enum BirdSize: String, Codable, CaseIterable {
+enum BirdSize: String, Codable, CaseIterable, Equatable {
     case hummingbird = "벌새 크기"
     case pigeon = "비둘기 크기"
     case eagle = "독수리 크기"
@@ -40,8 +40,11 @@ extension Local {
         var seasons: [Season]         // 계절
         var habitats: [Habitat]       // 서식지
         var size: BirdSize            // 크기 (열거형)
-        var imageURL: String?            // 이미지 URL
+        var imageURL: String?         // 이미지 URL
         var isBookmarked: Bool        // 북마크 여부
+        
+        var seasonRaw: String
+        var habitatRaw: String
         
         init(
             name: String,
@@ -63,6 +66,8 @@ extension Local {
             self.size = size
             self.imageURL = imageURL
             self.isBookmarked = isBookmarked
+            self.seasonRaw = seasons.map { $0.rawValue }.joined()
+            self.habitatRaw = habitats.map { $0.rawValue }.joined()
         }
     }
 }
