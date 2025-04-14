@@ -10,13 +10,13 @@ import SwiftData
 import SwiftUI
 
 extension View {
-    func query<T: PersistentModel>(
-        searchText: String,
+    func query<T: PersistentModel, Key: Equatable>(
+        key: Key,
         results: Binding<[T]>,
-        _ builder: @escaping (String) -> Query<T, [T]>
+        _ builder: @escaping (Key) -> Query<T, [T]>
     ) -> some View {
         background {
-            QueryViewContainer(searchText: searchText, builder: builder) { _, values in
+            QueryViewContainer(key: key, builder: builder) { _, values in
                 results.wrappedValue = values
             }
             .equatable()
@@ -28,17 +28,17 @@ extension View {
 ///
 /// `searchText`가 변경되지 않는 한 SwiftUI가 `QueryView`를 재생성하지 않도록
 /// `Equatable`을 통해 렌더링을 제어합니다.
-private struct QueryViewContainer<T: PersistentModel>: View, Equatable {
-    let searchText: String
-    let builder: (String) -> Query<T, [T]>
+private struct QueryViewContainer<T: PersistentModel, Key: Equatable>: View, Equatable {
+    let key: Key
+    let builder: (Key) -> Query<T, [T]>
     let results: ([T], [T]) -> Void
 
     var body: some View {
-        QueryView(query: builder(searchText), results: results)
+        QueryView(query: builder(key), results: results)
     }
 
-    static func == (lhs: QueryViewContainer<T>, rhs: QueryViewContainer<T>) -> Bool {
-        return lhs.searchText == rhs.searchText
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.key == rhs.key
     }
 }
 
