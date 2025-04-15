@@ -28,8 +28,9 @@ struct FieldGuideView: Routable {
     
     @State private var fieldGuide: [Local.Bird]
     @State private var fieldGuideState: Loadable<Void>
-    @State private var searchText: String = ""
-    @State private var isAllBookmarked: Bool = false
+    @State private var filterKey: BirdFilter = .init()
+    @State private var showSeasonSheet = false
+    @State private var showHabitatSheet = false
     
     // MARK:  Init
     
@@ -41,28 +42,12 @@ struct FieldGuideView: Routable {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             content
-                .query(searchText: searchText, results: $fieldGuide, { search in
+                .query(key: filterKey, results: $fieldGuide) { filterKey in
                     Query(
-                        filter: #Predicate<Local.Bird> { bird in
-                            if search.isEmpty {
-                                return true
-                            } else {
-                                return bird.name.localizedStandardContains(search)
-                            }
-                        },
-                        sort: \Local.Bird.name)
-                })
-                .query(searchText: isAllBookmarked ? "Bookmark" : "", results: $fieldGuide, { search in
-                    Query(
-                        filter: #Predicate<Local.Bird> { bird in
-                            if search.isEmpty {
-                                return true
-                            } else {
-                                return bird.isBookmarked
-                            }
-                        },
-                        sort: \Local.Bird.name)
-                })
+                        filter: filterKey.build(),
+                        sort: \Local.Bird.name
+                    )
+                }
         }
         .onReceive(routingUpdate) { self.routingState = $0 }
     }
@@ -89,32 +74,25 @@ private extension FieldGuideView {
     func loadedView() -> some View {
         VStack(spacing: 0) {
             navigationBar
-            
-            if fieldGuide.isEmpty {
-                Text("No matches found")
-                    .font(.SRFontSet.h3)
-                    .frame(maxHeight: .infinity)
-            } else {
-                gridView
-                    .background(Color.background)
-                    .navigationDestination(for: Local.Bird.self, destination: { bird in
-                        BirdDetailView(bird, path: $navigationPath)
-                    })
-                    .onAppear {
-                        injected.appState[\.routing.contentView.isTabbarHidden] = false
+            filterButtonSection
+            gridSection
+                .navigationDestination(for: Local.Bird.self, destination: { bird in
+                    BirdDetailView(bird, path: $navigationPath)
+                })
+                .onAppear {
+                    injected.appState[\.routing.contentView.isTabbarHidden] = false
+                }
+                .onChange(of: routingState.birdName, initial: true, { _, name in
+                    guard let name,
+                          let bird = fieldGuide.first(where: { $0.name == name })
+                    else { return }
+                    navigationPath.append(bird)
+                })
+                .onChange(of: navigationPath, { _, path in
+                    if !path.isEmpty {
+                        routingBinding.wrappedValue.birdName = nil
                     }
-                    .onChange(of: routingState.birdName, initial: true, { _, name in
-                        guard let name,
-                              let bird = fieldGuide.first(where: { $0.name == name })
-                        else { return }
-                        navigationPath.append(bird)
-                    })
-                    .onChange(of: navigationPath, { _, path in
-                        if !path.isEmpty {
-                            routingBinding.wrappedValue.birdName = nil
-                        }
-                    })
-            }
+                })
         }
     }
     
@@ -127,13 +105,14 @@ private extension FieldGuideView {
             trailing: {
                 HStack(spacing: 12) {
                     Button {
-                        isAllBookmarked.toggle()
+                        filterKey.isBookmarked.toggle()
                     } label: {
-                        Image(isAllBookmarked ? .bookmarkFill : .bookmark)
-                            .foregroundStyle(isAllBookmarked ? .main : .black)
+                        Image(filterKey.isBookmarked ? .bookmarkFill : .bookmark)
+                            .foregroundStyle(filterKey.isBookmarked ? .main : .black)
                     }
+                    
                     Button {
-                        
+                        // TODO: 검색기능
                     } label: {
                         Image(.magnifyingglass)
                     }
@@ -143,7 +122,19 @@ private extension FieldGuideView {
         )
     }
     
-    var gridView: some View {
+    var filterButtonSection: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                seasonFilterButton
+                habitatFilterButton
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
+        }
+    }
+    
+    var gridSection: some View {
         ScrollView(.vertical, showsIndicators: false) {
             LazyVGrid(
                 columns: [
@@ -160,15 +151,64 @@ private extension FieldGuideView {
                     }
                     .buttonStyle(.plain)
                 }
-                Rectangle()
-                    .foregroundStyle(.clear)
-                    .frame(height: 80)
-                Rectangle()
-                    .foregroundStyle(.clear)
-                    .frame(height: 80)
+                Group {
+                    Rectangle()
+                    Rectangle()
+                }
+                .foregroundStyle(.clear)
+                .frame(height: 60)
             }
             .padding(SRDesignConstant.defaultPadding)
         }
+        .background(Color.background)
+    }
+    
+    var seasonFilterButton: some View {
+        let isActive = !filterKey.selectedSeasons.isEmpty
+        
+        return Button {
+            showSeasonSheet.toggle()
+        } label: {
+            HStack(spacing: 4) {
+                Image(.calendar)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16)
+                Text(!isActive ? "계절" : filterKey.selectedSeasons.map { $0.rawValue }.joined(separator: " • "))
+                    .font(.SRFontSet.h3)
+            }
+        }
+        .srStyled(.filterButton(isActive: isActive))
+        .sheetEnumPicker(
+            isPresented: $showSeasonSheet,
+            title: "계절 선택",
+            selection: $filterKey.selectedSeasons,
+            presentationDetents: [.fraction(0.3)]
+        )
+    }
+    
+    var habitatFilterButton: some View {
+        let isActive = !filterKey.selectedHabitats.isEmpty
+        
+        return Button {
+            showHabitatSheet.toggle()
+        } label: {
+            HStack(spacing: 4) {
+                Image(.tree)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16)
+                Text(!isActive ? "서식지" : filterKey.selectedHabitats.map { $0.rawValue }.joined(separator: " • "))
+                    .font(.SRFontSet.h3)
+            }
+        }
+        .srStyled(.filterButton(isActive: isActive))
+        .sheetEnumPicker(
+            isPresented: $showHabitatSheet,
+            title: "계절 선택",
+            selection: $filterKey.selectedHabitats,
+            presentationDetents: [.fraction(0.4)]
+        )
     }
 }
 

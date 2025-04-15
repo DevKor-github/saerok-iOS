@@ -108,7 +108,6 @@
 			mainGroup = 219F72242D89ABEB00C04738;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				218DEAA72D91898000D59E12 /* XCLocalSwiftPackageReference "SRNetworkService" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 219F722E2D89ABEB00C04738 /* Products */;
@@ -267,7 +266,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"saerok/Resources\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = B6AJR944A6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -303,7 +302,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"saerok/Resources\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = B6AJR944A6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -354,13 +353,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		218DEAA72D91898000D59E12 /* XCLocalSwiftPackageReference "SRNetworkService" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = SRNetworkService;
-		};
-/* End XCLocalSwiftPackageReference section */
 	};
 	rootObject = 219F72252D89ABEB00C04738 /* Project object */;
 }
