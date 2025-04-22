@@ -10,6 +10,11 @@ import Combine
 import SwiftData
 import SwiftUI
 
+enum Route: Hashable {
+    case search
+    case birdDetail(Local.Bird)
+}
+
 struct FieldGuideView: Routable {
     
     // MARK:  Dependencies
@@ -22,8 +27,8 @@ struct FieldGuideView: Routable {
     
     // MARK: Navigation
     
-    @State internal var navigationPath = NavigationPath()
-    
+    @State var navigationPath = NavigationPath()
+
     // MARK: View State
     
     @State private var fieldGuide: [Local.Bird]
@@ -31,6 +36,7 @@ struct FieldGuideView: Routable {
     @State private var filterKey: BirdFilter = .init()
     @State private var showSeasonSheet = false
     @State private var showHabitatSheet = false
+    @State private var showSizeSheet = false
     
     // MARK:  Init
     
@@ -76,17 +82,19 @@ private extension FieldGuideView {
             navigationBar
             filterButtonSection
             gridSection
-                .navigationDestination(for: Local.Bird.self, destination: { bird in
-                    BirdDetailView(bird, path: $navigationPath)
-                })
-                .onAppear {
-                    injected.appState[\.routing.contentView.isTabbarHidden] = false
+                .navigationDestination(for: Route.self) { route in
+                    switch route {
+                    case .search:
+                        FieldGuideSearchView(path: $navigationPath)
+                    case .birdDetail(let bird):
+                        BirdDetailView(bird, path: $navigationPath)
+                    }
                 }
                 .onChange(of: routingState.birdName, initial: true, { _, name in
                     guard let name,
                           let bird = fieldGuide.first(where: { $0.name == name })
                     else { return }
-                    navigationPath.append(bird)
+                    navigationPath.append(Route.birdDetail(bird))
                 })
                 .onChange(of: navigationPath, { _, path in
                     if !path.isEmpty {
@@ -110,12 +118,13 @@ private extension FieldGuideView {
                         Image(filterKey.isBookmarked ? .bookmarkFill : .bookmark)
                             .foregroundStyle(filterKey.isBookmarked ? .main : .black)
                     }
-                    
+                
                     Button {
-                        // TODO: 검색기능
+                        navigationPath.append(Route.search)
                     } label: {
                         Image(.magnifyingglass)
                     }
+                    .buttonStyle(.plain)
                 }
                 .font(.system(size: 24))
             }
@@ -127,6 +136,7 @@ private extension FieldGuideView {
             HStack {
                 seasonFilterButton
                 habitatFilterButton
+                sizeFilterButton
                 Spacer()
             }
             .padding(.horizontal, 24)
@@ -205,8 +215,32 @@ private extension FieldGuideView {
         .srStyled(.filterButton(isActive: isActive))
         .sheetEnumPicker(
             isPresented: $showHabitatSheet,
-            title: "계절 선택",
+            title: "서식지 선택",
             selection: $filterKey.selectedHabitats,
+            presentationDetents: [.fraction(0.4)]
+        )
+    }
+    
+    var sizeFilterButton: some View {
+        let isActive = !filterKey.selectedSizes.isEmpty
+        
+        return Button {
+            showSizeSheet.toggle()
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "textformat")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16)
+                Text(!isActive ? "크기" : filterKey.selectedSizes.map { $0.rawValue }.joined(separator: " • "))
+                    .font(.SRFontSet.h3)
+            }
+        }
+        .srStyled(.filterButton(isActive: isActive))
+        .sheetEnumPicker(
+            isPresented: $showSizeSheet,
+            title: "크기 선택",
+            selection: $filterKey.selectedSizes,
             presentationDetents: [.fraction(0.4)]
         )
     }

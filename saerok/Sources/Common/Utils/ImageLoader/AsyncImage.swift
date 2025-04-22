@@ -10,6 +10,7 @@ import SwiftUI
 
 struct AsyncImage: View {
     @State private var uiImage: UIImage? = nil
+    @State private var isLoading: Bool = true
     let url: String
     let size: CGSize
     let scale: ImageScale
@@ -29,6 +30,7 @@ struct AsyncImage: View {
                 quality: quality,
                 downsampled: downsampling
             )
+            isLoading = false
         }
     }
     
@@ -37,9 +39,10 @@ struct AsyncImage: View {
         if let image = uiImage {
             imageView(for: image, parentWidth: parentWidth)
         } else {
-            ProgressView()
+            Color.border
                 .frame(height: size.height)
                 .frame(maxWidth: .infinity)
+                .shimmer(when: $isLoading)
         }
     }
     
@@ -70,18 +73,20 @@ struct AsyncImage: View {
 
 struct ReactiveAsyncImage: View {
     @State private var uiImage: UIImage? = nil
+    @State private var isLoading: Bool = true
     let url: String
     let scale: ImageScale
     let quality: CGFloat
     let downsampling: Bool
-
+    
     var body: some View {
         Group {
             if let image = uiImage {
                 Image(uiImage: image)
                     .resizable()
             } else {
-                ProgressView()
+                Color.border
+                    .shimmer(when: $isLoading)
             }
         }
         .task {
@@ -92,6 +97,8 @@ struct ReactiveAsyncImage: View {
                 quality: quality,
                 downsampled: downsampling
             )
+            
+            isLoading = false
         }
     }
 }

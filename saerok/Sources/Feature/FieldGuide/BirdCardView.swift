@@ -16,27 +16,27 @@ struct BirdCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            if let url = bird.imageURL {
-                AsyncImage(
-                    url: url,
-                    size: CGSize(width: 120, height: 142),
-                    scale: .medium,
-                    quality: 0.8,
-                    downsampling: true
-                )
-            }
-
-            VStack(alignment: .leading) {
-                HStack(alignment: .top) {
-                    nameSection
-                    Spacer()
-                    bookmarkButton
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading, spacing: 0) {
+                if let url = bird.imageURL {
+                    AsyncImage(
+                        url: url,
+                        size: CGSize(width: 120, height: 142),
+                        scale: .medium,
+                        quality: 0.8,
+                        downsampling: true
+                    )
                 }
+                
+                nameSection
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(11)
+                    .background(.srWhite)
             }
-            .frame(alignment: .leading)
-            .padding(11)
-            .background(.srWhite)
+            
+            bookmarkButton
+                .padding(.trailing, 12)
+                .padding(.top, 13)
         }
         .frame(height: 198)
         .frame(maxWidth: .infinity)

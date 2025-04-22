@@ -38,6 +38,7 @@ private extension TabItemView {
     var tabIcon: some View {
         icon
             .frame(.defaultIconSize)
+            .bold(isActive)
             .foregroundColor(isActive ? .main : .gray)
     }
     
