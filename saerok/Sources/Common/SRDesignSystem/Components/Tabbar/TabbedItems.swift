@@ -23,7 +23,7 @@ enum TabbedItems: Int, CaseIterable {
         case .home:
             return "지도"
         case .collection:
-            return "도감"
+            return "컬렉션"
         case .profile:
             return "MY"
         }

@@ -43,12 +43,15 @@ private extension AppEnvironment {
     /// - Parameter modelContainer: 로컬 데이터를 저장하는 데 사용할 `ModelContainer`
     static func configuredRepositories(modelContainer: ModelContainer) -> DIContainer.Repositories {
         let mainRepository = MainRepository(modelContainer: modelContainer)
-        return .init(birds: mainRepository)
+        return .init(birds: mainRepository, collections: mainRepository)
     }
     
     /// 저장소를 기반으로 앱에서 사용할 인터랙터들을 생성합니다.
     /// - Parameter repositories: 인터랙터에 주입할 저장소
     static func configuredInteractors(repositories: DIContainer.Repositories)-> DIContainer.Interactors {
-        return .init(fieldGuide: FieldGuideInteractorImpl(repository: repositories.birds))
+        return .init(
+            fieldGuide: FieldGuideInteractorImpl(repository: repositories.birds),
+            collection: CollectionInteractorImpl(repository: repositories.collections)
+        )
     }
 }

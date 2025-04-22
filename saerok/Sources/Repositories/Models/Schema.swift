@@ -14,6 +14,7 @@ extension Schema {
             Local.Bird.self,
             Local.FieldGuide.self,
             Local.RecentSearchEntity.self,
+            Local.CollectionBird.self,
         ])
     }
 }

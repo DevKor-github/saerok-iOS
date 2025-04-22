@@ -19,7 +19,7 @@ struct ContentView: Routable {
     @State var routingState: Routing = .init()
     
     // MARK: View State
-
+    
     @State var selectedTab: Int = SRConstant.mainTab
     @State var isTabbarHidden: Bool = false
     
@@ -27,8 +27,8 @@ struct ContentView: Routable {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .srWhite
-        appearance.shadowColor = .clear 
-
+        appearance.shadowColor = .clear
+        
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }

@@ -6,8 +6,6 @@
 //
 
 
-import SwiftData
-
 protocol FieldGuideInteractor {
     func refreshFieldGuide() async throws
     func loadBirdDetails(birdName: String) async throws -> Local.Bird

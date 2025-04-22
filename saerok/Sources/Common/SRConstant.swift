@@ -7,7 +7,7 @@
 
 enum SRConstant {
     static let bundleIdentifier = "com.apu.saerok"
-    static let mainTab: Int = 1
+    static let mainTab: Int = 3
 }
 
 enum SRDesignConstant {
