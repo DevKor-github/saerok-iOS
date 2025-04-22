@@ -11,6 +11,11 @@ extension Image {
     enum SRIconSet: String, Hashable {
         case iconAdd
         case down
+        case xmark
+        case bookmark
+        case bookmarkFill
+        case penFill
+        case textFormat
         
         // Tabbar
         case ellipsisMessage
@@ -28,9 +33,6 @@ extension Image {
             case defaultIconSize
             case defaultIconSizeLarge
             case defaultIconSizeVeryLarge
-            case quotedMessageIconSize
-            case iconEmojiSmall
-            case iconEmojiLarge
             
             func toCGSize() -> CGSize {
                 switch self {
@@ -43,15 +45,9 @@ extension Image {
                 case .defaultIconSize:
                     return CGSize(width: 24, height: 24)
                 case .defaultIconSizeLarge:
-                    return CGSize(width: 32, height: 32)
+                    return CGSize(width: 30, height: 30)
                 case .defaultIconSizeVeryLarge:
-                    return CGSize(width: 48, height: 48)
-                case .quotedMessageIconSize:
-                    return CGSize(width: 20, height: 20)
-                case .iconEmojiSmall:
-                    return CGSize(width: 20, height: 20)
-                case .iconEmojiLarge:
-                    return CGSize(width: 38, height: 38)
+                    return CGSize(width: 32, height: 32)
                 }
             }
         }
@@ -92,6 +88,16 @@ extension Image.SRIconSet {
     /// - 반환: `Image` 객체
     private var image: Image {
         switch self {
+        case .xmark:
+            return Image(systemName: "xmark")
+        case .bookmark:
+            return Image(.bookmark)
+        case .bookmarkFill:
+            return Image(.bookmarkFill)
+        case .penFill:
+            return Image(.penFill)
+        case .textFormat:
+            return Image(systemName: "textformat")
         case .down:
             return Image(.chevronDown)
         case .book:

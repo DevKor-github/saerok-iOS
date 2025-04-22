@@ -32,5 +32,7 @@ extension MainRepository: BirdsRepository {
                     modelContext.insert($0)
                 }
         }
+        
+        try modelContext.save()
     }
 }

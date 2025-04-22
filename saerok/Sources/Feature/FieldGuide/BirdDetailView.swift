@@ -13,9 +13,7 @@ struct BirdDetailView: View {
     private let bird: Local.Bird
     
     @Binding var path: NavigationPath
-    
-    @Environment(\.injected) var injected
-    
+        
     init(_ bird: Local.Bird, path: Binding<NavigationPath>) {
         self.bird = bird
         self._path = path
@@ -27,15 +25,14 @@ struct BirdDetailView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 30) {
                     birdImageWithTag
-                    classification
-                    description
+                    Group {
+                        classification
+                        description
+                    }
+                    .padding(.horizontal, SRDesignConstant.defaultPadding)
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
-        }
-        .onAppear {
-            injected.appState[\.routing.contentView.isTabbarHidden] = true
         }
         .regainSwipeBack()
     }
@@ -47,10 +44,12 @@ struct BirdDetailView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity)
                     .cornerRadius(10)
+                    .padding(.horizontal, SRDesignConstant.defaultPadding)
             }
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 5) {
+                    Color.clear.frame(width: 20)
                     ForEach(bird.seasons, id: \.rawValue) { season in
                         chip(season.rawValue)
                     }
@@ -59,7 +58,8 @@ struct BirdDetailView: View {
                         chip(habitat.rawValue)
                     }
                     
-                    chip(bird.size.rawValue)
+                    chip(bird.size.rawValue + " 크기")
+                    Color.clear.frame(width: 20)
                 }
             }
         }
@@ -72,6 +72,7 @@ struct BirdDetailView: View {
                 .bold()
             Text(bird.classification)
                 .font(.SRFontSet.h4)
+                .foregroundStyle(.secondary)
                 .lineSpacing(5)
         }
     }
@@ -90,9 +91,11 @@ struct BirdDetailView: View {
     private func chip(_ content: String) -> some View {
         return Text(content)
             .font(.SRFontSet.h6)
+            .bold()
             .padding(.horizontal, 13)
             .padding(.vertical, 7)
-            .background(Color.background)
+            .foregroundStyle(.srWhite)
+            .background(Color.main)
             .cornerRadius(.infinity)
     }
     
@@ -117,11 +120,21 @@ struct BirdDetailView: View {
                 }
             },
             trailing: {
-                Button {
-                    bird.isBookmarked.toggle()
-                } label: {
-                    Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
-                        .foregroundStyle(bird.isBookmarked ? .main : .black)
+                HStack(spacing: 10) {
+                    Button { } label: {
+                        Image.SRIconSet.penFill.frame(.defaultIconSizeLarge)
+                            .padding(.top, 1)
+                    }
+                    Button {
+                        bird.isBookmarked.toggle()
+                    } label: {
+                        Group {
+                            bird.isBookmarked
+                            ? Image.SRIconSet.bookmarkFill.frame(.defaultIconSize)
+                            : Image.SRIconSet.bookmark.frame(.defaultIconSize)
+                        }
+                        .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
+                    }
                 }
                 .buttonStyle(.plain)
             }

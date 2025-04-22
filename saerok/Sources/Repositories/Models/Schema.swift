@@ -13,6 +13,7 @@ extension Schema {
         Schema([
             Local.Bird.self,
             Local.FieldGuide.self,
+            Local.RecentSearchEntity.self,
         ])
     }
 }

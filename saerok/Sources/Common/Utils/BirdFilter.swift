@@ -14,13 +14,15 @@ struct BirdFilter: Equatable {
     var isBookmarked: Bool = false
     var selectedHabitats: Set<Habitat> = []
     var selectedSeasons: Set<Season> = []
+    var selectedSizes: Set<BirdSize> = []
     
     func build() -> Predicate<Local.Bird> {
         let predicates: [Predicate<Local.Bird>] = [
             nameFilter(),
             bookmarkFilter(),
             seasonFilter(),
-            habitatFilter()
+            habitatFilter(),
+            sizeFilter()
         ].compactMap { $0 }
         
         return predicates
@@ -38,9 +40,7 @@ private extension BirdFilter {
     func nameFilter() -> Predicate<Local.Bird>? {
         guard !searchText.isEmpty else { return nil }
 
-        return #Predicate { bird in
-            bird.name.localizedStandardContains(searchText)
-        }
+        return .true
     }
 
     func bookmarkFilter() -> Predicate<Local.Bird>? {
@@ -73,6 +73,22 @@ private extension BirdFilter {
         let conditions: [Predicate<Local.Bird>] = selectedHabitats.map { habitat in
             #Predicate { bird in
                 bird.habitatRaw.contains(habitat.rawValue)
+            }
+        }
+
+        return conditions.reduce(#Predicate { _ in false }) { partialResult, next in
+            #Predicate { bird in
+                partialResult.evaluate(bird) || next.evaluate(bird)
+            }
+        }
+    }
+    
+    func sizeFilter() -> Predicate<Local.Bird>? {
+        guard !selectedSizes.isEmpty else { return nil }
+        
+        let conditions: [Predicate<Local.Bird>] = selectedSizes.map { size in
+            #Predicate { bird in
+                bird.sizeRaw.contains(size.rawValue)
             }
         }
 

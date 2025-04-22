@@ -1,8 +1,8 @@
 //
 //  SwiftUIView.swift
-//  Brick_SwiftUI
+//  saerok
 //
-//  Created by iOS on 9/26/24.
+//  Created by Hanseung on 4/10/25.
 //
 
 import SwiftUI

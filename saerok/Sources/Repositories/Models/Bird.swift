@@ -25,9 +25,9 @@ enum Habitat: String, Codable, CaseIterable, Equatable {
 }
 
 enum BirdSize: String, Codable, CaseIterable, Equatable {
-    case hummingbird = "벌새 크기"
-    case pigeon = "비둘기 크기"
-    case eagle = "독수리 크기"
+    case hummingbird = "벌새"
+    case pigeon = "비둘기"
+    case eagle = "독수리"
 }
 
 extension Local {
@@ -43,8 +43,11 @@ extension Local {
         var imageURL: String?         // 이미지 URL
         var isBookmarked: Bool        // 북마크 여부
         
+        // MARK: #Predicate 지원
+        
         var seasonRaw: String
         var habitatRaw: String
+        var sizeRaw: String
         
         init(
             name: String,
@@ -68,6 +71,7 @@ extension Local {
             self.isBookmarked = isBookmarked
             self.seasonRaw = seasons.map { $0.rawValue }.joined()
             self.habitatRaw = habitats.map { $0.rawValue }.joined()
+            self.sizeRaw = size.rawValue
         }
     }
 }
@@ -133,6 +137,16 @@ extension Local.Bird {
 
         .init(
             name: "황조롱이",
+            scientificName: "Falco tinnunculus",
+            detail: "소형 맹금류로, 개활지에서 자주 사냥을 한다. 특유의 정지비행으로 잘 알려져 있다. 몸길이는 약 35cm, 날개 폭은 약 70~80cm.",
+            classification: "매목 > 매과 > 매속",
+            seasons: [.spring, .autumn],
+            habitats: [.forest],
+            size: .pigeon,
+            imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Common_kestrel_falco_tinnunculus.jpg/960px-Common_kestrel_falco_tinnunculus.jpg"
+        ),
+        .init(
+            name: "test",
             scientificName: "Falco tinnunculus",
             detail: "소형 맹금류로, 개활지에서 자주 사냥을 한다. 특유의 정지비행으로 잘 알려져 있다. 몸길이는 약 35cm, 날개 폭은 약 70~80cm.",
             classification: "매목 > 매과 > 매속",

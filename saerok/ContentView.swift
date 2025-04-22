@@ -34,21 +34,23 @@ struct ContentView: Routable {
     }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            switch selectedTab {
-            case 1:
-                FieldGuideView()
-            default:
-                Rectangle()
-                    .foregroundStyle(.clear)
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                switch selectedTab {
+                case 1:
+                    FieldGuideView()
+                default:
+                    Rectangle()
+                        .foregroundStyle(.clear)
+                }
+                
+                TabbarView(selectedTab: selectedTab)
+                    .opacity(routingState.isTabbarHidden ? 0 : 1)
+                    .allowsHitTesting(!routingState.isTabbarHidden)
             }
-            
-            TabbarView(selectedTab: selectedTab)
-                .opacity(routingState.isTabbarHidden ? 0 : 1)
-                .allowsHitTesting(!routingState.isTabbarHidden)
+            .ignoresSafeArea(edges: .bottom)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea(edges: .all)
         .onReceive(routingUpdate) { self.routingState = $0 }
         .onChange(of: routingState.tabSelection, initial: true) { _, destination in
             selectedTab = destination
