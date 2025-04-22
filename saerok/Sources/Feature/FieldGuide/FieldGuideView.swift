@@ -132,16 +132,12 @@ private extension FieldGuideView {
     }
     
     var filterButtonSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                seasonFilterButton
-                habitatFilterButton
-                sizeFilterButton
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-        }
+        FilterBar(
+            showSeasonSheet: $showSeasonSheet,
+            showHabitatSheet: $showHabitatSheet,
+            showSizeSheet: $showSizeSheet,
+            filterKey: $filterKey
+        )
     }
     
     var gridSection: some View {
@@ -171,78 +167,6 @@ private extension FieldGuideView {
             .padding(SRDesignConstant.defaultPadding)
         }
         .background(Color.background)
-    }
-    
-    var seasonFilterButton: some View {
-        let isActive = !filterKey.selectedSeasons.isEmpty
-        
-        return Button {
-            showSeasonSheet.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(.calendar)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16)
-                Text(!isActive ? "계절" : filterKey.selectedSeasons.map { $0.rawValue }.joined(separator: " • "))
-                    .font(.SRFontSet.h3)
-            }
-        }
-        .srStyled(.filterButton(isActive: isActive))
-        .sheetEnumPicker(
-            isPresented: $showSeasonSheet,
-            title: "계절 선택",
-            selection: $filterKey.selectedSeasons,
-            presentationDetents: [.fraction(0.3)]
-        )
-    }
-    
-    var habitatFilterButton: some View {
-        let isActive = !filterKey.selectedHabitats.isEmpty
-        
-        return Button {
-            showHabitatSheet.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(.tree)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16)
-                Text(!isActive ? "서식지" : filterKey.selectedHabitats.map { $0.rawValue }.joined(separator: " • "))
-                    .font(.SRFontSet.h3)
-            }
-        }
-        .srStyled(.filterButton(isActive: isActive))
-        .sheetEnumPicker(
-            isPresented: $showHabitatSheet,
-            title: "서식지 선택",
-            selection: $filterKey.selectedHabitats,
-            presentationDetents: [.fraction(0.4)]
-        )
-    }
-    
-    var sizeFilterButton: some View {
-        let isActive = !filterKey.selectedSizes.isEmpty
-        
-        return Button {
-            showSizeSheet.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "textformat")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16)
-                Text(!isActive ? "크기" : filterKey.selectedSizes.map { $0.rawValue }.joined(separator: " • "))
-                    .font(.SRFontSet.h3)
-            }
-        }
-        .srStyled(.filterButton(isActive: isActive))
-        .sheetEnumPicker(
-            isPresented: $showSizeSheet,
-            title: "크기 선택",
-            selection: $filterKey.selectedSizes,
-            presentationDetents: [.fraction(0.4)]
-        )
     }
 }
 

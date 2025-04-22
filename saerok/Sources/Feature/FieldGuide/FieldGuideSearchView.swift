@@ -19,14 +19,17 @@ struct FieldGuideSearchView: View {
     
     // MARK: View State
     
-    @Query(sort: \Local.RecentSearchEntity.createdAt, order: .reverse) var recentSearchItems: [Local.RecentSearchEntity]
+    @Query(sort: \Local.RecentSearchEntity.createdAt, order: .reverse)
+    private var recentSearchItems: [Local.RecentSearchEntity]
+    
     @State private var filterKey: BirdFilter = .init()
     @State private var fieldGuide: [Local.Bird]
     @State private var filteredBirds: [Local.Bird] = []
+    @State private var hangulFinder: HangulFinder<Local.Bird>
     @State private var showSeasonSheet = false
     @State private var showHabitatSheet = false
+    @State private var showSizeSheet = false
     @FocusState private var isSearchBarFocused: Bool
-    private var hangulFinder: HangulFinder<Local.Bird>
     
     // MARK: Navigation
     
@@ -54,14 +57,17 @@ struct FieldGuideSearchView: View {
         }
         .onChange(of: fieldGuide) { _, newDataSet in
             hangulFinder.reInitialize(newDataSet)
+            filteredBirds = hangulFinder.search(filterKey.searchText)
         }
-        .onChange(of: filterKey.searchText) { _, searchText in
-            filteredBirds = hangulFinder.search(searchText)
+        .onChange(of: filterKey) { _, filterKey in
+            filteredBirds = hangulFinder.search(filterKey.searchText)
         }
         .regainSwipeBack()
     }
-    
-    private var searchBarSection: some View {
+}
+
+private extension FieldGuideSearchView {
+    var searchBarSection: some View {
         HStack {
             Button {
                 path.removeLast()
@@ -81,7 +87,7 @@ struct FieldGuideSearchView: View {
         .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
     
-    private func bookmarkButtonSection(_ bird: Local.Bird) -> some View {
+    func bookmarkButtonSection(_ bird: Local.Bird) -> some View {
         Button {
             bird.isBookmarked.toggle()
         } label: {
@@ -92,7 +98,7 @@ struct FieldGuideSearchView: View {
     }
     
     @ViewBuilder
-    private func searchResultSection() -> some View {
+    func searchResultSection() -> some View {
         ScrollView {
             if filterKey.searchText.isEmpty {
                 VStack(spacing: 1){
@@ -121,7 +127,7 @@ struct FieldGuideSearchView: View {
         .background(Color.background)
     }
     
-    private func searchItem(_ bird: Local.Bird) -> some View {
+    func searchItem(_ bird: Local.Bird) -> some View {
         HStack(spacing: 19) {
             Button {
                 bird.isBookmarked.toggle()
@@ -134,7 +140,7 @@ struct FieldGuideSearchView: View {
             
             Button {
                 path.append(Route.birdDetail(bird))
-                modelContext.insert(Local.RecentSearchEntity(bird: bird))
+                updateRecentItem(bird)
             } label: {
                 HStack {
                     VStack(alignment: .leading) {
@@ -157,13 +163,21 @@ struct FieldGuideSearchView: View {
         .background(Color.srWhite)
     }
     
-    private func recentItem(_ search: Local.RecentSearchEntity) -> some View {
+    func recentItem(_ search: Local.RecentSearchEntity) -> some View {
         HStack {
-            Text(search.bird.name)
-            Spacer()
-            Text(search.createdAt.toShortString)
-                .foregroundColor(.gray)
-                .font(.caption)
+            Button {
+                path.append(Route.birdDetail(search.bird))
+            } label: {
+                HStack(spacing: 0) {
+                    Text(search.bird.name)
+                    Spacer()
+                    Text(search.createdAt.toShortString)
+                        .foregroundColor(.gray)
+                        .font(.caption)
+                }
+                .contentShape(Rectangle())
+            }
+            
             Button {
                 modelContext.delete(search)
             } label: {
@@ -180,63 +194,26 @@ struct FieldGuideSearchView: View {
     }
     
     var filterButtonSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                seasonFilterButton
-                habitatFilterButton
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-        }
-    }
-    
-    var seasonFilterButton: some View {
-        let isActive = !filterKey.selectedSeasons.isEmpty
-        
-        return Button {
-            showSeasonSheet.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(.calendar)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16)
-                Text(!isActive ? "계절" : filterKey.selectedSeasons.map { $0.rawValue }.joined(separator: " • "))
-                    .font(.SRFontSet.h3)
-            }
-        }
-        .srStyled(.filterButton(isActive: isActive))
-        .sheetEnumPicker(
-            isPresented: $showSeasonSheet,
-            title: "계절 선택",
-            selection: $filterKey.selectedSeasons,
-            presentationDetents: [.fraction(0.3)]
+        FilterBar(
+            showSeasonSheet: $showSeasonSheet,
+            showHabitatSheet: $showHabitatSheet,
+            showSizeSheet: $showSizeSheet,
+            filterKey: $filterKey
         )
     }
     
-    var habitatFilterButton: some View {
-        let isActive = !filterKey.selectedHabitats.isEmpty
-        
-        return Button {
-            showHabitatSheet.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(.tree)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16)
-                Text(!isActive ? "서식지" : filterKey.selectedHabitats.map { $0.rawValue }.joined(separator: " • "))
-                    .font(.SRFontSet.h3)
-            }
-        }
-        .srStyled(.filterButton(isActive: isActive))
-        .sheetEnumPicker(
-            isPresented: $showHabitatSheet,
-            title: "계절 선택",
-            selection: $filterKey.selectedHabitats,
-            presentationDetents: [.fraction(0.4)]
+    func updateRecentItem(_ bird: Local.Bird) {
+        let birdName = bird.name
+        let request = FetchDescriptor<Local.RecentSearchEntity>(
+            predicate: #Predicate { $0.bird.name == birdName },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
+
+        if let existing = try? modelContext.fetch(request).first {
+            existing.createdAt = .now
+        } else {
+            modelContext.insert(Local.RecentSearchEntity(bird: bird))
+        }
     }
 }
 
