@@ -34,7 +34,7 @@ struct BirdFilter: Equatable {
     }
     
     func buildForCollection() -> Predicate<Local.CollectionBird> {
-        let base = build() // 기존 Bird에 대한 Predicate 사용
+        let base = build()
         
         return #Predicate { collectionBird in
             if let bird = collectionBird.bird {

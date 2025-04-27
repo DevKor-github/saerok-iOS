@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TabbarView: View {
-    var selectedTab: Int
+    var selectedTab: TabbedItems
     @Environment(\.injected) var injected
 
     var body: some View {
@@ -38,14 +38,14 @@ struct TabbarView: View {
         HStack {
             ForEach((TabbedItems.allCases), id: \.self){ item in
                 Button {
-                    injected.appState[\.routing.contentView.tabSelection] = item.rawValue
+                    injected.appState[\.routing.contentView.tabSelection] = item
                 } label: {
                     HStack {
                         Spacer()
                         TabItemView(
                             icon: item.icon,
                             title: item.title,
-                            isActive: (selectedTab == item.rawValue)
+                            isActive: (selectedTab == item)
                         )
                         Spacer()
                     }

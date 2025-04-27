@@ -107,7 +107,7 @@ extension Local.Bird {
             seasons: [.spring, .summer, .autumn],
             habitats: [.wetland],
             size: .hummingbird,
-            imageURL: "https://i.namu.wiki/i/qels_DGLZ7fXysLFYitKPXPDf2uqfmY9dFkIdH8y7ebc1ZW8KipArWDecRhsASQmKlhSV53uwT5-3_m2UyIwgD0Sx9-4kqrhVQ9ExUuO441AkGPXMZ0UTVrhQmsqXfaquybDDn41bhn__Op_qScyOw.webp"
+            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706155335721_0XCGKN3XR.jpg/ia82_132_i2.jpg?type=m1500"
         ),
 
         .init(
@@ -135,14 +135,58 @@ extension Local.Bird {
         ),
         .init(
             id: 7,
-            name: "test",
-            scientificName: "Falco tinnunculus",
-            detail: "소형 맹금류로, 개활지에서 자주 사냥을 한다. 특유의 정지비행으로 잘 알려져 있다. 몸길이는 약 35cm, 날개 폭은 약 70~80cm.",
+            name: "방울새",
+            scientificName: "Chloris sinica",
+            detail: "우리나라 전역에서 관찰이 가능한 흔한 텃새이다. 중국, 만주, 일본 등 동부아시아에서 서식한다. 아종에는 제주도에서만 번식하는 장박새와 울도방울새가 있다. 학명은 Carduelis sinica ussuriensis인데, ‘엉겅퀴를 좋아한다’라는 뜻이다. 영문 이름인 Oriental Greenfinch는 ‘동아시아에서 서식하는 종자를 즐겨 먹는 푸른빛을 띤 새’라는 뜻이다.\n\n날개 길이는 79∼83.5㎜, 부리 길이는 10∼11㎜, 부척(跗蹠: 새의 다리에서 정강이뼈와 발가락 사이의 부분)은 15∼16㎜이다. 머리는 회갈색이며 윗면과 아랫면은 갈색이다. 번식기는 4∼8월이며 2차 번식도 한다. 번식 장소는 인가 부근 혹은 공원 등지이며 둥지는 이끼류, 마른풀, 식물 뿌리 등으로 만든다. \n\n한배 산란 수는 2∼5개이고 포란 기간은 12일이다. 어미새는 먹이를 소낭에 저장하여 새끼에게 토해서 먹이를 준다. 겨울철 먹이는 주로 식물성인데, 잡초씨와 조·벼·밀·수수 등의 곡류가 대부분이다. 번식 기간인 여름철엔 대부분 곤충류를 먹는다. 번식기 외에는 대부분 20∼30개체의 무리로 이동한다. 방울새라는 국명은 울음소리가 ‘또르르륵, 또르르륵’하는 작은 방울소리가 난다고 해서 붙여졌다. 김영일(金英一) 작사, 김성태(金聖泰) 작곡의 ‘방울새’라는 동요가 있는데 방울새의 방울소리를 재미있게 표현하였다. \n\n방울새야 방울새야 쪼로롱 방울새야/ 간밤에 고방을 어디서 사왔니/ 쪼로롱 고방을 어디서 사왔니/ 방울새야 방울새야 쪼로롱 방울새야/ 너 갈 제 고 방울 나 주고 가렴/ 쪼로롱 고방울 나 주고 가렴.",
             classification: "매목 > 매과 > 매속",
             seasons: [.spring, .autumn],
             habitats: [.forest],
-            size: .pigeon,
-            imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Common_kestrel_falco_tinnunculus.jpg/960px-Common_kestrel_falco_tinnunculus.jpg"
+            size: .hummingbird,
+            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706160452691_JI99WEUYC.jpg/ia82_148_i1.jpg?type=m1500"
         ),
+        .init(
+                id: 8,
+                name: "오목눈이",
+                scientificName: "Aegithalos caudatus",
+                detail: "오목눈이는 작은 몸집과 둥글둥글한 외모로 사랑받는 새입니다. 부리는 짧고 눈이 커서 귀여운 인상을 줍니다. 나뭇가지에 매달리거나 재빠르게 이동하는 모습을 볼 수 있습니다.",
+                classification: "참새목 > 오목눈이과 > 오목눈이속",
+                seasons: [.spring, .autumn, .winter],
+                habitats: [.forest],
+                size: .hummingbird,
+                imageURL: "https://dbscthumb-phinf.pstatic.net/2765_000_32/20241114060540131_LT2LRTVXY.jpg/13029503.jpg?type=m1500"
+            ),
+        .init(
+                id: 9,
+                name: "긴꼬리딱새",
+                scientificName: "Terpsiphone atrocaudata",
+                detail: "긴꼬리딱새는 여름철에 매우 드물게 번식하는 희귀 여름철새입니다. 수컷은 길고 아름다운 꼬리깃을 가지고 있으며, 숲 속 그늘진 곳을 좋아합니다.",
+                classification: "참새목 > 딱새과 > 긴꼬리딱새속",
+                seasons: [.summer],
+                habitats: [.forest],
+                size: .hummingbird,
+                imageURL: "https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA2MDNfNTYg%2FMDAxNzE3Mzc1Njk2MzM1.FBuebOCbKQ4URHUDBhcAOW9v9W9u1z0qnS5ljwTfLbog.YlfRFXym1eqpVpSMWqoXJJ-TZ0b4k46YK7spWfY-bbkg.JPEG%2FJKPT8352.JPG&type=sc960_832"
+            ),
+            .init(
+                id: 10,
+                name: "양비둘기",
+                scientificName: "Columba eversmanni",
+                detail: "양비둘기는 광활한 초원을 선호하는 비둘기로, 우리나라에서는 극히 드물게 관찰됩니다. 몸집이 크고, 비교적 무거운 체형을 가지고 있습니다.",
+                classification: "비둘기목 > 비둘기과 > 비둘기속",
+                seasons: [.winter],
+                habitats: [.farmland],
+                size: .pigeon,
+                imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706171345642_G2N6DRCS9.jpg/ia82_234_i3.jpg?type=m1500"
+            ),
+            .init(
+                id: 11,
+                name: "흰물떼새",
+                scientificName: "Charadrius alexandrinus",
+                detail: "흰물떼새는 드물게 우리나라 해안가에서 번식하는 종입니다. 흰색과 연한 갈색을 띠며, 조심스럽게 모래사장에서 이동하는 모습이 특징입니다.",
+                classification: "도요목 > 물떼새과 > 물떼새속",
+                seasons: [.spring, .summer],
+                habitats: [.wetland],
+                size: .hummingbird,
+                imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706185010184_HJI9F0WND.jpg/ia82_354_i5.jpg?type=m1500"
+            )
     ]
 }

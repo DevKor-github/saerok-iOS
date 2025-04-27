@@ -9,6 +9,7 @@ import SwiftUI
 
 extension Image {
     enum SRIconSet: String, Hashable {
+        case chevronLeft
         case iconAdd
         case down
         case xmark
@@ -16,6 +17,7 @@ extension Image {
         case bookmarkFill
         case penFill
         case textFormat
+        case magnifyingGlass
         
         // Tabbar
         case ellipsisMessage
@@ -47,7 +49,7 @@ extension Image {
                 case .defaultIconSizeLarge:
                     return CGSize(width: 30, height: 30)
                 case .defaultIconSizeVeryLarge:
-                    return CGSize(width: 32, height: 32)
+                    return CGSize(width: 42, height: 42)
                 }
             }
         }
@@ -88,6 +90,10 @@ extension Image.SRIconSet {
     /// - 반환: `Image` 객체
     private var image: Image {
         switch self {
+        case .chevronLeft:
+            return Image(.chevronLeft)
+        case .magnifyingGlass:
+            return Image(systemName: "magnifyingglass")
         case .xmark:
             return Image(systemName: "xmark")
         case .bookmark:

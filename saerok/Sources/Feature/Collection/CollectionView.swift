@@ -11,6 +11,10 @@ import SwiftData
 import SwiftUI
 
 struct CollectionView: Routable {
+    enum Route: Hashable {
+        case collectionDetail(_ collection: Local.CollectionBird)
+        case addCollection
+    }
     
     // MARK:  Dependencies
     
@@ -70,26 +74,47 @@ struct CollectionView: Routable {
 private extension CollectionView {
     @ViewBuilder
     func loadedView() -> some View {
-        VStack(spacing: 0) {
-            navigationBar
-            listSection
-                .navigationDestination(for: Local.Bird.self, destination: { bird in
-                    BirdDetailView(bird, path: $navigationPath)
-                })
-                .onAppear {
-                    injected.appState[\.routing.contentView.isTabbarHidden] = false
-                }
-                .onChange(of: routingState.birdID, initial: true, { _, id in
-                    guard let id,
-                          let bird = collections.first(where: { $0.persistentModelID == id })
-                    else { return }
-                    navigationPath.append(bird)
-                })
-                .onChange(of: navigationPath, { _, path in
-                    if !path.isEmpty {
-                        routingBinding.wrappedValue.birdID = nil
-                    }
-                })
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
+                navigationBar
+                listSection
+                    .navigationDestination(for: CollectionView.Route.self, destination: { route in
+                        switch route {
+                        case .collectionDetail(let collection):
+                            CollectionDetailView(collection, path: $navigationPath)
+                        case .addCollection:
+                            AddCollectionItemView(path: $navigationPath)
+                        }
+                    })
+                    .onChange(of: routingState.collection, initial: true, { _, collection in
+                        guard let collection else { return }
+                        
+                        navigationPath.append(Route.collectionDetail(collection))
+                    })
+                    .onChange(of: navigationPath, { _, path in
+                        if !path.isEmpty {
+                            routingBinding.wrappedValue.collection = nil
+                        }
+                    })
+            }
+            
+            Button {
+                navigationPath.append(Route.addCollection)
+            } label: {
+                Image.SRIconSet.penFill.frame(.defaultIconSizeVeryLarge)
+                    .foregroundStyle(.srWhite)
+                    .background(
+                        Color.main
+                            .frame(width: 61, height: 61)
+                            .clipShape(Circle())
+                    )
+                    .shadow(radius: 4)
+            }
+            .buttonStyle(.plain)
+            .padding(.bottom, 114)
+            .padding(.trailing, SRDesignConstant.defaultPadding)
+
+            
         }
     }
     
@@ -116,7 +141,7 @@ private extension CollectionView {
         ScrollView(.vertical, showsIndicators: false) {
             ForEach(collections) { bird in
                 Button {
-                    //
+                    injected.appState[\.routing.collectionView.collection] = bird
                 } label: {
                     BirdCollectionCardView(bird)
                 }
@@ -126,54 +151,6 @@ private extension CollectionView {
         }
         .background(Color.background)
     }
-    
-//    var seasonFilterButton: some View {
-//        let isActive = !filterKey.selectedSeasons.isEmpty
-//        
-//        return Button {
-//            showSeasonSheet.toggle()
-//        } label: {
-//            HStack(spacing: 4) {
-//                Image(.calendar)
-//                    .resizable()
-//                    .aspectRatio(contentMode: .fit)
-//                    .frame(width: 16)
-//                Text(!isActive ? "계절" : filterKey.selectedSeasons.map { $0.rawValue }.joined(separator: " • "))
-//                    .font(.SRFontSet.h3)
-//            }
-//        }
-//        .srStyled(.filterButton(isActive: isActive))
-//        .sheetEnumPicker(
-//            isPresented: $showSeasonSheet,
-//            title: "계절 선택",
-//            selection: $filterKey.selectedSeasons,
-//            presentationDetents: [.fraction(0.3)]
-//        )
-//    }
-//    
-//    var habitatFilterButton: some View {
-//        let isActive = !filterKey.selectedHabitats.isEmpty
-//        
-//        return Button {
-//            showHabitatSheet.toggle()
-//        } label: {
-//            HStack(spacing: 4) {
-//                Image(.tree)
-//                    .resizable()
-//                    .aspectRatio(contentMode: .fit)
-//                    .frame(width: 16)
-//                Text(!isActive ? "서식지" : filterKey.selectedHabitats.map { $0.rawValue }.joined(separator: " • "))
-//                    .font(.SRFontSet.h3)
-//            }
-//        }
-//        .srStyled(.filterButton(isActive: isActive))
-//        .sheetEnumPicker(
-//            isPresented: $showHabitatSheet,
-//            title: "계절 선택",
-//            selection: $filterKey.selectedHabitats,
-//            presentationDetents: [.fraction(0.4)]
-//        )
-//    }
 }
 
 // MARK: - Loading Content
@@ -214,7 +191,7 @@ private extension CollectionView {
 
 extension CollectionView {
     struct Routing: Equatable {
-        var birdID: PersistentIdentifier?
+        var collection: Local.CollectionBird?
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {

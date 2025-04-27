@@ -9,7 +9,7 @@ import SwiftUI
 
 enum TabbedItems: Int, CaseIterable {
     case community = 0
-    case book
+    case fieldGuide
     case home
     case collection
     case profile
@@ -18,7 +18,7 @@ enum TabbedItems: Int, CaseIterable {
         switch self {
         case .community:
             return "커뮤니티"
-        case .book:
+        case .fieldGuide:
             return "도감"
         case .home:
             return "지도"
@@ -33,7 +33,7 @@ enum TabbedItems: Int, CaseIterable {
         switch self {
         case .community:
             return Image.SRIconSet.ellipsisMessage
-        case .book:
+        case .fieldGuide:
             return Image.SRIconSet.book
         case .home:
             return Image.SRIconSet.house

@@ -26,6 +26,11 @@ struct BirdCollectionCardView: View {
                     downsampling: true
                 )
                 .frame(width: 143)
+            } else if let imageData = bird.imageData.first {
+                Image(uiImage: UIImage(data: imageData) ?? .birdPreview)
+                    .resizable()
+                    .frame(width: 143)
+                    .clipShape(Rectangle())
             }
             
             VStack(alignment: .leading) {
@@ -71,8 +76,15 @@ private extension BirdCollectionCardView {
     }
 }
 
+//#Preview {
+//    BirdCollectionCardView(Local.CollectionBird.mockData[0])
+//        .padding(SRDesignConstant.defaultPadding)
+//        
+//}
+
+
 #Preview {
-    BirdCollectionCardView(Local.CollectionBird.mockData[0])
-        .padding(SRDesignConstant.defaultPadding)
-        
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
+    appDelegate.rootView
 }

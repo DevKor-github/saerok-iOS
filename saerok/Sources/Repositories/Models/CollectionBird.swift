@@ -8,10 +8,12 @@
 
 import Foundation
 import SwiftData
+import UIKit
 
 extension Local {
     @Model
     final class CollectionBird {
+        @Attribute(.unique) var id: UUID
         var bird: Local.Bird?
         var customName: String?
         var date: Date
@@ -21,7 +23,8 @@ extension Local {
         var note: String?
         var imageURL: [String]
         var lastModified: Date
-        
+        var imageData: [Data]
+
         var isIdentified: Bool {
             bird != nil
         }
@@ -35,8 +38,10 @@ extension Local {
             locationDescription: String?,
             note: String? ,
             imageURL: [String],
-            lastModified: Date
+            lastModified: Date,
+            images: [UIImage] = []
         ) {
+            self.id = .init()
             self.bird = bird
             self.customName = customName
             self.date = date
@@ -46,7 +51,9 @@ extension Local {
             self.note = note
             self.imageURL = imageURL
             self.lastModified = lastModified
-        }
+            self.imageData = images.compactMap { image in
+                image.jpegData(compressionQuality: 1.0) // JPEG 형식으로 변환
+            }        }
         
     }
 }

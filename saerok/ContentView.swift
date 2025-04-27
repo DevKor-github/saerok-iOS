@@ -20,7 +20,8 @@ struct ContentView: Routable {
     
     // MARK: View State
     
-    @State var selectedTab: Int = SRConstant.mainTab
+    @State private var showSplash = true
+    @State var selectedTab: TabbedItems = SRConstant.mainTab
     @State var isTabbarHidden: Bool = false
     
     init() {
@@ -33,39 +34,95 @@ struct ContentView: Routable {
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
     
+//    var body: some View {
+//        if showMain {
+//            NavigationStack {
+//                ZStack(alignment: .bottom) {
+//                    switch selectedTab {
+//                    case .fieldGuide:
+//                        FieldGuideView()
+//                    case .collection:
+//                        CollectionView()
+//                    default:
+//                        Rectangle()
+//                            .foregroundStyle(.clear)
+//                    }
+//
+//                    TabbarView(selectedTab: selectedTab)
+//                        .opacity(routingState.isTabbarHidden ? 0 : 1)
+//                        .allowsHitTesting(!routingState.isTabbarHidden)
+//                }
+//                .ignoresSafeArea(edges: .bottom)
+//            }
+//            .frame(maxWidth: .infinity, maxHeight: .infinity)
+//            .onReceive(routingUpdate) { self.routingState = $0 }
+//            .onChange(of: routingState.tabSelection, initial: true) { _, destination in
+//                selectedTab = destination
+//            }
+//            .onChange(of: routingState.isTabbarHidden, initial: true) { _, value in
+//                isTabbarHidden = value
+//            }
+//        } else {
+//            LottieView(animationName: "splash", completion: {
+//                withAnimation {
+//                    showMain = true
+//                }
+//            })
+//            .background(Color.red)
+//            .frame(maxWidth: .infinity, maxHeight: .infinity)
+//            .ignoresSafeArea()
+//        }
+//    }
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottom) {
-                switch selectedTab {
-                case 1:
-                    FieldGuideView()
-                default:
-                    Rectangle()
-                        .foregroundStyle(.clear)
+            ZStack {
+                // 메인 화면
+                NavigationStack {
+                    ZStack(alignment: .bottom) {
+                        switch selectedTab {
+                        case .fieldGuide:
+                            FieldGuideView()
+                        case .collection:
+                            CollectionView()
+                        default:
+                            Rectangle()
+                                .foregroundStyle(.clear)
+                        }
+                        
+                        TabbarView(selectedTab: selectedTab)
+                            .opacity(routingState.isTabbarHidden ? 0 : 1)
+                            .allowsHitTesting(!routingState.isTabbarHidden)
+                    }
+                    .ignoresSafeArea(edges: .bottom)
+                }
+                .opacity(showSplash ? 0 : 1)
+                .animation(.easeInOut(duration: 0.5), value: showSplash)
+                .onReceive(routingUpdate) { self.routingState = $0 }
+                .onChange(of: routingState.tabSelection, initial: true) { _, destination in
+                    selectedTab = destination
+                }
+                .onChange(of: routingState.isTabbarHidden, initial: true) { _, value in
+                    isTabbarHidden = value
                 }
                 
-                TabbarView(selectedTab: selectedTab)
-                    .opacity(routingState.isTabbarHidden ? 0 : 1)
-                    .allowsHitTesting(!routingState.isTabbarHidden)
+                if showSplash {
+                    LottieView(animationName: "splash", completion: {
+                        withAnimation {
+                            showSplash = false
+                        }
+                    })
+                    .background(Color.srWhite)
+                    .ignoresSafeArea()
+                }
             }
-            .ignoresSafeArea(edges: .bottom)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onReceive(routingUpdate) { self.routingState = $0 }
-        .onChange(of: routingState.tabSelection, initial: true) { _, destination in
-            selectedTab = destination
-        }
-        .onChange(of: routingState.isTabbarHidden, initial: true) { _, value in
-            isTabbarHidden = value
-        }
-    }
+    
 }
 
 // MARK: - Routable
 
 extension ContentView {
     struct Routing: Equatable {
-        var tabSelection: Int = SRConstant.mainTab
+        var tabSelection: TabbedItems = SRConstant.mainTab
         var isTabbarHidden: Bool = false
     }
     
