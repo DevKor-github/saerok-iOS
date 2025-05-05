@@ -5,22 +5,25 @@
 //  Created by HanSeung on 3/20/25.
 //
 
+
 import Foundation
 
 enum SREndpoint: Endpoint {
+    case fullSync
+    
     var baseURL: String {
-        return ""
+        return "http://3.34.90.203:8080/api/"
     }
     
     var path: String {
         switch self {
-        default: return ""
+        case .fullSync: "v1/birds/full-sync"
         }
     }
     
     var method: String {
         switch self {
-        default: "GET"
+        case .fullSync: "GET"
         }
     }
     

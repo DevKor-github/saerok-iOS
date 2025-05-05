@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct TabbarView: View {
-    var selectedTab: Int
+    var selectedTab: TabbedItems
     @Environment(\.injected) var injected
 
     var body: some View {
         VStack {
             Spacer()
             ZStack {
-                shadow
+//                shadow
                 tabItems
             }
         }
+        .padding()
     }
     
     // MARK: - UI Components
@@ -38,14 +39,14 @@ struct TabbarView: View {
         HStack {
             ForEach((TabbedItems.allCases), id: \.self){ item in
                 Button {
-                    injected.appState[\.routing.contentView.tabSelection] = item.rawValue
+                    injected.appState[\.routing.contentView.tabSelection] = item
                 } label: {
                     HStack {
                         Spacer()
                         TabItemView(
                             icon: item.icon,
                             title: item.title,
-                            isActive: (selectedTab == item.rawValue)
+                            isActive: (selectedTab == item)
                         )
                         Spacer()
                     }
@@ -53,9 +54,14 @@ struct TabbarView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 94, alignment: .top)
+        .frame(height: 78)
         .padding(.horizontal, 16)
         .background(Color.white)
-        .cornerRadius(18)
+        .cornerRadius(.infinity)
     }
 }
+
+#Preview {
+    ContentView()
+}
+

@@ -32,6 +32,18 @@ struct BirdFilter: Equatable {
                 }
             }
     }
+    
+    func buildForCollection() -> Predicate<Local.CollectionBird> {
+        let base = build()
+        
+        return #Predicate { collectionBird in
+            if let bird = collectionBird.bird {
+                base.evaluate(bird)
+            } else {
+                false
+            }
+        }
+    }
 }
 
 // MARK: - Predicate Components

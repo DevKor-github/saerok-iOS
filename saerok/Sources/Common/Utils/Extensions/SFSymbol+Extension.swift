@@ -24,6 +24,7 @@ enum SFSymbol: String {
     case bookmarkFill = "bookmark.fill"
     case calendar
     case tree
+    case xmarkCircleFill = "xmark.circle.fill"
 }
 
 extension Image {

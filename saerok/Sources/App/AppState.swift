@@ -18,6 +18,8 @@ extension AppState {
     struct ViewRouting: Equatable {
         var contentView = ContentView.Routing(tabSelection: SRConstant.mainTab)
         var fieldGuideView = FieldGuideView.Routing()
+        var collectionView = CollectionView.Routing()
+        var addCollectionItemView = AddCollectionItemView.Routing()
     }
 }
 

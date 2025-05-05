@@ -16,7 +16,7 @@ enum Route: Hashable {
 }
 
 struct FieldGuideView: Routable {
-    
+    @State var errorMessage: String = ""
     // MARK:  Dependencies
     
     @Environment(\.injected) private var injected: DIContainer
@@ -79,6 +79,7 @@ private extension FieldGuideView {
     @ViewBuilder
     func loadedView() -> some View {
         VStack(spacing: 0) {
+            Text(errorMessage)
             navigationBar
             filterButtonSection
             gridSection
@@ -199,7 +200,39 @@ private extension FieldGuideView {
 private extension FieldGuideView {
     func loadFieldGuide() {
         $fieldGuideState.load {
-            try await injected.interactors.fieldGuide.refreshFieldGuide()
+            do {
+                try await injected.interactors.fieldGuide.refreshFieldGuide()
+            } catch let error as FieldGuideInteractorError {
+                // FieldguideInteractorError를 구체적으로 처리
+                switch error {
+                case .networkError(let error):
+                    switch error {
+                    case .clientError(let statusCode):
+                        print("클라이언트 오류, 상태 코드: \(statusCode)")
+                        errorMessage = "잘못된 요청입니다. (\(statusCode))"
+                        
+                    case .serverError(let statusCode):
+                        print("서버 오류, 상태 코드: \(statusCode)")
+                        errorMessage = "서버 오류가 발생했습니다. (\(statusCode))"
+                        
+                    case .decodingError(let message):
+                        print("디코딩 오류: \(message)")
+                        errorMessage = "데이터 처리 중 오류가 발생했습니다."
+
+                    case .unknownError:
+                        errorMessage = "알 수 없는 네트워크 오류가 발생했습니다."
+                    }
+                case .repositoryError(let error):
+                    errorMessage = error.localizedDescription
+                case .unknownError(let error):
+                    errorMessage = error.localizedDescription
+                case .birdNotFound:
+                    errorMessage = ""
+                }
+            } catch {
+                // 그 외의 오류를 처리
+                errorMessage = "Unknown error: \(error.localizedDescription)"
+            }
         }
     }
 }

@@ -26,13 +26,18 @@ struct DIContainer {
 extension DIContainer {
     struct Repositories {
         let birds: BirdsRepository
+        let collections: CollectionRepository
     }
     
     struct Interactors {
         let fieldGuide: FieldGuideInteractor
+        let collection: CollectionInteractor
 
         static var stub: Self {
-            .init(fieldGuide: MockFieldGuideInteractorImpl())
+            .init(
+                fieldGuide: MockFieldGuideInteractorImpl(),
+                collection: MockCollectionInteractorImpl()
+            )
         }
     }
 }
