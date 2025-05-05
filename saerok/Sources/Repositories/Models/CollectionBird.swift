@@ -162,9 +162,6 @@ extension Local.CollectionBird {
             ],
             lastModified: Date()
         ),
-        .init(customName: "의미심장한 새", latitude: 37.5285, longitude: 126.9670, imageURL: [
-            "https://dbscthumb-phinf.pstatic.net/3150_000_1/20140625104539141_191PUK4XY.jpg/a_298_t.jpg?type=m1500"
-        ],lastModified: Date())
     ]
 }
 

@@ -14,7 +14,6 @@ struct TabItemView: View {
     
     var body: some View {
         VStack(spacing: 4) {
-            indicator
             tabIcon
             titleText
         }
@@ -26,15 +25,6 @@ struct TabItemView: View {
 // MARK: - UI Components
 
 private extension TabItemView {
-    var indicator: some View {
-        RoundedRectangle
-            .init(cornerRadius: 4)
-            .frame(height: 8)
-            .foregroundStyle(isActive ? .main : .clear)
-            .clipShape(.rect.offset(y: 4))
-            .offset(y: -4)
-    }
-    
     var tabIcon: some View {
         icon
             .frame(.defaultIconSize)

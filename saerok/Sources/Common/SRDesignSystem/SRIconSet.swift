@@ -13,6 +13,7 @@ extension Image {
         case iconAdd
         case down
         case xmark
+        case xmarkCircleFill
         case bookmark
         case bookmarkFill
         case penFill
@@ -96,6 +97,8 @@ extension Image.SRIconSet {
             return Image(systemName: "magnifyingglass")
         case .xmark:
             return Image(systemName: "xmark")
+        case .xmarkCircleFill:
+            return Image(.xmarkCircleFill)
         case .bookmark:
             return Image(.bookmark)
         case .bookmarkFill:

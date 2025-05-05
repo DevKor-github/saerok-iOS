@@ -20,7 +20,7 @@ struct ContentView: Routable {
     
     // MARK: View State
     
-    @State private var showSplash = true
+    @State private var showSplash = false
     @State var selectedTab: TabbedItems = SRConstant.mainTab
     @State var isTabbarHidden: Bool = false
     
@@ -34,45 +34,6 @@ struct ContentView: Routable {
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
     
-//    var body: some View {
-//        if showMain {
-//            NavigationStack {
-//                ZStack(alignment: .bottom) {
-//                    switch selectedTab {
-//                    case .fieldGuide:
-//                        FieldGuideView()
-//                    case .collection:
-//                        CollectionView()
-//                    default:
-//                        Rectangle()
-//                            .foregroundStyle(.clear)
-//                    }
-//
-//                    TabbarView(selectedTab: selectedTab)
-//                        .opacity(routingState.isTabbarHidden ? 0 : 1)
-//                        .allowsHitTesting(!routingState.isTabbarHidden)
-//                }
-//                .ignoresSafeArea(edges: .bottom)
-//            }
-//            .frame(maxWidth: .infinity, maxHeight: .infinity)
-//            .onReceive(routingUpdate) { self.routingState = $0 }
-//            .onChange(of: routingState.tabSelection, initial: true) { _, destination in
-//                selectedTab = destination
-//            }
-//            .onChange(of: routingState.isTabbarHidden, initial: true) { _, value in
-//                isTabbarHidden = value
-//            }
-//        } else {
-//            LottieView(animationName: "splash", completion: {
-//                withAnimation {
-//                    showMain = true
-//                }
-//            })
-//            .background(Color.red)
-//            .frame(maxWidth: .infinity, maxHeight: .infinity)
-//            .ignoresSafeArea()
-//        }
-//    }
     var body: some View {
             ZStack {
                 // 메인 화면

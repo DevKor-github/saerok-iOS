@@ -10,35 +10,30 @@ import Combine
 import SwiftUI
 
 struct AddCollectionItemView: Routable {
-
     enum Route {
         case findBird
     }
     
     // MARK:  Dependencies
-
+    
     @Environment(\.injected) var injected
     @Environment(\.modelContext) var context
     
     // MARK:  Routable
-
+    
     @State var routingState: Routing = .init()
     
     // MARK: Navigation
     
     @Binding var path: NavigationPath
-
+    
     // MARK: View State
-
+    
     @State var isDateSeclecting: Bool = false
     @State var selectedBird: Local.Bird?
     @State var defaultText: String = ""
     @State var note: String = ""
     @State var date: Date?
-    var submittable: Bool { selectedBird != nil && !note.isEmpty && date != nil
-    }
-    
-    
     @State private var selectedImages: [UIImage] = []
     @State private var isShowingImagePicker: Bool = false
     
@@ -46,7 +41,27 @@ struct AddCollectionItemView: Routable {
     @FocusState var dateFocused: Bool
     @FocusState var noteFocused: Bool
     
+    private var submittable: Bool { selectedBird != nil && !note.isEmpty && date != nil }
+    
     var body: some View {
+        content
+            .onReceive(routingUpdate) { self.routingState = $0 }
+            .navigationDestination(for: Route.self, destination: { route in
+                switch route {
+                case .findBird:
+                    CollectionSearchView(path: $path)
+                }
+            })
+            .onChange(of: routingState.selectedBird) { _, selectedBird in
+                self.selectedBird = selectedBird
+            }
+            .regainSwipeBack()
+    }
+}
+
+private extension AddCollectionItemView {
+    @ViewBuilder
+    var content: some View {
         navigationBar
         VStack(spacing: 20) {
             imageForm
@@ -58,53 +73,39 @@ struct AddCollectionItemView: Routable {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, SRDesignConstant.defaultPadding)
-        .onReceive(routingUpdate) { self.routingState = $0 }
-        .navigationDestination(for: Route.self, destination: { route in
-            switch route {
-            case .findBird:
-                CollectionSearchView(path: $path)
-            }
-        })
-        .onChange(of: routingState.selectedBird) { _, selectedBird in
-            self.selectedBird = selectedBird
-        }
-        .regainSwipeBack()
     }
-}
-
-private extension AddCollectionItemView {
+    
     var imageForm: some View {
         VStack(alignment: .leading, spacing: 10) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 100, height: 100)
-                                .clipped()
-                                .cornerRadius(10)
-                                .overlay {
-                                    Button(action: {
-                                        // 사진 삭제
-                                        selectedImages.remove(at: index)
-                                    }) {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .foregroundColor(.gray)
-                                            .background(Color.srWhite)
-                                            .clipShape(Circle())
-                                            .offset(x: 50, y: -50) // 버튼 위치 조정
-                                    }
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: Constants.imageSize, height: Constants.imageSize)
+                            .clipped()
+                            .cornerRadius(Constants.imageCornerRadius)
+                            .overlay {
+                                Button(action: {
+                                    selectedImages.remove(at: index)
+                                }) {
+                                    Image.SRIconSet.xmarkCircleFill.frame(.defaultIconSizeMedium)
+                                        .foregroundColor(.gray)
+                                        .background(Color.srWhite)
+                                        .clipShape(Circle())
+                                        .offset(x: Constants.deleteButtonOffset, y: -Constants.deleteButtonOffset)
                                 }
+                            }
                     }
                     
                     Button {
                         isShowingImagePicker = true
                     } label: {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: Constants.imageCornerRadius)
                                 .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: [5]))
-                                .frame(width: 100, height: 100)
+                                .frame(width: Constants.imageSize, height: Constants.imageSize)
                             Image(systemName: "plus")
                                 .foregroundColor(.border)
                         }
@@ -114,9 +115,9 @@ private extension AddCollectionItemView {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 10)
             }
-            .sheet(isPresented: $isShowingImagePicker) {
-                MultiImagePicker(selectedImages: $selectedImages)
-            }
+        }
+        .sheet(isPresented: $isShowingImagePicker) {
+            MultiImagePicker(selectedImages: $selectedImages)
         }
     }
     
@@ -125,7 +126,7 @@ private extension AddCollectionItemView {
             Text("새 이름")
                 .font(.SRFontSet.h4)
                 .padding(.horizontal, 10)
-
+            
             HStack {
                 Text(selectedBird == nil ? "새 이름을 입력해주세요" : selectedBird!.name)
                     .foregroundStyle(selectedBird != nil ? .primary : .tertiary)
@@ -135,9 +136,9 @@ private extension AddCollectionItemView {
             }
             .padding(.leading, 20)
             .padding(.trailing, 10)
-            .frame(height: 44)
+            .frame(height: Constants.formHeight)
             .srStyled(.textField(isFocused: $nameFocused))
-
+            
         }
         .onTapGesture {
             path.append(Route.findBird)
@@ -154,7 +155,7 @@ private extension AddCollectionItemView {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 20)
                 .padding(.trailing, 10)
-                .frame(height: 44)
+                .frame(height: Constants.formHeight)
                 .srStyled(.textField(isFocused: $dateFocused))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
@@ -184,39 +185,28 @@ private extension AddCollectionItemView {
             Text("한 줄 평")
                 .font(.SRFontSet.h4)
                 .padding(.horizontal, 10)
-
-                TextField("한 줄 평을 입력해주세요", text: $note)
-                    .padding(20)
-                    .frame(height: 44)
-                    .srStyled(.textField(isFocused: $noteFocused))
-                    .overlay(alignment: .topTrailing) {
-                        Text("(\(note.count)/100)")
-                            .font(.SRFontSet.h4)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 48)
-                            .onChange(of: note) { _, newValue in
-                                if newValue.count > 100 {
-                                    note = String(newValue.prefix(100))
-                                }
+            
+            TextField("한 줄 평을 입력해주세요", text: $note)
+                .padding(20)
+                .frame(height: Constants.formHeight)
+                .srStyled(.textField(isFocused: $noteFocused))
+                .overlay(alignment: .topTrailing) {
+                    Text("(\(note.count)/\(Constants.maxNoteLength)")
+                        .font(.SRFontSet.h4)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 48)
+                        .onChange(of: note) { _, newValue in
+                            if newValue.count > Constants.maxNoteLength {
+                                note = String(newValue.prefix(Constants.maxNoteLength))
                             }
-                    }
+                        }
+                }
         }
     }
     
     var submitButton: some View {
         Button {
-            context.insert(Local.CollectionBird.init(
-                bird: selectedBird,
-                customName: nil,
-                date: date.unsafelyUnwrapped,
-                latitude: 0,
-                longitude: 0,
-                locationDescription: "우리 집 근처",
-                note: note,
-                imageURL: [],
-                lastModified: Date(),
-                images: selectedImages
-            ))
+            submitForm()
             path.removeLast()
         } label: {
             Text("종 추가")
@@ -245,6 +235,25 @@ private extension AddCollectionItemView {
     }
 }
 
+// MARK: - Action Method
+
+private extension AddCollectionItemView {
+    func submitForm() {
+        context.insert(Local.CollectionBird.init(
+            bird: selectedBird,
+            customName: nil,
+            date: date.unsafelyUnwrapped,
+            latitude: 0,
+            longitude: 0,
+            locationDescription: "우리 집 근처",
+            note: note,
+            imageURL: [],
+            lastModified: Date(),
+            images: selectedImages
+        ))
+    }
+}
+
 // MARK: - Routable
 
 extension AddCollectionItemView {
@@ -260,6 +269,19 @@ extension AddCollectionItemView {
         $routingState.dispatched(to: injected.appState, \.routing.addCollectionItemView)
     }
 }
+
+// MARK: - Constants
+
+private extension AddCollectionItemView {
+    enum Constants {
+        static let imageSize: CGFloat = 100
+        static let imageCornerRadius: CGFloat = 10
+        static let formHeight: CGFloat = 44
+        static let maxNoteLength: Int = 100
+        static let deleteButtonOffset: CGFloat = imageSize / 2
+    }
+}
+
 
 #Preview {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate

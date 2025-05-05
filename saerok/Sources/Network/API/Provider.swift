@@ -5,6 +5,7 @@
 //  Created by HanSeung on 3/20/25.
 //
 
+
 import Foundation
 
 final class Provider {
@@ -27,12 +28,16 @@ final class Provider {
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
-            throw NetworkError.decodingError
+            throw NetworkError.decodingError(error.localizedDescription)
         }
     }
     
-    func validateStatusCode(_ statusCode: Int) -> Error {
+    func validateStatusCode(_ statusCode: Int) -> NetworkError {
         switch statusCode {
+        case 400..<500:
+            return NetworkError.clientError(statusCode)
+        case 500..<600:
+            return NetworkError.serverError(statusCode)
         default:
             return NetworkError.unknownError
         }

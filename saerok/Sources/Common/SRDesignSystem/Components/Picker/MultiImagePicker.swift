@@ -6,15 +6,15 @@
 //
 
 
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct MultiImagePicker: UIViewControllerRepresentable {
     @Binding var selectedImages: [UIImage]
     
     func makeUIViewController(context: Context) -> some UIViewController {
         var config = PHPickerConfiguration()
-        config.selectionLimit = 0 // 0이면 무제한, 숫자 지정 가능
+        config.selectionLimit = 0
         config.filter = .images
         
         let picker = PHPickerViewController(configuration: config)

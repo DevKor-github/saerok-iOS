@@ -10,17 +10,20 @@ import Combine
 import SwiftUI
 
 struct CollectionDetailView: View {
+    private let collectionBird: Local.CollectionBird
     
     // MARK:  Dependencies
     
     @Environment(\.injected) private var injected: DIContainer
     
-    private let collection: Local.CollectionBird
-    
+    // MARK: Navigation
+
     @Binding var path: NavigationPath
     
+    // MARK: - Init
+
     init(_ bird: Local.CollectionBird, path: Binding<NavigationPath>) {
-        self.collection = bird
+        self.collectionBird = bird
         self._path = path
     }
     
@@ -42,9 +45,9 @@ struct CollectionDetailView: View {
 private extension CollectionDetailView {
     @ViewBuilder
     var imageSection: some View {
-        if !collection.imageURL.isEmpty {
+        if !collectionBird.imageURL.isEmpty {
             TabView {
-                ForEach(collection.imageURL, id: \.self) { url in
+                ForEach(collectionBird.imageURL, id: \.self) { url in
                     ReactiveAsyncImage(
                         url: url,
                         scale: .medium,
@@ -56,9 +59,9 @@ private extension CollectionDetailView {
             }
             .tabViewStyle(PageTabViewStyle())
             .frame(height: 300)
-        } else if let imageData = collection.imageData.first {
+        } else if let imageData = collectionBird.imageData.first {
             TabView {
-                ForEach(collection.imageData, id: \.self) { data in
+                ForEach(collectionBird.imageData, id: \.self) { data in
                     Image(uiImage: UIImage(data: data) ?? .birdPreview)
                         .resizable()
                         .clipShape(Rectangle())
@@ -84,7 +87,7 @@ private extension CollectionDetailView {
                 Spacer()
                 
                 NavigationLink {
-                    BirdDetailView(collection.bird ?? .mockData[0], path: $path)
+                    BirdDetailView(collectionBird.bird ?? .mockData[0], path: $path)
                 } label: {
                     Text("도감 보기")
                         .font(.SRFontSet.h3)
@@ -103,19 +106,19 @@ private extension CollectionDetailView {
                     Text("발견 일시")
                         .font(.SRFontSet.h6)
                         .foregroundStyle(.secondary)
-                    Text(collection.date.toFullString)
+                    Text(collectionBird.date.toFullString)
                         .font(.SRFontSet.h3)
                 }
                 HStack {
                     Text("발견 장소")
                         .font(.SRFontSet.h6)
                         .foregroundStyle(.secondary)
-                    Text(collection.locationDescription ?? "위치 정보 없음")
+                    Text(collectionBird.locationDescription ?? "위치 정보 없음")
                         .font(.SRFontSet.h3)
                 }
             }
             
-            if let note = collection.note, !note.isEmpty {
+            if let note = collectionBird.note, !note.isEmpty {
                 Text(note)
                     .font(.SRFontSet.h6)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -140,9 +143,9 @@ private extension CollectionDetailView {
                     .buttonStyle(.plain)
                     
                     VStack(alignment: .leading) {
-                        Text((collection.bird?.name ?? collection.customName)!)
+                        Text((collectionBird.bird?.name ?? collectionBird.customName)!)
                             .font(.SRFontSet.h2)
-                        Text(collection.bird?.scientificName ?? "")
+                        Text(collectionBird.bird?.scientificName ?? "")
                             .font(.SRFontSet.h3)
                             .foregroundStyle(.gray)
                     }

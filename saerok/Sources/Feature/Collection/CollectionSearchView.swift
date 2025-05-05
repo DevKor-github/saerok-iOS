@@ -22,6 +22,7 @@ struct CollectionSearchView: View {
     @State private var fieldGuide: [Local.Bird]
     @State private var filteredBirds: [Local.Bird] = []
     @State private var hangulFinder: HangulFinder<Local.Bird>
+    
     @FocusState private var isSearchBarFocused: Bool
     
     // MARK: Navigation
@@ -149,11 +150,4 @@ private extension CollectionSearchView {
         .padding(SRDesignConstant.defaultPadding)
         .background(Color.srWhite)
     }
-}
-
-#Preview {
-    @Previewable @State var path: NavigationPath = .init()
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    //    appDelegate.rootView
-    CollectionSearchView(path: $path)
 }

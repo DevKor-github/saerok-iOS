@@ -26,7 +26,11 @@ struct CollectionInteractorImpl: CollectionInteractor {
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
-    func refreshCollection() async throws { }
+//    let repository: CollectionRepository
+
+    func refreshCollection() async throws {
+//        try await repository.store(Local.CollectionBird.mockData)
+    }
     
     func loadCollectionBird(birdID: Int) async throws -> Local.CollectionBird? {
         return Local.CollectionBird.mockData[0]

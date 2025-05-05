@@ -15,10 +15,11 @@ struct TabbarView: View {
         VStack {
             Spacer()
             ZStack {
-                shadow
+//                shadow
                 tabItems
             }
         }
+        .padding()
     }
     
     // MARK: - UI Components
@@ -53,9 +54,14 @@ struct TabbarView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 94, alignment: .top)
+        .frame(height: 78)
         .padding(.horizontal, 16)
         .background(Color.white)
-        .cornerRadius(18)
+        .cornerRadius(.infinity)
     }
 }
+
+#Preview {
+    ContentView()
+}
+

@@ -20,16 +20,15 @@ struct BirdCollectionCardView: View {
             if let url = bird.imageURL.first {
                 ReactiveAsyncImage(
                     url: url,
-//                    size: CGSize(width: 200, height: 100),
                     scale: .medium,
                     quality: 0.8,
                     downsampling: true
                 )
-                .frame(width: 143)
+                .frame(width: Constants.cardHeight)
             } else if let imageData = bird.imageData.first {
                 Image(uiImage: UIImage(data: imageData) ?? .birdPreview)
                     .resizable()
-                    .frame(width: 143)
+                    .frame(width: Constants.cardHeight)
                     .clipShape(Rectangle())
             }
             
@@ -76,12 +75,13 @@ private extension BirdCollectionCardView {
     }
 }
 
-//#Preview {
-//    BirdCollectionCardView(Local.CollectionBird.mockData[0])
-//        .padding(SRDesignConstant.defaultPadding)
-//        
-//}
+// MARK: - Constants
 
+private extension BirdCollectionCardView {
+    enum Constants {
+        static let cardHeight: CGFloat = 143
+    }
+}
 
 #Preview {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
