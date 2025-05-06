@@ -50,15 +50,9 @@ struct BirdDetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 5) {
                     Color.clear.frame(width: 20)
-                    ForEach(bird.seasons, id: \.rawValue) { season in
-                        chip(season.rawValue)
-                    }
-                    
-                    ForEach(bird.habitats, id: \.rawValue) { habitat in
-                        chip(habitat.rawValue)
-                    }
-                    
-                    chip(bird.size.rawValue + " 크기")
+                    ChipList(icon: .seasonWhite, list: bird.seasons)
+                    ChipList(icon: .habitatWhite, list: bird.habitats)
+                    ChipList(icon: .sizeWhite, list: [bird.size])
                     Color.clear.frame(width: 20)
                 }
             }
@@ -68,10 +62,10 @@ struct BirdDetailView: View {
     private var classification: some View {
         VStack(alignment: .leading, spacing: 13) {
             Text("분류")
-                .font(.SRFontSet.h3)
+                .font(.SRFontSet.subtitle2)
                 .bold()
             Text(bird.classification)
-                .font(.SRFontSet.h4)
+                .font(.SRFontSet.caption1)
                 .foregroundStyle(.secondary)
                 .lineSpacing(5)
         }
@@ -80,24 +74,17 @@ struct BirdDetailView: View {
     private var description: some View {
         VStack(alignment: .leading, spacing: 13) {
             Text("상세 설명")
-                .font(.SRFontSet.h3)
+                .font(.SRFontSet.subtitle2)
                 .bold()
             Text(bird.detail)
-                .font(.SRFontSet.h4)
+                .font(.SRFontSet.body2)
                 .lineSpacing(5)
+            Color.clear
+                .frame(height: 80)
         }
     }
     
-    private func chip(_ content: String) -> some View {
-        return Text(content)
-            .font(.SRFontSet.h6)
-            .bold()
-            .padding(.horizontal, 13)
-            .padding(.vertical, 7)
-            .foregroundStyle(.srWhite)
-            .background(Color.main)
-            .cornerRadius(.infinity)
-    }
+    
     
     private var navigationBar: some View {
         NavigationBar(
@@ -106,15 +93,16 @@ struct BirdDetailView: View {
                     Button {
                         path.removeLast()
                     } label: {
-                        Image(.chevronLeft)
+                        Image.SRIconSet.chevronLeft
+                            .frame(.defaultIconSize)
                     }
                     .buttonStyle(.plain)
                     
                     VStack(alignment: .leading) {
                         Text(bird.name)
-                            .font(.SRFontSet.h2)
+                            .font(.SRFontSet.subtitle1)
                         Text(bird.scientificName)
-                            .font(.SRFontSet.h3)
+                            .font(.SRFontSet.caption1)
                             .foregroundStyle(.gray)
                     }
                 }
@@ -129,9 +117,9 @@ struct BirdDetailView: View {
                         bird.isBookmarked.toggle()
                     } label: {
                         Group {
-                            bird.isBookmarked
-                            ? Image.SRIconSet.bookmarkFill.frame(.defaultIconSize)
-                            : Image.SRIconSet.bookmark.frame(.defaultIconSize)
+                            (bird.isBookmarked
+                             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
+                             : Image.SRIconSet.bookmark.frame(.defaultIconSize))
                         }
                         .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
                     }
@@ -140,10 +128,34 @@ struct BirdDetailView: View {
             }
         )
     }
+    
+    struct ChipList<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
+        
+        let icon: Image.SRIconSet
+        let list: [T]
+        var body: some View {
+            HStack {
+                icon.frame(.defaultIconSizeSmall)
+
+                if list.isEmpty {
+                    Text("미등록")
+                } else {
+                    Text(list.map(\.rawValue).joined(separator: " • "))
+                }
+            }
+            .font(.SRFontSet.body1)
+            .bold()
+            .padding(.horizontal, 13)
+            .padding(.vertical, 7)
+            .foregroundStyle(.srWhite)
+            .background(Color.main)
+            .cornerRadius(.infinity)
+        }
+    }
 }
 
 #Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @Previewable @State var path: NavigationPath = .init()
     
-    appDelegate.rootView
+    BirdDetailView(.mockData[0], path: $path)
 }

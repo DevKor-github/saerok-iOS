@@ -14,11 +14,14 @@ struct FilterButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(isActive ? .main : Color.background)
+            .padding(.vertical, 8)
+            .background(isActive ? .main : Color.whiteGray)
             .foregroundStyle(isActive ? .srWhite : .primary)
             .clipShape(RoundedRectangle(cornerRadius: .infinity))
-//            .shadow(color: .border, radius: 3)
+            .overlay {
+                RoundedRectangle(cornerRadius: .infinity)
+                    .stroke(isActive ? Color.main : Color.gray, lineWidth: 0.35)
+            }
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
     }

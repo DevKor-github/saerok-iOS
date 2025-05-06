@@ -5,50 +5,66 @@
 //  Created by HanSeung on 3/18/25.
 //
 
+
 import SwiftUI
 
 extension Image {
     enum SRIconSet: String, Hashable {
+        
+        // MARK: SFSymbol
+
         case chevronLeft
+        case chevronRight
         case iconAdd
         case down
         case xmark
         case xmarkCircleFill
-        case bookmark
-        case bookmarkFill
         case penFill
         case textFormat
         case magnifyingGlass
         
-        // Tabbar
-        case ellipsisMessage
-        case book
+        // MARK: Custom Symbol
+
+        case scrap
+        case scrapFilled
+        case season
+        case seasonWhite
+        case size
+        case sizeWhite
+        case habitat
+        case habitatWhite
+        case bookmark
+        case bookmarkFilled
+        case alert
+        
+        // MARK: Tabbar
+        case doongzi
+        case doongziFilled
+        case dogam
+        case dogamFilled
         case heart
-        case house
-        case person
+        case heartFilled
+        case my
+        case myFilled
+        case home
+        case homeFilled
         
         // MARK: - Metric
         
         enum Metric: String {
-            case defaultIconSizeVerySmall
             case defaultIconSizeSmall
-            case defaultIconSizeMedium
             case defaultIconSize
             case defaultIconSizeLarge
             case defaultIconSizeVeryLarge
             
             func toCGSize() -> CGSize {
                 switch self {
-                case .defaultIconSizeVerySmall:
-                    return CGSize(width: 12, height: 12)
                 case .defaultIconSizeSmall:
-                    return CGSize(width: 16, height: 16)
-                case .defaultIconSizeMedium:
-                    return CGSize(width: 18, height: 18)
+                    return CGSize(width: 13, height: 13)
                 case .defaultIconSize:
-                    return CGSize(width: 24, height: 24)
+                    return CGSize(width: 17, height: 17)
                 case .defaultIconSizeLarge:
-                    return CGSize(width: 30, height: 30)
+                    return CGSize(width: 24, height: 24)
                 case .defaultIconSizeVeryLarge:
                     return CGSize(width: 42, height: 42)
                 }
@@ -92,33 +108,63 @@ extension Image.SRIconSet {
     private var image: Image {
         switch self {
         case .chevronLeft:
-            return Image(.chevronLeft)
+            return Image(systemName: "chevron.left")
+        case .chevronRight:
+            return Image(systemName: "chevron.right")
         case .magnifyingGlass:
             return Image(systemName: "magnifyingglass")
         case .xmark:
             return Image(systemName: "xmark")
         case .xmarkCircleFill:
-            return Image(.xmarkCircleFill)
+            return Image(systemName: "xmark.circle.fill")
+        case .scrap:
+            return Image(.scrap)
+        case .scrapFilled:
+            return Image(.scrapFilled)
+        case .season:
+            return Image(.season)
+        case .seasonWhite:
+            return Image(.seasonWhite)
+        case .size:
+            return Image(.birdSize)
+        case .sizeWhite:
+            return Image(.sizeWhite)
+        case .habitat:
+            return Image(.habitat)
+        case .habitatWhite:
+            return Image(.habitatWhite)
+        case .alert:
+            return Image(.alert)
         case .bookmark:
             return Image(.bookmark)
-        case .bookmarkFill:
-            return Image(.bookmarkFill)
+        case .bookmarkFilled:
+            return Image(.bookmarkFilled)
         case .penFill:
             return Image(.penFill)
         case .textFormat:
             return Image(systemName: "textformat")
         case .down:
-            return Image(.chevronDown)
-        case .book:
-            return Image(.book)
-        case .ellipsisMessage:
-            return Image(.ellipsisMessage)
+            return Image(systemName: "chevron.down")
+        case .dogam:
+            return Image(.dogam)
+        case .dogamFilled:
+            return Image(.dogamFilled)
         case .heart:
             return Image(.heart)
-        case .person:
-            return Image(.person)
-        case .house:
-            return Image(.house)
+        case .heartFilled:
+            return Image(.heartFilled)
+        case .my:
+            return Image(.my)
+        case .myFilled:
+            return Image(.myFilled)
+        case .home:
+            return Image(.home)
+        case .homeFilled:
+            return Image(.homeFilled)
+        case .doongzi:
+            return Image(.doongzi)
+        case .doongziFilled:
+            return Image(.doongziFilled)
         default:
             return Image(self.rawValue, bundle: Image.SRIconSet.bundle)
         }

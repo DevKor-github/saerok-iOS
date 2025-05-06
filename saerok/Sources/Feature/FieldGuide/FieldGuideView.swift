@@ -109,21 +109,22 @@ private extension FieldGuideView {
         NavigationBar(
             leading: {
                 Text("도감")
-                    .font(.SRFontSet.h1)
+                    .font(.SRFontSet.headline1)
             },
             trailing: {
                 HStack(spacing: 12) {
                     Button {
                         filterKey.isBookmarked.toggle()
                     } label: {
-                        Image(filterKey.isBookmarked ? .bookmarkFill : .bookmark)
-                            .foregroundStyle(filterKey.isBookmarked ? .main : .black)
+                        (filterKey.isBookmarked
+                         ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
+                         : Image.SRIconSet.bookmark.frame(.defaultIconSize))
                     }
                 
                     Button {
                         navigationPath.append(Route.search)
                     } label: {
-                        Image(.magnifyingglass)
+                        Image(systemName: "magnifyingglass")
                     }
                     .buttonStyle(.plain)
                 }
@@ -167,7 +168,7 @@ private extension FieldGuideView {
             }
             .padding(SRDesignConstant.defaultPadding)
         }
-        .background(Color.background)
+        .background(Color.whiteGray)
     }
 }
 

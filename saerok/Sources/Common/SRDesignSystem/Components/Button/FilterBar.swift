@@ -18,7 +18,8 @@ struct FilterBar: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 FilterButton<Season>(
-                    icon: Image(.calendar),
+                    icon: Image.SRIconSet.season,
+                    iconSelected: Image.SRIconSet.seasonWhite,
                     placeholder: "계절",
                     title: "계절 선택",
                     isPresented: $showSeasonSheet,
@@ -26,15 +27,17 @@ struct FilterBar: View {
                     detents: [.fraction(0.3)]
                 )
                 FilterButton<Habitat>(
-                    icon: Image(.tree),
+                    icon: Image.SRIconSet.habitat,
+                    iconSelected: Image.SRIconSet.habitatWhite,
                     placeholder: "서식지",
                     title: "서식지 선택",
                     isPresented: $showHabitatSheet,
                     selection: $filterKey.selectedHabitats,
-                    detents: [.fraction(0.4)]
+                    detents: [.fraction(0.7)]
                 )
                 FilterButton<BirdSize>(
-                    icon: Image(systemName: "textformat"),
+                    icon: Image.SRIconSet.size,
+                    iconSelected: Image.SRIconSet.sizeWhite,
                     placeholder: "크기",
                     title: "크기 선택",
                     isPresented: $showSizeSheet,

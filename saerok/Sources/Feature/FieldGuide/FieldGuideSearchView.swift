@@ -72,7 +72,8 @@ private extension FieldGuideSearchView {
             Button {
                 path.removeLast()
             } label: {
-                Image(.chevronLeft)
+                Image.SRIconSet.chevronLeft
+                    .frame(.defaultIconSize)
                     .foregroundStyle(.main)
             }
             .buttonStyle(.plain)
@@ -91,9 +92,9 @@ private extension FieldGuideSearchView {
         Button {
             bird.isBookmarked.toggle()
         } label: {
-            Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
-                .font(.system(size: 24, weight: bird.isBookmarked ? .regular : .light))
-                .foregroundStyle(bird.isBookmarked ? .main : .gray)
+            (bird.isBookmarked
+             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
+             : Image.SRIconSet.bookmark.frame(.defaultIconSize))
         }
     }
     
@@ -124,7 +125,7 @@ private extension FieldGuideSearchView {
                 }
             }
         }
-        .background(Color.background)
+        .background(Color.whiteGray)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
@@ -132,9 +133,9 @@ private extension FieldGuideSearchView {
             Button {
                 bird.isBookmarked.toggle()
             } label: {
-                Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
-                    .font(.system(size: 24, weight: bird.isBookmarked ? .regular : .light))
-                    .foregroundStyle(bird.isBookmarked ? .main : .gray)
+                (bird.isBookmarked
+                 ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
+                 : Image.SRIconSet.bookmark.frame(.defaultIconSize))
             }
             .frame(width: 24)
             
@@ -145,13 +146,14 @@ private extension FieldGuideSearchView {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(bird.name)
-                            .font(.SRFontSet.h3)
+                            .font(.SRFontSet.body3)
                         Text(bird.scientificName)
-                            .font(.SRFontSet.h4)
+                            .font(.SRFontSet.caption1)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Image(.chevronRight)
+                    Image.SRIconSet.chevronRight
+                        .frame(.defaultIconSize)
                         .foregroundStyle(.secondary)
                 }
                 .contentShape(Rectangle())
@@ -182,7 +184,7 @@ private extension FieldGuideSearchView {
                 modelContext.delete(search)
             } label: {
                 Image.SRIconSet.xmark
-                    .frame(.defaultIconSizeVerySmall)
+                    .frame(.defaultIconSizeSmall)
                     .foregroundStyle(.secondary)
             }
         }

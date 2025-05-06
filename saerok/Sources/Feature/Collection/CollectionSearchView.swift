@@ -64,7 +64,7 @@ private extension CollectionSearchView {
     var navigationBar: some View {
         NavigationBar(center: {
             Text("이름 찾기")
-                .font(.SRFontSet.h2)
+                .font(.SRFontSet.subtitle2)
         }, leading: {
             Button {
                 path.removeLast()
@@ -90,9 +90,9 @@ private extension CollectionSearchView {
         Button {
             bird.isBookmarked.toggle()
         } label: {
-            Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
-                .font(.system(size: 24, weight: bird.isBookmarked ? .regular : .light))
-                .foregroundStyle(bird.isBookmarked ? .main : .gray)
+            (bird.isBookmarked
+             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
+             : Image.SRIconSet.bookmark.frame(.defaultIconSize))
         }
     }
     
@@ -112,7 +112,7 @@ private extension CollectionSearchView {
             }
             
         }
-        .background(Color.background)
+        .background(Color.whiteGray)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
@@ -120,9 +120,9 @@ private extension CollectionSearchView {
             Button {
                 bird.isBookmarked.toggle()
             } label: {
-                Image(bird.isBookmarked ? .bookmarkFill : .bookmark)
-                    .font(.system(size: 24, weight: bird.isBookmarked ? .regular : .light))
-                    .foregroundStyle(bird.isBookmarked ? .main : .gray)
+                (bird.isBookmarked
+                 ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
+                 : Image.SRIconSet.bookmark.frame(.defaultIconSize))
             }
             .frame(width: 24)
             
@@ -133,13 +133,14 @@ private extension CollectionSearchView {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(bird.name)
-                            .font(.SRFontSet.h3)
+                            .font(.SRFontSet.body3)
                         Text(bird.scientificName)
-                            .font(.SRFontSet.h4)
+                            .font(.SRFontSet.caption1)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Image(.chevronRight)
+                    Image.SRIconSet.chevronRight
+                        .frame(.defaultIconSize)
                         .foregroundStyle(.secondary)
                 }
                 .contentShape(Rectangle())

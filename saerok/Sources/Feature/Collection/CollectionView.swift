@@ -122,14 +122,15 @@ private extension CollectionView {
         NavigationBar(
             leading: {
                 Text("컬렉션")
-                    .font(.SRFontSet.h1)
+                    .font(.SRFontSet.headline1)
             },
             trailing: {
                 HStack(spacing: 12) {                    
                     Button {
                         // TODO: 검색기능
                     } label: {
-                        Image(.magnifyingglass)
+                        Image.SRIconSet.magnifyingGlass
+                            .frame(.defaultIconSize)
                     }
                 }
                 .font(.system(size: 24))
@@ -149,7 +150,7 @@ private extension CollectionView {
             }
             .padding(SRDesignConstant.defaultPadding)
         }
-        .background(Color.background)
+        .background(Color.whiteGray)
     }
 }
 
