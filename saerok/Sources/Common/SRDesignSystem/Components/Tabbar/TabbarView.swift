@@ -14,26 +14,13 @@ struct TabbarView: View {
     var body: some View {
         VStack {
             Spacer()
-            ZStack {
-//                shadow
                 tabItems
-            }
+                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 0)
         }
         .padding()
     }
     
     // MARK: - UI Components
-
-    private let shadow: some View = {
-        LinearGradient(
-            gradient: Gradient(colors: [Color.white, Color.clear]),
-            startPoint: .bottom,
-            endPoint: .top
-        )
-        .frame(height: 94)
-        .offset(y: -30)
-        .allowsHitTesting(false)
-    }()
     
     private var tabItems: some View {
         HStack {
@@ -45,6 +32,7 @@ struct TabbarView: View {
                         Spacer()
                         TabItemView(
                             icon: item.icon,
+                            iconFilled: item.iconSelected,
                             title: item.title,
                             isActive: (selectedTab == item)
                         )

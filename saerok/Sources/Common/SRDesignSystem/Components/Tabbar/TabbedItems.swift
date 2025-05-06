@@ -17,13 +17,13 @@ enum TabbedItems: Int, CaseIterable {
     var title: String {
         switch self {
         case .community:
-            return "커뮤니티"
+            return "둥지"
         case .fieldGuide:
             return "도감"
         case .home:
             return "지도"
         case .collection:
-            return "컬렉션"
+            return "새록"
         case .profile:
             return "MY"
         }
@@ -32,15 +32,30 @@ enum TabbedItems: Int, CaseIterable {
     var icon: Image.SRIconSet {
         switch self {
         case .community:
-            return Image.SRIconSet.ellipsisMessage
+            return Image.SRIconSet.doongzi
         case .fieldGuide:
-            return Image.SRIconSet.book
+            return Image.SRIconSet.dogam
         case .home:
-            return Image.SRIconSet.house
+            return Image.SRIconSet.home
         case .collection:
             return Image.SRIconSet.heart
         case .profile:
-            return Image.SRIconSet.person
+            return Image.SRIconSet.my
+        }
+    }
+    
+    var iconSelected: Image.SRIconSet {
+        switch self {
+        case .community:
+            return Image.SRIconSet.doongziFilled
+        case .fieldGuide:
+            return Image.SRIconSet.dogamFilled
+        case .home:
+            return Image.SRIconSet.homeFilled
+        case .collection:
+            return Image.SRIconSet.heartFilled
+        case .profile:
+            return Image.SRIconSet.myFilled
         }
     }
 }

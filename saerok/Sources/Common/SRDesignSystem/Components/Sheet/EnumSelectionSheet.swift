@@ -36,7 +36,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
     var body: some View {
         VStack(spacing: 16) {
             Text(title)
-                .font(.SRFontSet.h2)
+                .font(.SRFontSet.headline2)
 
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 15),

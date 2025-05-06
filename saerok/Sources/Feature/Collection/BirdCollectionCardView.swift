@@ -58,9 +58,9 @@ private extension BirdCollectionCardView {
     var nameSection: some View {
         VStack(alignment: .leading) {
             Text(bird.bird?.name ?? bird.customName ?? "")
-                .font(.SRFontSet.h3)
+                .font(.SRFontSet.body3)
             Text(bird.bird?.scientificName ?? "")
-                .font(.SRFontSet.h4)
+                .font(.SRFontSet.caption1)
                 .foregroundStyle(.secondary)
         }
     }
@@ -70,7 +70,7 @@ private extension BirdCollectionCardView {
             Text(bird.date.toFullString)
             Text(bird.locationDescription ?? "")
         }
-        .font(.SRFontSet.h4)
+        .font(.SRFontSet.caption1)
         .foregroundStyle(.primary)
     }
 }

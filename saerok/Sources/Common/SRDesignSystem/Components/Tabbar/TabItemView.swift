@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TabItemView: View {
     let icon: Image.SRIconSet
+    let iconFilled: Image.SRIconSet
     let title: String
     let isActive: Bool
     
@@ -26,8 +27,8 @@ struct TabItemView: View {
 
 private extension TabItemView {
     var tabIcon: some View {
-        icon
-            .frame(.defaultIconSize)
+        (isActive ? iconFilled : icon)
+            .frame(.defaultIconSizeLarge)
             .bold(isActive)
             .foregroundColor(isActive ? .main : .gray)
     }

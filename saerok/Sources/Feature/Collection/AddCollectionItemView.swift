@@ -90,7 +90,7 @@ private extension AddCollectionItemView {
                                 Button(action: {
                                     selectedImages.remove(at: index)
                                 }) {
-                                    Image.SRIconSet.xmarkCircleFill.frame(.defaultIconSizeMedium)
+                                    Image.SRIconSet.xmarkCircleFill.frame(.defaultIconSize)
                                         .foregroundColor(.gray)
                                         .background(Color.srWhite)
                                         .clipShape(Circle())
@@ -124,14 +124,14 @@ private extension AddCollectionItemView {
     var nameForm: some View {
         VStack(alignment: .leading) {
             Text("새 이름")
-                .font(.SRFontSet.h4)
+                .font(.SRFontSet.caption1)
                 .padding(.horizontal, 10)
             
             HStack {
                 Text(selectedBird == nil ? "새 이름을 입력해주세요" : selectedBird!.name)
                     .foregroundStyle(selectedBird != nil ? .primary : .tertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Image.SRIconSet.magnifyingGlass.frame(.defaultIconSizeMedium)
+                Image.SRIconSet.magnifyingGlass.frame(.defaultIconSize)
                     .foregroundStyle(.border)
             }
             .padding(.leading, 20)
@@ -148,7 +148,7 @@ private extension AddCollectionItemView {
     var dateForm: some View {
         VStack(alignment: .leading) {
             Text("발견 일시")
-                .font(.SRFontSet.h4)
+                .font(.SRFontSet.caption1)
                 .padding(.horizontal, 10)
             Text(date?.toFullString ?? "날짜를 선택해주세요")
                 .foregroundStyle(date != nil ? .primary : .tertiary)
@@ -183,7 +183,7 @@ private extension AddCollectionItemView {
     var noteForm: some View {
         VStack(alignment: .leading) {
             Text("한 줄 평")
-                .font(.SRFontSet.h4)
+                .font(.SRFontSet.caption1)
                 .padding(.horizontal, 10)
             
             TextField("한 줄 평을 입력해주세요", text: $note)
@@ -192,7 +192,7 @@ private extension AddCollectionItemView {
                 .srStyled(.textField(isFocused: $noteFocused))
                 .overlay(alignment: .topTrailing) {
                     Text("(\(note.count)/\(Constants.maxNoteLength)")
-                        .font(.SRFontSet.h4)
+                        .font(.SRFontSet.caption1)
                         .foregroundColor(.secondary)
                         .padding(.top, 48)
                         .onChange(of: note) { _, newValue in
@@ -221,7 +221,7 @@ private extension AddCollectionItemView {
         NavigationBar(
             leading: {
                 Text("종추")
-                    .font(.SRFontSet.h1)
+                    .font(.SRFontSet.headline1)
             },
             trailing: {
                 Button {

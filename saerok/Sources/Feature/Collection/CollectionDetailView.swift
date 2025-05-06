@@ -81,7 +81,7 @@ private extension CollectionDetailView {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
                 Text("관찰정보")
-                    .font(.SRFontSet.h2)
+                    .font(.SRFontSet.subtitle2)
                     .fontWeight(.bold)
                 
                 Spacer()
@@ -90,7 +90,7 @@ private extension CollectionDetailView {
                     BirdDetailView(collectionBird.bird ?? .mockData[0], path: $path)
                 } label: {
                     Text("도감 보기")
-                        .font(.SRFontSet.h3)
+                        .font(.SRFontSet.body1)
                         .bold()
                         .padding(.vertical, 8)
                         .padding(.horizontal, 16)
@@ -104,27 +104,27 @@ private extension CollectionDetailView {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("발견 일시")
-                        .font(.SRFontSet.h6)
+                        .font(.SRFontSet.body2)
                         .foregroundStyle(.secondary)
                     Text(collectionBird.date.toFullString)
-                        .font(.SRFontSet.h3)
+                        .font(.SRFontSet.body1)
                 }
                 HStack {
                     Text("발견 장소")
-                        .font(.SRFontSet.h6)
+                        .font(.SRFontSet.body2)
                         .foregroundStyle(.secondary)
                     Text(collectionBird.locationDescription ?? "위치 정보 없음")
-                        .font(.SRFontSet.h3)
+                        .font(.SRFontSet.body1)
                 }
             }
             
             if let note = collectionBird.note, !note.isEmpty {
                 Text(note)
-                    .font(.SRFontSet.h6)
+                    .font(.SRFontSet.caption1)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 13)
                     .padding(.horizontal, 17)
-                    .background(Color.background)
+                    .background(Color.whiteGray)
                     .cornerRadius(8)
             }
             Spacer()
@@ -138,15 +138,16 @@ private extension CollectionDetailView {
                     Button {
                         path.removeLast()
                     } label: {
-                        Image(.chevronLeft)
+                        Image.SRIconSet.chevronLeft
+                            .frame(.defaultIconSize)
                     }
                     .buttonStyle(.plain)
                     
                     VStack(alignment: .leading) {
                         Text((collectionBird.bird?.name ?? collectionBird.customName)!)
-                            .font(.SRFontSet.h2)
+                            .font(.SRFontSet.subtitle1)
                         Text(collectionBird.bird?.scientificName ?? "")
-                            .font(.SRFontSet.h3)
+                            .font(.SRFontSet.caption1)
                             .foregroundStyle(.gray)
                     }
                 }

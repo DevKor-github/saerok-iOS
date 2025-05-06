@@ -9,7 +9,8 @@
 import SwiftUI
 
 struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
-    let icon: Image
+    let icon: Image.SRIconSet
+    let iconSelected: Image.SRIconSet
     let placeholder: String
     let title: String
     @Binding var isPresented: Bool
@@ -31,16 +32,14 @@ struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T
             isPresented.toggle()
         } label: {
             HStack(spacing: 4) {
-                icon
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16)
+                (isActive ? iconSelected : icon)
+                    .frame(.defaultIconSize)
                 Text(
                     isActive
                     ? selection.map(\.rawValue).joined(separator: " • ")
                     : placeholder
                 )
-                .font(.SRFontSet.h3)
+                .font(.SRFontSet.body1)
             }
         }
         .srStyled(.filterButton(isActive: isActive))
