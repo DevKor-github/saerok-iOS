@@ -21,16 +21,26 @@ struct BirdCardView: View {
                 if let url = bird.imageURL {
                     AsyncImage(
                         url: url,
-                        size: CGSize(width: 120, height: 198),
+                        size: CGSize(width: 120, height: 170),
                         scale: .medium,
                         quality: 0.8,
                         downsampling: true
                     )
+                    .clipped()
+                    .overlay {
+                        VStack{
+                            Color.clear
+                            LinearGradient.birdCardBackground
+                                .frame(height: 85)
+                        }
+                        
+                    }
                 }
                 
-                    
+                Color.srWhite
             }
-            VStack {
+            
+            VStack(spacing: 0) {
                 Spacer()
                 nameSection
             }
@@ -47,25 +57,21 @@ struct BirdCardView: View {
 
 private extension BirdCardView {
     var nameSection: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
             Spacer()
             Text(bird.name)
                 .font(.SRFontSet.body3)
+
             Text(bird.scientificName)
+                .lineLimit(1)
                 .font(.SRFontSet.caption1)
                 .foregroundStyle(.secondary)
         }
-        .frame(height: 90)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(
-            LinearGradient(colors: [
-                .srWhite,
-                .srWhite.opacity(0.9),
-                .clear,
-                .clear
-            ], startPoint: .bottom, endPoint: .top)
-        )
+        .frame(height: 40)
+        .frame(maxWidth: .infinity, alignment: .bottomLeading)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 11)
+
     }
     
     var bookmarkButton: some View {

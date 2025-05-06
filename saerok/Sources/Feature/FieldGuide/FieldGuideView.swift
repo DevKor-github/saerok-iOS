@@ -79,7 +79,6 @@ private extension FieldGuideView {
     @ViewBuilder
     func loadedView() -> some View {
         VStack(spacing: 0) {
-            Text(errorMessage)
             navigationBar
             filterButtonSection
             gridSection
@@ -112,19 +111,19 @@ private extension FieldGuideView {
                     .font(.SRFontSet.headline1)
             },
             trailing: {
-                HStack(spacing: 12) {
+                HStack(spacing: 25) {
                     Button {
                         filterKey.isBookmarked.toggle()
                     } label: {
                         (filterKey.isBookmarked
-                         ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
-                         : Image.SRIconSet.bookmark.frame(.defaultIconSize))
+                         ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSizeLarge)
+                         : Image.SRIconSet.bookmark.frame(.defaultIconSizeLarge))
                     }
                 
                     Button {
                         navigationPath.append(Route.search)
                     } label: {
-                        Image(systemName: "magnifyingglass")
+                        Image.SRIconSet.search.frame(.defaultIconSizeLarge)
                     }
                     .buttonStyle(.plain)
                 }
@@ -140,6 +139,7 @@ private extension FieldGuideView {
             showSizeSheet: $showSizeSheet,
             filterKey: $filterKey
         )
+        .padding(.bottom, 17)
     }
     
     var gridSection: some View {

@@ -131,7 +131,7 @@ private extension AddCollectionItemView {
                 Text(selectedBird == nil ? "새 이름을 입력해주세요" : selectedBird!.name)
                     .foregroundStyle(selectedBird != nil ? .primary : .tertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Image.SRIconSet.magnifyingGlass.frame(.defaultIconSize)
+                Image.SRIconSet.search.frame(.defaultIconSize)
                     .foregroundStyle(.border)
             }
             .padding(.leading, 20)

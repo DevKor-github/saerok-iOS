@@ -202,6 +202,8 @@ private extension FieldGuideSearchView {
             showSizeSheet: $showSizeSheet,
             filterKey: $filterKey
         )
+        .padding(.top, 15)
+        .padding(.bottom, 18)
     }
     
     func updateRecentItem(_ bird: Local.Bird) {

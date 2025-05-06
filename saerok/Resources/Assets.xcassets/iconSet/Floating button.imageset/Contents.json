@@ -1,15 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "bookmarkFilled.svg",
+      "filename" : "Floating button.png",
       "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
-  },
-  "properties" : {
-    "preserves-vector-representation" : true
   }
 }

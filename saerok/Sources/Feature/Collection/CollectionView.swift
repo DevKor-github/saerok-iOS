@@ -101,14 +101,9 @@ private extension CollectionView {
             Button {
                 navigationPath.append(Route.addCollection)
             } label: {
-                Image.SRIconSet.penFill.frame(.defaultIconSizeVeryLarge)
-                    .foregroundStyle(.srWhite)
-                    .background(
-                        Color.main
-                            .frame(width: 61, height: 61)
-                            .clipShape(Circle())
-                    )
-                    .shadow(radius: 4)
+                Image.SRIconSet.floatingButton
+                    .frame(.floatingButton)
+                    .shadow(color: .black.opacity(0.15), radius: 4)
             }
             .buttonStyle(.plain)
             .padding(.bottom, 114)
@@ -129,7 +124,7 @@ private extension CollectionView {
                     Button {
                         // TODO: 검색기능
                     } label: {
-                        Image.SRIconSet.magnifyingGlass
+                        Image.SRIconSet.search
                             .frame(.defaultIconSize)
                     }
                 }

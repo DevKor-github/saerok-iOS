@@ -77,8 +77,11 @@ struct BirdDetailView: View {
                 .font(.SRFontSet.subtitle2)
                 .bold()
             Text(bird.detail)
+                .allowsTightening(true)
                 .font(.SRFontSet.body2)
                 .lineSpacing(5)
+                .allowsTightening(true)
+            
             Color.clear
                 .frame(height: 80)
         }
@@ -89,7 +92,7 @@ struct BirdDetailView: View {
     private var navigationBar: some View {
         NavigationBar(
             leading: {
-                HStack(spacing: 16) {
+                HStack(spacing: 18) {
                     Button {
                         path.removeLast()
                     } label: {
@@ -108,20 +111,21 @@ struct BirdDetailView: View {
                 }
             },
             trailing: {
-                HStack(spacing: 10) {
-                    Button { } label: {
-                        Image.SRIconSet.penFill.frame(.defaultIconSizeLarge)
-                            .padding(.top, 1)
-                    }
+                HStack(spacing: 25) {
                     Button {
                         bird.isBookmarked.toggle()
                     } label: {
                         Group {
                             (bird.isBookmarked
-                             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
-                             : Image.SRIconSet.bookmark.frame(.defaultIconSize))
+                             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSizeLarge)
+                             : Image.SRIconSet.bookmark.frame(.defaultIconSizeLarge))
                         }
                         .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
+                    }
+                    
+                    Button { } label: {
+                        Image.SRIconSet.penFill.frame(.custom(width: 26, height: 26))
+                            .padding(.top, 3)
                     }
                 }
                 .buttonStyle(.plain)
@@ -151,6 +155,13 @@ struct BirdDetailView: View {
             .background(Color.main)
             .cornerRadius(.infinity)
         }
+    }
+}
+
+extension String {
+    /// 한글 자모 사이에 줄바꿈 힌트용 제로폭 스페이스(`\u{200B}`) 삽입
+    func allowLineBreaking() -> String {
+        return self.map { String($0) }.joined(separator: "\u{200B}")
     }
 }
 
