@@ -30,12 +30,12 @@ private extension TabItemView {
         (isActive ? iconFilled : icon)
             .frame(.defaultIconSizeLarge)
             .bold(isActive)
-            .foregroundColor(isActive ? .main : .gray)
+            .foregroundColor(isActive ? .main : .srGray)
     }
     
     var titleText: some View {
         Text(title)
             .font(isActive ? .SRFontSet.tabbarSelected : .SRFontSet.tabbar)
-            .foregroundColor(isActive ? .main : .gray)
+            .foregroundColor(isActive ? .main : .srGray)
     }
 }

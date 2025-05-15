@@ -148,7 +148,7 @@ private extension CollectionDetailView {
                             .font(.SRFontSet.subtitle1)
                         Text(collectionBird.bird?.scientificName ?? "")
                             .font(.SRFontSet.caption1)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(.srGray)
                     }
                 }
             }

@@ -37,9 +37,11 @@ extension Image {
         case alert
         case insta
         case search
+        case searchSecondary
         case delete
         case floatingButton
         case option
+        case pin
         
         // MARK: Tabbar
         case doongzi
@@ -113,8 +115,6 @@ extension Image {
 // MARK: - Private Properties
 
 extension Image.SRIconSet {
-    /// 현재 아이콘에 해당하는 이미지를 반환하는 계산 프로퍼티
-    /// - 반환: `Image` 객체
     private var image: Image {
         switch self {
         case .chevronLeft:
@@ -147,10 +147,14 @@ extension Image.SRIconSet {
             return Image(.delete)
         case .option:
             return Image(.option)
+        case .pin:
+            return Image(.pin)
         case .floatingButton:
             return Image(.floatingButton)
         case .search:
             return Image(.search)
+        case .searchSecondary:
+            return Image(.searchSecondary)
         case .bookmark:
             return Image(.bookmark)
         case .bookmarkFilled:
@@ -186,4 +190,3 @@ extension Image.SRIconSet {
         }
     }
 }
-

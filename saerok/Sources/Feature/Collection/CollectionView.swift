@@ -19,7 +19,8 @@ struct CollectionView: Routable {
     // MARK:  Dependencies
     
     @Environment(\.injected) private var injected: DIContainer
-    
+    @Environment(\.scenePhase) private var scenePhase
+
     // MARK:  Routable
     
     @State var routingState: Routing = .init()
@@ -91,6 +92,11 @@ private extension CollectionView {
                         
                         navigationPath.append(Route.collectionDetail(collection))
                     })
+                    .onChange(of: routingState.addCollection, initial: true, { _, isTrue in
+                        if isTrue {
+                            navigationPath.append(Route.addCollection)
+                        }
+                    })
                     .onChange(of: navigationPath, { _, path in
                         if !path.isEmpty {
                             routingBinding.wrappedValue.collection = nil
@@ -99,7 +105,8 @@ private extension CollectionView {
             }
             
             Button {
-                navigationPath.append(Route.addCollection)
+                routingState.addCollection = true
+                injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
             } label: {
                 Image.SRIconSet.floatingButton
                     .frame(.floatingButton)
@@ -116,7 +123,7 @@ private extension CollectionView {
     var navigationBar: some View {
         NavigationBar(
             leading: {
-                Text("컬렉션")
+                Text("나의 새록")
                     .font(.SRFontSet.headline1)
             },
             trailing: {
@@ -125,7 +132,7 @@ private extension CollectionView {
                         // TODO: 검색기능
                     } label: {
                         Image.SRIconSet.search
-                            .frame(.defaultIconSize)
+                            .frame(.defaultIconSizeLarge)
                     }
                 }
                 .font(.system(size: 24))
@@ -188,6 +195,7 @@ private extension CollectionView {
 extension CollectionView {
     struct Routing: Equatable {
         var collection: Local.CollectionBird?
+        var addCollection: Bool = false
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {

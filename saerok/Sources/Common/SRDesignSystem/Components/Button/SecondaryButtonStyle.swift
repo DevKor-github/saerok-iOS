@@ -12,13 +12,13 @@ struct SecondaryButtonStyle: ButtonStyle {
     
     var defaultColor: Color = .blue.opacity(0.3)
     var pressedColor: Color = .blue
-    var disabledColor: Color = .gray
+    var disabledColor: Color = Color.srGray
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding()
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
-            .foregroundColor(isEnabled ? .black : .gray)
+            .foregroundColor(isEnabled ? .black : Color.srGray)
             .cornerRadius(SRDesignConstant.cornerRadius)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .opacity(isEnabled ? 1.0 : 0.5)

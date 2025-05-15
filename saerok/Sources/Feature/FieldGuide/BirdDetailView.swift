@@ -10,6 +10,8 @@ import Combine
 import SwiftUI
 
 struct BirdDetailView: View {
+    @Environment(\.injected) var injected
+    
     private let bird: Local.Bird
     
     @Binding var path: NavigationPath
@@ -106,7 +108,7 @@ struct BirdDetailView: View {
                             .font(.SRFontSet.subtitle1)
                         Text(bird.scientificName)
                             .font(.SRFontSet.caption1)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(.srGray)
                     }
                 }
             },
@@ -123,7 +125,12 @@ struct BirdDetailView: View {
                         .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
                     }
                     
-                    Button { } label: {
+                    Button {
+                        
+                        injected.appState[\.routing.contentView.tabSelection] = .collection
+                        injected.appState[\.routing.collectionView.addCollection] = true
+                        injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
+                    } label: {
                         Image.SRIconSet.penFill.frame(.custom(width: 26, height: 26))
                             .padding(.top, 3)
                     }

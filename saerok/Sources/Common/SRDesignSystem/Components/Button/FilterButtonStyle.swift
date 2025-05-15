@@ -20,7 +20,7 @@ struct FilterButtonStyle: ButtonStyle {
             .clipShape(RoundedRectangle(cornerRadius: .infinity))
             .overlay {
                 RoundedRectangle(cornerRadius: .infinity)
-                    .stroke(isActive ? Color.main : Color.gray, lineWidth: 0.35)
+                    .stroke(isActive ? Color.main : Color.srGray, lineWidth: 0.35)
             }
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .opacity(configuration.isPressed ? 0.8 : 1.0)

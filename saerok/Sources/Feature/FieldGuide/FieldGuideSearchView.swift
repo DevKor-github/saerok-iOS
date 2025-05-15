@@ -174,7 +174,7 @@ private extension FieldGuideSearchView {
                     Text(search.bird.name)
                     Spacer()
                     Text(search.createdAt.toShortString)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.srGray)
                         .font(.caption)
                 }
                 .contentShape(Rectangle())

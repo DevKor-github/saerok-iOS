@@ -21,7 +21,7 @@ struct PasswordField: View {
                 isSecure.toggle()
             } label: {
                 Image(systemName: isSecure ? "eye.slash" : "eye")
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.srGray)
             }
         }
     }
