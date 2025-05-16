@@ -10,41 +10,41 @@ import Combine
 import SwiftData
 import SwiftUI
 
-enum Route: Hashable {
-    case search
-    case birdDetail(Local.Bird)
-}
-
 struct FieldGuideView: Routable {
-    @State var errorMessage: String = ""
-    // MARK:  Dependencies
-    
+    enum Route: Hashable {
+        case search
+        case birdDetail(Local.Bird)
+    }
+
+    // MARK: - Dependencies
+
     @Environment(\.injected) private var injected: DIContainer
-    
-    // MARK:  Routable
-    
+
+    // MARK: - Routable
+
     @State var routingState: Routing = .init()
-    
-    // MARK: Navigation
-    
+
+    // MARK: - Navigation
+
     @State var navigationPath = NavigationPath()
 
-    // MARK: View State
-    
+    // MARK: - View State
+
     @State private var fieldGuide: [Local.Bird]
     @State private var fieldGuideState: Loadable<Void>
     @State private var filterKey: BirdFilter = .init()
     @State private var showSeasonSheet = false
     @State private var showHabitatSheet = false
     @State private var showSizeSheet = false
-    
-    // MARK:  Init
-    
+    @State private var offsetY: CGFloat = 0
+
+    // MARK: - Init
+
     init(state: Loadable<Void> = .notRequested) {
         self.fieldGuide = []
         self._fieldGuideState = .init(initialValue: state)
     }
-    
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
             content
@@ -57,7 +57,7 @@ struct FieldGuideView: Routable {
         }
         .onReceive(routingUpdate) { self.routingState = $0 }
     }
-    
+
     @ViewBuilder
     private var content: some View {
         switch fieldGuideState {
@@ -76,34 +76,55 @@ struct FieldGuideView: Routable {
 // MARK: - Loaded Content
 
 private extension FieldGuideView {
-    @ViewBuilder
-    func loadedView() -> some View {
-        VStack(spacing: 0) {
-            navigationBar
-            filterButtonSection
-            gridSection
-                .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .search:
-                        FieldGuideSearchView(path: $navigationPath)
-                    case .birdDetail(let bird):
-                        BirdDetailView(bird, path: $navigationPath)
-                    }
-                }
-                .onChange(of: routingState.birdName, initial: true, { _, name in
-                    guard let name,
-                          let bird = fieldGuide.first(where: { $0.name == name })
-                    else { return }
-                    navigationPath.append(Route.birdDetail(bird))
-                })
-                .onChange(of: navigationPath, { _, path in
-                    if !path.isEmpty {
-                        routingBinding.wrappedValue.birdName = nil
-                    }
-                })
-        }
+    
+    // MARK: - Constants
+
+    private enum Constants {
+        static let headerHeight: CGFloat = 100
+        static let headerTopPadding: CGFloat = 20
+        static let iconBackgroundSize: CGFloat = 40
+        static let navBarSpacerHeight: CGFloat = 53
+        static let scrollOpacityMinY: CGFloat = -100
+        static let scrollOpacityMaxY: CGFloat = 0
     }
     
+    @ViewBuilder
+    func loadedView() -> some View {
+        ZStack {
+            Color.srWhite
+            LinearGradient.srGradient
+                .opacity(opacityForScroll(offset: offsetY))
+            VStack(spacing: 0) {
+                Color.clear.frame(height: Constants.navBarSpacerHeight)
+                navigationBar
+                scrollableSection
+            }
+        }
+        .navigationDestination(for: Route.self) { route in
+            switch route {
+            case .search:
+                FieldGuideSearchView(path: $navigationPath)
+            case .birdDetail(let bird):
+                BirdDetailView(bird, path: $navigationPath)
+            }
+        }
+        .onChange(of: routingState.birdName, initial: true, { _, name in
+            guard let name,
+                  let bird = fieldGuide.first(where: { $0.name == name })
+            else { return }
+            navigateToBirdDetail(bird)
+        })
+        .onChange(of: navigationPath, { _, path in
+            if !path.isEmpty {
+                routingBinding.wrappedValue.birdName = nil
+            }
+        })
+        .onPreferenceChange(ScrollPreferenceKey.self) { value in
+            self.offsetY = value
+        }
+        .ignoresSafeArea(.all)
+    }
+
     var navigationBar: some View {
         NavigationBar(
             leading: {
@@ -112,63 +133,76 @@ private extension FieldGuideView {
             },
             trailing: {
                 HStack(spacing: 25) {
-                    Button {
-                        filterKey.isBookmarked.toggle()
-                    } label: {
-                        (filterKey.isBookmarked
-                         ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSizeLarge)
-                         : Image.SRIconSet.bookmark.frame(.defaultIconSizeLarge))
-                    }
-                
-                    Button {
-                        navigationPath.append(Route.search)
-                    } label: {
-                        Image.SRIconSet.search.frame(.defaultIconSizeLarge)
-                    }
-                    .buttonStyle(.plain)
+                    bookmarkFilterButton
+                    searchButton
                 }
                 .font(.system(size: 24))
-            }
+            },
+            backgroundColor: .clear
         )
     }
-    
-    var filterButtonSection: some View {
-        FilterBar(
-            showSeasonSheet: $showSeasonSheet,
-            showHabitatSheet: $showHabitatSheet,
-            showSizeSheet: $showSizeSheet,
-            filterKey: $filterKey
-        )
-        .padding(.bottom, 17)
-    }
-    
-    var gridSection: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 15),
-                    GridItem(.flexible(), spacing: 15)
-                ],
-                spacing: 15
-            ) {
-                ForEach(fieldGuide) { bird in
-                    Button {
-                        injected.appState[\.routing.fieldGuideView.birdName] = bird.name
-                    } label: {
-                        BirdCardView(bird)
-                    }
-                    .buttonStyle(.plain)
-                }
-                Group {
-                    Rectangle()
-                    Rectangle()
-                }
-                .foregroundStyle(.clear)
-                .frame(height: 60)
-            }
-            .padding(SRDesignConstant.defaultPadding)
+
+    var bookmarkFilterButton: some View {
+        Button(action: bookmarkTapped) {
+            (filterKey.isBookmarked
+             ? Image.SRIconSet.bookmarkFilled
+             : Image.SRIconSet.bookmark)
+            .frame(.defaultIconSizeLarge)
+            .background(
+                Circle().fill(.glassWhite)
+                    .frame(width: Constants.iconBackgroundSize, height: Constants.iconBackgroundSize)
+            )
         }
-        .background(Color.whiteGray)
+    }
+
+    var searchButton: some View {
+        Button(action: searchButtonTapped) {
+            Image.SRIconSet.search
+                .frame(.defaultIconSizeLarge)
+                .background(
+                    Circle().fill(.glassWhite)
+                        .frame(width: Constants.iconBackgroundSize, height: Constants.iconBackgroundSize)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    var scrollableSection: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 0) {
+                OffsetReaderView()
+                headerSection
+                FilterBar(
+                    showSeasonSheet: $showSeasonSheet,
+                    showHabitatSheet: $showHabitatSheet,
+                    showSizeSheet: $showSizeSheet,
+                    filterKey: $filterKey
+                )
+                .padding(.top, Constants.headerTopPadding)
+                .background(.whiteGray)
+                BirdGridView(
+                    birds: fieldGuide,
+                    onTap: { bird in
+                        injected.appState[\.routing.fieldGuideView.birdName] = bird.name
+                    }
+                )
+            }
+        }
+    }
+
+    var headerSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer()
+            Text("504")
+                .font(.SRFontSet.heavy)
+                .fontWeight(.semibold)
+                .foregroundStyle(.splash)
+            Text("종의 새가 도감에 준비되어있어요.")
+                .font(.SRFontSet.caption1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: Constants.headerHeight)
+        .padding(SRDesignConstant.defaultPadding)
     }
 }
 
@@ -184,57 +218,42 @@ private extension FieldGuideView {
                 loadFieldGuide()
             }
     }
-    
+
     func loadingView() -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
     }
-    
+
     func failedView(_ error: Error) -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
     }
 }
 
-// MARK: - Side Effects
+// MARK: - Side Effects & Helper Methods
 
 private extension FieldGuideView {
     func loadFieldGuide() {
         $fieldGuideState.load {
-            do {
-                try await injected.interactors.fieldGuide.refreshFieldGuide()
-            } catch let error as FieldGuideInteractorError {
-                // FieldguideInteractorError를 구체적으로 처리
-                switch error {
-                case .networkError(let error):
-                    switch error {
-                    case .clientError(let statusCode):
-                        print("클라이언트 오류, 상태 코드: \(statusCode)")
-                        errorMessage = "잘못된 요청입니다. (\(statusCode))"
-                        
-                    case .serverError(let statusCode):
-                        print("서버 오류, 상태 코드: \(statusCode)")
-                        errorMessage = "서버 오류가 발생했습니다. (\(statusCode))"
-                        
-                    case .decodingError(let message):
-                        print("디코딩 오류: \(message)")
-                        errorMessage = "데이터 처리 중 오류가 발생했습니다."
-
-                    case .unknownError:
-                        errorMessage = "알 수 없는 네트워크 오류가 발생했습니다."
-                    }
-                case .repositoryError(let error):
-                    errorMessage = error.localizedDescription
-                case .unknownError(let error):
-                    errorMessage = error.localizedDescription
-                case .birdNotFound:
-                    errorMessage = ""
-                }
-            } catch {
-                // 그 외의 오류를 처리
-                errorMessage = "Unknown error: \(error.localizedDescription)"
-            }
+            try? await injected.interactors.fieldGuide.refreshFieldGuide()
         }
+    }
+
+    func opacityForScroll(offset: CGFloat) -> Double {
+        let clampedOffset = max(min(offset, Constants.scrollOpacityMaxY), Constants.scrollOpacityMinY)
+        return Double((clampedOffset - Constants.scrollOpacityMinY) / (Constants.scrollOpacityMaxY - Constants.scrollOpacityMinY))
+    }
+
+    func bookmarkTapped() {
+        filterKey.isBookmarked.toggle()
+    }
+
+    func searchButtonTapped() {
+        navigationPath.append(Route.search)
+    }
+
+    func navigateToBirdDetail(_ bird: Local.Bird) {
+        navigationPath.append(Route.birdDetail(bird))
     }
 }
 
@@ -244,11 +263,11 @@ extension FieldGuideView {
     struct Routing: Equatable {
         var birdName: String?
     }
-    
+
     var routingUpdate: AnyPublisher<Routing, Never> {
         injected.appState.updates(for: \.routing.fieldGuideView)
     }
-    
+
     var routingBinding: Binding<Routing> {
         $routingState.dispatched(to: injected.appState, \.routing.fieldGuideView)
     }
@@ -256,6 +275,5 @@ extension FieldGuideView {
 
 #Preview {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
     appDelegate.rootView
 }

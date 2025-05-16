@@ -13,19 +13,18 @@ struct BirdDetailView: View {
     @Environment(\.injected) var injected
     
     private let bird: Local.Bird
-    
     @Binding var path: NavigationPath
-        
+    
     init(_ bird: Local.Bird, path: Binding<NavigationPath>) {
         self.bird = bird
         self._path = path
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 11) {
+        VStack(alignment: .leading, spacing: Constants.mainSpacing) {
             navigationBar
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 30) {
+                VStack(alignment: .leading, spacing: Constants.scrollContentSpacing) {
                     birdImageWithTag
                     Group {
                         classification
@@ -38,63 +37,63 @@ struct BirdDetailView: View {
         }
         .regainSwipeBack()
     }
-    
-    private var birdImageWithTag: some View {
-        VStack(alignment: .leading, spacing: 13) {
+}
+
+// MARK: - UI Components
+
+private extension BirdDetailView {
+    var birdImageWithTag: some View {
+        VStack(alignment: .leading, spacing: Constants.birdImageSpacing) {
             if let url = bird.imageURL {
                 ReactiveAsyncImage(url: url, scale: .large, quality: 1, downsampling: false)
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity)
-                    .cornerRadius(10)
+                    .cornerRadius(Constants.imageCornerRadius)
                     .padding(.horizontal, SRDesignConstant.defaultPadding)
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 5) {
-                    Color.clear.frame(width: 20)
+                HStack(spacing: Constants.chipSpacing) {
+                    Color.clear.frame(width: Constants.chipSidePadding)
                     ChipList(icon: .seasonWhite, list: bird.seasons)
                     ChipList(icon: .habitatWhite, list: bird.habitats)
                     ChipList(icon: .sizeWhite, list: [bird.size])
-                    Color.clear.frame(width: 20)
+                    Color.clear.frame(width: Constants.chipSidePadding)
                 }
             }
         }
     }
-    
-    private var classification: some View {
-        VStack(alignment: .leading, spacing: 13) {
+
+    var classification: some View {
+        VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
             Text("분류")
                 .font(.SRFontSet.subtitle2)
                 .bold()
             Text(bird.classification)
                 .font(.SRFontSet.caption1)
                 .foregroundStyle(.secondary)
-                .lineSpacing(5)
+                .lineSpacing(Constants.lineSpacing)
         }
     }
-    
-    private var description: some View {
-        VStack(alignment: .leading, spacing: 13) {
+
+    var description: some View {
+        VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
             Text("상세 설명")
                 .font(.SRFontSet.subtitle2)
                 .bold()
             Text(bird.detail)
                 .allowsTightening(true)
                 .font(.SRFontSet.body2)
-                .lineSpacing(5)
-                .allowsTightening(true)
-            
-            Color.clear
-                .frame(height: 80)
+                .lineSpacing(Constants.lineSpacing)
+
+            Color.clear.frame(height: Constants.bottomSpacerHeight)
         }
     }
-    
-    
-    
-    private var navigationBar: some View {
+
+    var navigationBar: some View {
         NavigationBar(
             leading: {
-                HStack(spacing: 18) {
+                HStack(spacing: Constants.navLeadingSpacing) {
                     Button {
                         path.removeLast()
                     } label: {
@@ -102,7 +101,7 @@ struct BirdDetailView: View {
                             .frame(.defaultIconSize)
                     }
                     .buttonStyle(.plain)
-                    
+
                     VStack(alignment: .leading) {
                         Text(bird.name)
                             .font(.SRFontSet.subtitle1)
@@ -113,37 +112,40 @@ struct BirdDetailView: View {
                 }
             },
             trailing: {
-                HStack(spacing: 25) {
+                HStack(spacing: Constants.navTrailingSpacing) {
                     Button {
                         bird.isBookmarked.toggle()
                     } label: {
                         Group {
                             (bird.isBookmarked
-                             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSizeLarge)
-                             : Image.SRIconSet.bookmark.frame(.defaultIconSizeLarge))
+                             ? Image.SRIconSet.bookmarkFilled
+                             : Image.SRIconSet.bookmark)
+                            .frame(.defaultIconSizeLarge)
                         }
                         .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
                     }
-                    
+
                     Button {
-                        
                         injected.appState[\.routing.contentView.tabSelection] = .collection
                         injected.appState[\.routing.collectionView.addCollection] = true
                         injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
                     } label: {
-                        Image.SRIconSet.penFill.frame(.custom(width: 26, height: 26))
-                            .padding(.top, 3)
+                        Image.SRIconSet.penFill
+                            .frame(.custom(width: Constants.penIconWidth, height: Constants.penIconHeight))
+                            .padding(.top, Constants.penIconTopPadding)
                     }
                 }
                 .buttonStyle(.plain)
             }
         )
     }
-    
+}
+
+private extension BirdDetailView {
     struct ChipList<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
-        
         let icon: Image.SRIconSet
         let list: [T]
+        
         var body: some View {
             HStack {
                 icon.frame(.defaultIconSizeSmall)
@@ -156,8 +158,8 @@ struct BirdDetailView: View {
             }
             .font(.SRFontSet.body1)
             .bold()
-            .padding(.horizontal, 13)
-            .padding(.vertical, 7)
+            .padding(.horizontal, Constants.chipHorizontalPadding)
+            .padding(.vertical, Constants.chipVerticalPadding)
             .foregroundStyle(.srWhite)
             .background(Color.main)
             .cornerRadius(.infinity)
@@ -165,12 +167,31 @@ struct BirdDetailView: View {
     }
 }
 
-extension String {
-    /// 한글 자모 사이에 줄바꿈 힌트용 제로폭 스페이스(`\u{200B}`) 삽입
-    func allowLineBreaking() -> String {
-        return self.map { String($0) }.joined(separator: "\u{200B}")
+// MARK: - Constants
+
+private extension BirdDetailView {
+    enum Constants {
+        static let mainSpacing: CGFloat = 11
+        static let scrollContentSpacing: CGFloat = 30
+        static let birdImageSpacing: CGFloat = 13
+        static let chipSpacing: CGFloat = 5
+        static let chipSidePadding: CGFloat = 20
+        static let imageCornerRadius: CGFloat = 10
+        static let sectionSpacing: CGFloat = 13
+        static let lineSpacing: CGFloat = 5
+        static let bottomSpacerHeight: CGFloat = 80
+        static let navLeadingSpacing: CGFloat = 18
+        static let navTrailingSpacing: CGFloat = 25
+        static let penIconWidth: CGFloat = 26
+        static let penIconHeight: CGFloat = 26
+        static let penIconTopPadding: CGFloat = 3
+        
+        // ChipList
+        static let chipHorizontalPadding: CGFloat = 13
+        static let chipVerticalPadding: CGFloat = 7
     }
 }
+
 
 #Preview {
     @Previewable @State var path: NavigationPath = .init()

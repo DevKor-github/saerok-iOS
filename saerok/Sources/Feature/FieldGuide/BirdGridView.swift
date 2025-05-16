@@ -1,3 +1,12 @@
+//
+//  BirdGridView.swift
+//  saerok
+//
+//  Created by HanSeung on 5/15/25.
+//
+
+
+import SwiftUI
 
 struct BirdGridView: View {
     let birds: [Local.Bird]
@@ -20,7 +29,6 @@ struct BirdGridView: View {
                 .buttonStyle(.plain)
             }
 
-            // 빈 공간용 사각형
             Group {
                 Rectangle()
                 Rectangle()
