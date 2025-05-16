@@ -86,11 +86,12 @@ private extension FieldGuideView {
         static let navBarSpacerHeight: CGFloat = 53
         static let scrollOpacityMinY: CGFloat = -100
         static let scrollOpacityMaxY: CGFloat = 0
+        static let scrollableID: String = "scrollable"
     }
     
     @ViewBuilder
     func loadedView() -> some View {
-        ZStack {
+        ZStack(alignment: .bottomTrailing) {
             Color.srWhite
             LinearGradient.srGradient
                 .opacity(opacityForScroll(offset: offsetY))
@@ -99,6 +100,20 @@ private extension FieldGuideView {
                 navigationBar
                 scrollableSection
             }
+            
+            Button {
+                offsetY = 0
+            } label: {
+                Image.SRIconSet.upper
+                    .frame(.defaultIconSizeLarge)
+                    .background(
+                        Circle().fill(.glassWhite)
+                            .frame(width: Constants.iconBackgroundSize, height: Constants.iconBackgroundSize)
+                    )
+                    .frame(width: 40, height: 40)
+            }
+            .padding(.bottom, 114)
+            .padding(.horizontal, SRDesignConstant.defaultPadding)
         }
         .navigationDestination(for: Route.self) { route in
             switch route {
@@ -168,24 +183,34 @@ private extension FieldGuideView {
     }
 
     var scrollableSection: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 0) {
-                OffsetReaderView()
-                headerSection
-                FilterBar(
-                    showSeasonSheet: $showSeasonSheet,
-                    showHabitatSheet: $showHabitatSheet,
-                    showSizeSheet: $showSizeSheet,
-                    filterKey: $filterKey
-                )
-                .padding(.top, Constants.headerTopPadding)
-                .background(.whiteGray)
-                BirdGridView(
-                    birds: fieldGuide,
-                    onTap: { bird in
-                        injected.appState[\.routing.fieldGuideView.birdName] = bird.name
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    OffsetReaderView()
+                        .id(Constants.scrollableID)
+                    headerSection
+                    FilterBar(
+                        showSeasonSheet: $showSeasonSheet,
+                        showHabitatSheet: $showHabitatSheet,
+                        showSizeSheet: $showSizeSheet,
+                        filterKey: $filterKey
+                    )
+                    .padding(.top, Constants.headerTopPadding)
+                    .background(.whiteGray)
+                    BirdGridView(
+                        birds: fieldGuide,
+                        onTap: { bird in
+                            injected.appState[\.routing.fieldGuideView.birdName] = bird.name
+                        }
+                    )
+                }
+            }
+            .onChange(of: offsetY) { _, newValue in
+                if newValue == 0 {
+                    withAnimation {
+                        proxy.scrollTo(Constants.scrollableID, anchor: .top)
                     }
-                )
+                }
             }
         }
     }

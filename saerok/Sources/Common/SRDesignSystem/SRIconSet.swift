@@ -42,6 +42,7 @@ extension Image {
         case floatingButton
         case option
         case pin
+        case upper
         
         // MARK: Tabbar
         case doongzi
@@ -149,6 +150,8 @@ extension Image.SRIconSet {
             return Image(.option)
         case .pin:
             return Image(.pin)
+        case .upper:
+            return Image(.upper)
         case .floatingButton:
             return Image(.floatingButton)
         case .search:
