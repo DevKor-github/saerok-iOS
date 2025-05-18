@@ -35,12 +35,12 @@ struct FieldGuideSearchView: View {
     
     @Binding var path: NavigationPath
     
-    // MARK:  Init
+    // MARK: Init
     
     init(path: Binding<NavigationPath>) {
         self._path = path
         self.fieldGuide = []
-        hangulFinder = .init(items: [], keySelector: { $0.name })
+        self.hangulFinder = .init(items: [], keySelector: { $0.name })
     }
     
     var body: some View {
@@ -67,11 +67,25 @@ struct FieldGuideSearchView: View {
 }
 
 private extension FieldGuideSearchView {
+    
+    enum Layout {
+        static let iconSize: CGFloat = 24
+        static let horizontalPadding: CGFloat = 18
+        static let verticalPadding: CGFloat = 14
+        static let textFieldHeight: CGFloat = 44
+        static let filterTopPadding: CGFloat = 15
+        static let filterBottomPadding: CGFloat = 18
+        static let searchItemPadding: CGFloat = 16
+        static let recentItemHeight: CGFloat = 55
+        static let clearColorHeight: CGFloat = 4
+        static let searchSpacing: CGFloat = 2
+        static let recentSpacing: CGFloat = 1
+        static let hStackSpacing: CGFloat = 19
+    }
+    
     var searchBarSection: some View {
         HStack {
-            Button {
-                path.removeLast()
-            } label: {
+            Button(action: backButtonTapped) {
                 Image.SRIconSet.chevronLeft
                     .frame(.defaultIconSize)
                     .foregroundStyle(.main)
@@ -81,20 +95,19 @@ private extension FieldGuideSearchView {
             TextField("새 이름을 입력해주세요", text: $filterKey.searchText)
                 .textFieldDeletable(text: $filterKey.searchText)
         }
-        .padding(.vertical, 14)
-        .padding(.leading, 18)
-        .frame(height: 44)
+        .padding(.vertical, Layout.verticalPadding)
+        .padding(.leading, Layout.horizontalPadding)
+        .frame(height: Layout.textFieldHeight)
         .srStyled(.textField(isFocused: $isSearchBarFocused))
         .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
     
     func bookmarkButtonSection(_ bird: Local.Bird) -> some View {
-        Button {
-            bird.isBookmarked.toggle()
-        } label: {
+        Button(action: { bookmarkButtonTapped(bird) }) {
             (bird.isBookmarked
-             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
-             : Image.SRIconSet.bookmark.frame(.defaultIconSize))
+             ? Image.SRIconSet.bookmarkFilled
+             : Image.SRIconSet.bookmark)
+            .frame(.defaultIconSize)
         }
     }
     
@@ -102,7 +115,7 @@ private extension FieldGuideSearchView {
     func searchResultSection() -> some View {
         ScrollView {
             if filterKey.searchText.isEmpty {
-                VStack(spacing: 1){
+                VStack(spacing: Layout.recentSpacing) {
                     Color.clear
                         .frame(height: 0)
                     
@@ -114,10 +127,10 @@ private extension FieldGuideSearchView {
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     Color.clear
-                        .frame(height: 4)
+                        .frame(height: Layout.clearColorHeight)
                     
-                    VStack(spacing: 2) {
-                        ForEach(filteredBirds, id: \.name) { bird in
+                    LazyVStack(spacing: Layout.searchSpacing) {
+                        ForEach(filteredBirds, id: \.id) { bird in
                             searchItem(bird)
                                 .listRowInsets(.init())
                         }
@@ -129,20 +142,11 @@ private extension FieldGuideSearchView {
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
-        HStack(spacing: 19) {
-            Button {
-                bird.isBookmarked.toggle()
-            } label: {
-                (bird.isBookmarked
-                 ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
-                 : Image.SRIconSet.bookmark.frame(.defaultIconSize))
-            }
-            .frame(width: 24)
+        HStack(spacing: Layout.hStackSpacing) {
+            bookmarkButtonSection(bird)
+                .frame(width: Layout.iconSize)
             
-            Button {
-                path.append(Route.birdDetail(bird))
-                updateRecentItem(bird)
-            } label: {
+            Button(action: { searchItemTapped(bird) }) {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(bird.name)
@@ -161,35 +165,31 @@ private extension FieldGuideSearchView {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(Layout.searchItemPadding)
         .background(Color.srWhite)
     }
     
     func recentItem(_ search: Local.RecentSearchEntity) -> some View {
         HStack {
-            Button {
-                path.append(Route.birdDetail(search.bird))
-            } label: {
+            Button(action: { recentItemTapped(search) }) {
                 HStack(spacing: 0) {
                     Text(search.bird.name)
                     Spacer()
                     Text(search.createdAt.toShortString)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.srGray)
                         .font(.caption)
                 }
                 .contentShape(Rectangle())
             }
             
-            Button {
-                modelContext.delete(search)
-            } label: {
+            Button(action: { deleteRecentTapped(search) }) {
                 Image.SRIconSet.xmark
                     .frame(.defaultIconSizeSmall)
                     .foregroundStyle(.secondary)
             }
         }
         .buttonStyle(.plain)
-        .frame(height: 55)
+        .frame(height: Layout.recentItemHeight)
         .frame(maxWidth: .infinity)
         .padding(.horizontal, SRDesignConstant.defaultPadding)
         .background(Color.srWhite)
@@ -202,6 +202,33 @@ private extension FieldGuideSearchView {
             showSizeSheet: $showSizeSheet,
             filterKey: $filterKey
         )
+        .padding(.top, Layout.filterTopPadding)
+        .padding(.bottom, Layout.filterBottomPadding)
+    }
+}
+
+// MARK: - Actions
+
+private extension FieldGuideSearchView {
+    func backButtonTapped() {
+        path.removeLast()
+    }
+    
+    func bookmarkButtonTapped(_ bird: Local.Bird) {
+        bird.isBookmarked.toggle()
+    }
+    
+    func searchItemTapped(_ bird: Local.Bird) {
+        path.append(FieldGuideView.Route.birdDetail(bird))
+        updateRecentItem(bird)
+    }
+    
+    func recentItemTapped(_ search: Local.RecentSearchEntity) {
+        path.append(FieldGuideView.Route.birdDetail(search.bird))
+    }
+    
+    func deleteRecentTapped(_ search: Local.RecentSearchEntity) {
+        modelContext.delete(search)
     }
     
     func updateRecentItem(_ bird: Local.Bird) {
@@ -210,7 +237,7 @@ private extension FieldGuideSearchView {
             predicate: #Predicate { $0.bird.name == birdName },
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
-
+        
         if let existing = try? modelContext.fetch(request).first {
             existing.createdAt = .now
         } else {

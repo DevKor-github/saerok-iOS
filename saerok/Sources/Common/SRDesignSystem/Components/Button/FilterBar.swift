@@ -48,7 +48,7 @@ struct FilterBar: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 24)
-            .padding(.vertical, 8)
+            .padding(.vertical, 1)
         }
     }
 }

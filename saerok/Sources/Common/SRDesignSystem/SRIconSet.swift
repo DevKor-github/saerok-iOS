@@ -21,7 +21,6 @@ extension Image {
         case xmarkCircleFill
         case penFill
         case textFormat
-        case magnifyingGlass
         
         // MARK: Custom Symbol
 
@@ -36,6 +35,14 @@ extension Image {
         case bookmark
         case bookmarkFilled
         case alert
+        case insta
+        case search
+        case searchSecondary
+        case delete
+        case floatingButton
+        case option
+        case pin
+        case upper
         
         // MARK: Tabbar
         case doongzi
@@ -51,11 +58,13 @@ extension Image {
         
         // MARK: - Metric
         
-        enum Metric: String {
+        enum Metric {
             case defaultIconSizeSmall
             case defaultIconSize
             case defaultIconSizeLarge
             case defaultIconSizeVeryLarge
+            case floatingButton
+            case custom(width: CGFloat, height: CGFloat)
             
             func toCGSize() -> CGSize {
                 switch self {
@@ -67,6 +76,10 @@ extension Image {
                     return CGSize(width: 24, height: 24)
                 case .defaultIconSizeVeryLarge:
                     return CGSize(width: 42, height: 42)
+                case .floatingButton:
+                    return CGSize(width: 61, height: 61)
+                case let .custom(width, height):
+                    return CGSize(width: width, height: height)
                 }
             }
         }
@@ -103,18 +116,12 @@ extension Image {
 // MARK: - Private Properties
 
 extension Image.SRIconSet {
-    /// 현재 아이콘에 해당하는 이미지를 반환하는 계산 프로퍼티
-    /// - 반환: `Image` 객체
     private var image: Image {
         switch self {
         case .chevronLeft:
             return Image(systemName: "chevron.left")
         case .chevronRight:
             return Image(systemName: "chevron.right")
-        case .magnifyingGlass:
-            return Image(systemName: "magnifyingglass")
-        case .xmark:
-            return Image(systemName: "xmark")
         case .xmarkCircleFill:
             return Image(systemName: "xmark.circle.fill")
         case .scrap:
@@ -135,6 +142,22 @@ extension Image.SRIconSet {
             return Image(.habitatWhite)
         case .alert:
             return Image(.alert)
+        case .insta:
+            return Image(.insta)
+        case .delete:
+            return Image(.delete)
+        case .option:
+            return Image(.option)
+        case .pin:
+            return Image(.pin)
+        case .upper:
+            return Image(.upper)
+        case .floatingButton:
+            return Image(.floatingButton)
+        case .search:
+            return Image(.search)
+        case .searchSecondary:
+            return Image(.searchSecondary)
         case .bookmark:
             return Image(.bookmark)
         case .bookmarkFilled:
@@ -170,4 +193,3 @@ extension Image.SRIconSet {
         }
     }
 }
-

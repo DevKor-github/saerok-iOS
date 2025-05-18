@@ -18,9 +18,9 @@ struct AppEnvironment {
         let appState = Store<AppState>(AppState())
         let modelContainer = configuredModelContainer()
         let mainRepository = configuredRepositories(modelContainer: modelContainer)
-        let networkService = SRNetworkService()
+        let networkService = SRNetworkServiceImpl()
         let interactors = configuredInteractors(repositories: mainRepository, networkService: networkService)
-        let diContainer = DIContainer(appState: appState, interactors: interactors)
+        let diContainer = DIContainer(appState: appState, interactors: interactors, networkService: networkService)
         
         return AppEnvironment(modelContainer: modelContainer, diContainer: diContainer)
     }

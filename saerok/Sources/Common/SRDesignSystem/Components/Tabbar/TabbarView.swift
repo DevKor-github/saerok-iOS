@@ -15,7 +15,7 @@ struct TabbarView: View {
         VStack {
             Spacer()
                 tabItems
-                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 0)
+                    .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 0)
         }
         .padding()
     }

@@ -12,9 +12,11 @@ struct NavigationBar<Center: View, Leading: View, Trailing: View>: View {
     
     // MARK: Properties
     
-    var center: Center
-    var leading: Leading
-    var trailing: Trailing
+    private var center: Center
+    private var leading: Leading
+    private var trailing: Trailing
+    
+    private let backgroundColor: Color
     
     // MARK: Init
 
@@ -22,16 +24,18 @@ struct NavigationBar<Center: View, Leading: View, Trailing: View>: View {
         @ViewBuilder
         center: () -> Center = { EmptyView() },
         leading: () -> Leading = { EmptyView() },
-        trailing: () -> Trailing = { EmptyView() }
+        trailing: () -> Trailing = { EmptyView() },
+        backgroundColor: Color = .srWhite
     ) {
         self.center = center()
         self.leading = leading()
         self.trailing = trailing()
+        self.backgroundColor = backgroundColor
     }
 
     var body: some View {
         ZStack {
-            Color.srWhite
+            backgroundColor
             HStack(spacing: 0) {
                 leading
                 Spacer()
@@ -43,7 +47,7 @@ struct NavigationBar<Center: View, Leading: View, Trailing: View>: View {
             }
         }
         .foregroundStyle(Color.black)
-        .frame(height: 52)
+        .frame(height: 62)
     }
 }
 

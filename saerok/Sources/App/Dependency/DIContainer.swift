@@ -6,20 +6,22 @@
 //
 
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct DIContainer {
     let appState: Store<AppState>
     let interactors: Interactors
+    let networkService: SRNetworkService
 
-    init(appState: Store<AppState> = .init(AppState()), interactors: Interactors) {
+    init(appState: Store<AppState> = .init(AppState()), interactors: Interactors, networkService: SRNetworkService) {
         self.appState = appState
         self.interactors = interactors
+        self.networkService = networkService
     }
 
-    init(appState: AppState, interactors: Interactors) {
-        self.init(appState: Store<AppState>(appState), interactors: interactors)
+    init(appState: AppState, interactors: Interactors, networkSevice: SRNetworkService) {
+        self.init(appState: Store<AppState>(appState), interactors: interactors, networkService: networkSevice)
     }
 }
 
@@ -46,7 +48,11 @@ extension DIContainer {
 
 extension EnvironmentValues {
     /// DIContainer를 SwiftUI의 @Environment에 등록
-    @Entry var injected: DIContainer = DIContainer(appState: AppState(), interactors: .stub)
+    @Entry var injected: DIContainer = DIContainer(
+        appState: AppState(),
+        interactors: .stub,
+        networkSevice: SRNetworkServiceImpl()
+    )
 }
 
 extension View {

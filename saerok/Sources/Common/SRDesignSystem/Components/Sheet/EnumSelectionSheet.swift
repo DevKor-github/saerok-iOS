@@ -18,8 +18,8 @@ extension View {
         self.sheet(isPresented: isPresented) {
             EnumSelectionSheet(
                 isPresented: isPresented,
-                title: title,
                 selection: selection,
+                title: title,
                 presentationDetents: presentationDetents
             )
         }
@@ -28,9 +28,10 @@ extension View {
 
 private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
     @Binding var isPresented: Bool
+    @Binding var selection: Set<T>
+
     let title: String
     let allOptions: [T] = Array(T.allCases)
-    @Binding var selection: Set<T>
     let presentationDetents: Set<PresentationDetent>
 
     var body: some View {
@@ -48,7 +49,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                             .foregroundColor(selection.contains(item) ? .white : .primary)
                         Spacer()
                         Image(systemName: selection.contains(item) ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(selection.contains(item) ? .white : .gray)
+                            .foregroundColor(selection.contains(item) ? .white : .srGray)
                     }
                     .padding()
                     .background(selection.contains(item) ? Color.main : Color(.systemGray6))
