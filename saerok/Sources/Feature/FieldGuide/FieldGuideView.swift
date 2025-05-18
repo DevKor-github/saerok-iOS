@@ -83,7 +83,7 @@ private extension FieldGuideView {
         static let headerHeight: CGFloat = 100
         static let headerTopPadding: CGFloat = 20
         static let iconBackgroundSize: CGFloat = 40
-        static let navBarSpacerHeight: CGFloat = 53
+        static let navBarSpacerHeight: CGFloat = 64
         static let scrollOpacityMinY: CGFloat = -100
         static let scrollOpacityMaxY: CGFloat = 0
         static let scrollableID: String = "scrollable"
@@ -106,12 +106,8 @@ private extension FieldGuideView {
             } label: {
                 Image.SRIconSet.upper
                     .frame(.defaultIconSizeLarge)
-                    .background(
-                        Circle().fill(.glassWhite)
-                            .frame(width: Constants.iconBackgroundSize, height: Constants.iconBackgroundSize)
-                    )
-                    .frame(width: 40, height: 40)
             }
+            .srStyled(.iconButton)
             .padding(.bottom, 114)
             .padding(.horizontal, SRDesignConstant.defaultPadding)
         }
@@ -147,11 +143,10 @@ private extension FieldGuideView {
                     .font(.SRFontSet.headline1)
             },
             trailing: {
-                HStack(spacing: 25) {
+                HStack(spacing: 7) {
                     bookmarkFilterButton
                     searchButton
                 }
-                .font(.system(size: 24))
             },
             backgroundColor: .clear
         )
@@ -163,23 +158,16 @@ private extension FieldGuideView {
              ? Image.SRIconSet.bookmarkFilled
              : Image.SRIconSet.bookmark)
             .frame(.defaultIconSizeLarge)
-            .background(
-                Circle().fill(.glassWhite)
-                    .frame(width: Constants.iconBackgroundSize, height: Constants.iconBackgroundSize)
-            )
         }
+        .srStyled(.iconButton)
     }
 
     var searchButton: some View {
         Button(action: searchButtonTapped) {
             Image.SRIconSet.search
                 .frame(.defaultIconSizeLarge)
-                .background(
-                    Circle().fill(.glassWhite)
-                        .frame(width: Constants.iconBackgroundSize, height: Constants.iconBackgroundSize)
-                )
         }
-        .buttonStyle(.plain)
+        .srStyled(.iconButton)
     }
 
     var scrollableSection: some View {

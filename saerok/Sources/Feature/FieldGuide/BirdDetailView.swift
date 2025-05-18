@@ -22,11 +22,11 @@ struct BirdDetailView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: Constants.mainSpacing) {
-            navigationBar
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: Constants.scrollContentSpacing) {
                     birdImageWithTag
                     Group {
+                        title
                         classification
                         description
                     }
@@ -45,13 +45,18 @@ private extension BirdDetailView {
     var birdImageWithTag: some View {
         VStack(alignment: .leading, spacing: Constants.birdImageSpacing) {
             if let url = bird.imageURL {
-                ReactiveAsyncImage(url: url, scale: .large, quality: 1, downsampling: false)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity)
-                    .cornerRadius(Constants.imageCornerRadius)
-                    .padding(.horizontal, SRDesignConstant.defaultPadding)
+                ZStack(alignment: .bottomTrailing) {
+                    ReactiveAsyncImage(url: url, scale: .large, quality: 1, downsampling: false)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: .infinity)
+                        .cornerRadius(Constants.imageCornerRadius)
+                        .padding(.horizontal, SRDesignConstant.defaultPadding)
+                        
+                    topLeadingButton
+                    bottomTrailingButtons
+                }
             }
-
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Constants.chipSpacing) {
                     Color.clear.frame(width: Constants.chipSidePadding)
@@ -63,7 +68,60 @@ private extension BirdDetailView {
             }
         }
     }
-
+    
+    var topLeadingButton: some View {
+        VStack {
+            HStack {
+                Button(action: backButtonTapped) {
+                    Image.SRIconSet.chevronLeft
+                        .frame(.defaultIconSize)
+                        
+                }
+                .srStyled(.iconButton)
+                Spacer()
+            }
+            Spacer()
+        }
+        .padding(8)
+        .padding(.leading, SRDesignConstant.defaultPadding)
+    }
+    
+    var bottomTrailingButtons: some View {
+        HStack(spacing: 7) {
+            Button(action: bookmarkButtonTapped) {
+                Group {
+                    (bird.isBookmarked
+                     ? Image.SRIconSet.bookmarkFilled
+                     : Image.SRIconSet.bookmark)
+                    .frame(.defaultIconSizeLarge)
+                }
+                .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
+            }
+            
+            Button(action: saerokButtonTapped) {
+                Image.SRIconSet.penFill
+                    .frame(.custom(width: Constants.penIconWidth, height: Constants.penIconHeight))
+                    .padding(.top, Constants.penIconTopPadding)
+            }
+            .frame(alignment: .bottomTrailing)
+        }
+        .srStyled(.iconButton)
+        .padding(8)
+        .padding(.trailing, SRDesignConstant.defaultPadding)
+    }
+    
+    var title: some View {
+        VStack(alignment: .center) {
+            Text(bird.name)
+                .font(.SRFontSet.subtitle1)
+            Text(bird.scientificName)
+                .font(.SRFontSet.body2)
+                .foregroundStyle(.srGray)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 50)
+    }
+    
     var classification: some View {
         VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
             Text("분류")
@@ -75,7 +133,7 @@ private extension BirdDetailView {
                 .lineSpacing(Constants.lineSpacing)
         }
     }
-
+    
     var description: some View {
         VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
             Text("상세 설명")
@@ -85,59 +143,9 @@ private extension BirdDetailView {
                 .allowsTightening(true)
                 .font(.SRFontSet.body2)
                 .lineSpacing(Constants.lineSpacing)
-
+            
             Color.clear.frame(height: Constants.bottomSpacerHeight)
         }
-    }
-
-    var navigationBar: some View {
-        NavigationBar(
-            leading: {
-                HStack(spacing: Constants.navLeadingSpacing) {
-                    Button {
-                        path.removeLast()
-                    } label: {
-                        Image.SRIconSet.chevronLeft
-                            .frame(.defaultIconSize)
-                    }
-                    .buttonStyle(.plain)
-
-                    VStack(alignment: .leading) {
-                        Text(bird.name)
-                            .font(.SRFontSet.subtitle1)
-                        Text(bird.scientificName)
-                            .font(.SRFontSet.caption1)
-                            .foregroundStyle(.srGray)
-                    }
-                }
-            },
-            trailing: {
-                HStack(spacing: Constants.navTrailingSpacing) {
-                    Button {
-                        bird.isBookmarked.toggle()
-                    } label: {
-                        Group {
-                            (bird.isBookmarked
-                             ? Image.SRIconSet.bookmarkFilled
-                             : Image.SRIconSet.bookmark)
-                            .frame(.defaultIconSizeLarge)
-                        }
-                        .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
-                    }
-
-                    Button {
-                        injected.appState[\.routing.contentView.tabSelection] = .collection
-                        injected.appState[\.routing.collectionView.addCollection] = true
-                        injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
-                    } label: {
-                        Image.SRIconSet.penFill
-                            .frame(.custom(width: Constants.penIconWidth, height: Constants.penIconHeight))
-                            .padding(.top, Constants.penIconTopPadding)
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-        )
     }
 }
 
@@ -149,7 +157,7 @@ private extension BirdDetailView {
         var body: some View {
             HStack {
                 icon.frame(.defaultIconSizeSmall)
-
+                
                 if list.isEmpty {
                     Text("미등록")
                 } else {
@@ -167,6 +175,24 @@ private extension BirdDetailView {
     }
 }
 
+// MARK: - Button Actions
+
+private extension BirdDetailView {
+    func backButtonTapped() {
+        path.removeLast()
+    }
+    
+    func bookmarkButtonTapped() {
+        bird.isBookmarked.toggle()
+    }
+    
+    func saerokButtonTapped() {
+        injected.appState[\.routing.contentView.tabSelection] = .collection
+        injected.appState[\.routing.collectionView.addCollection] = true
+        injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
+    }
+}
+
 // MARK: - Constants
 
 private extension BirdDetailView {
@@ -176,7 +202,7 @@ private extension BirdDetailView {
         static let birdImageSpacing: CGFloat = 13
         static let chipSpacing: CGFloat = 5
         static let chipSidePadding: CGFloat = 20
-        static let imageCornerRadius: CGFloat = 10
+        static let imageCornerRadius: CGFloat = 20
         static let sectionSpacing: CGFloat = 13
         static let lineSpacing: CGFloat = 5
         static let bottomSpacerHeight: CGFloat = 80

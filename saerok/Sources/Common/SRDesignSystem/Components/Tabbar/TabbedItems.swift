@@ -8,16 +8,16 @@
 import SwiftUI
 
 enum TabbedItems: Int, CaseIterable {
-    case community = 0
-    case fieldGuide
+//    case community = 0
+    case fieldGuide = 0
     case home
     case collection
     case profile
     
     var title: String {
         switch self {
-        case .community:
-            return "둥지"
+//        case .community:
+//            return "둥지"
         case .fieldGuide:
             return "도감"
         case .home:
@@ -31,8 +31,8 @@ enum TabbedItems: Int, CaseIterable {
     
     var icon: Image.SRIconSet {
         switch self {
-        case .community:
-            return Image.SRIconSet.doongzi
+//        case .community:
+//            return Image.SRIconSet.doongzi
         case .fieldGuide:
             return Image.SRIconSet.dogam
         case .home:
@@ -46,8 +46,8 @@ enum TabbedItems: Int, CaseIterable {
     
     var iconSelected: Image.SRIconSet {
         switch self {
-        case .community:
-            return Image.SRIconSet.doongziFilled
+//        case .community:
+//            return Image.SRIconSet.doongziFilled
         case .fieldGuide:
             return Image.SRIconSet.dogamFilled
         case .home:
