@@ -79,29 +79,6 @@ private extension CollectionView {
             VStack(spacing: 0) {
                 navigationBar
                 listSection
-                    .navigationDestination(for: CollectionView.Route.self, destination: { route in
-                        switch route {
-                        case .collectionDetail(let collection):
-                            CollectionDetailView(collection, path: $navigationPath)
-                        case .addCollection:
-                            AddCollectionItemView(path: $navigationPath)
-                        }
-                    })
-                    .onChange(of: routingState.collection, initial: true, { _, collection in
-                        guard let collection else { return }
-                        
-                        navigationPath.append(Route.collectionDetail(collection))
-                    })
-                    .onChange(of: routingState.addCollection, initial: true, { _, isTrue in
-                        if isTrue {
-                            navigationPath.append(Route.addCollection)
-                        }
-                    })
-                    .onChange(of: navigationPath, { _, path in
-                        if !path.isEmpty {
-                            routingBinding.wrappedValue.collection = nil
-                        }
-                    })
             }
             
             Button {
@@ -115,9 +92,30 @@ private extension CollectionView {
             .buttonStyle(.plain)
             .padding(.bottom, 114)
             .padding(.trailing, SRDesignConstant.defaultPadding)
-
-            
         }
+        .navigationDestination(for: CollectionView.Route.self, destination: { route in
+            switch route {
+            case .collectionDetail(let collection):
+                CollectionDetailView(collection, path: $navigationPath)
+            case .addCollection:
+                AddCollectionItemView(path: $navigationPath)
+            }
+        })
+        .onChange(of: routingState.collection, initial: true, { _, collection in
+            guard let collection else { return }
+            
+            navigationPath.append(Route.collectionDetail(collection))
+        })
+        .onChange(of: routingState.addCollection, initial: true, { _, isTrue in
+            if isTrue {
+                navigationPath.append(Route.addCollection)
+            }
+        })
+        .onChange(of: navigationPath, { _, path in
+            if !path.isEmpty {
+                routingBinding.wrappedValue.collection = nil
+            }
+        })
     }
     
     var navigationBar: some View {
@@ -141,18 +139,57 @@ private extension CollectionView {
     }
     
     var listSection: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            ForEach(collections) { bird in
+//        ScrollView(.vertical, showsIndicators: false) {
+//            ForEach(collections) { bird in
+//                Button {
+//                    injected.appState[\.routing.collectionView.collection] = bird
+//                } label: {
+//                    BirdCollectionCardView(bird)
+//                }
+//                .buttonStyle(.plain)
+//            }
+//            .padding(SRDesignConstant.defaultPadding)
+//        }
+//        .background(Color.whiteGray)
+//        
+        ScrollView {
+            StaggeredGrid(items: collections, columns: 2) { bird in
                 Button {
                     injected.appState[\.routing.collectionView.collection] = bird
                 } label: {
-                    BirdCollectionCardView(bird)
+                    if let url = bird.imageURL.first {
+                        VStack(alignment: .leading) {
+                            ReactiveAsyncImage(
+                                url: url,
+                                scale: .medium,
+                                quality: 0.8,
+                                downsampling: true
+                            )
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            
+                            Text(bird.bird?.name ?? "")
+                                .font(.SRFontSet.caption2)
+                                .padding(.leading, 8)
+                        }
+       
+                    } else if let imageData = bird.imageData.first {
+                        VStack(alignment: .leading) {
+                            Image(uiImage: UIImage(data: imageData) ?? .birdPreview)
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            
+                            Text(bird.bird?.name ?? "")
+                                .font(.SRFontSet.caption2)
+                                .padding(.leading, 8)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
             }
-            .padding(SRDesignConstant.defaultPadding)
+            .padding(.horizontal)
         }
-        .background(Color.whiteGray)
     }
 }
 
@@ -211,4 +248,45 @@ extension CollectionView {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     appDelegate.rootView
+}
+
+
+struct StaggeredGrid<Content: View, T: Hashable>: View {
+    var items: [T]
+    var columns: Int
+    var spacing: CGFloat
+    var content: (T) -> Content
+
+    init(items: [T], columns: Int, spacing: CGFloat = 8, @ViewBuilder content: @escaping (T) -> Content) {
+        self.items = items
+        self.columns = columns
+        self.spacing = spacing
+        self.content = content
+    }
+
+    private func generateColumns() -> [[T]] {
+        var grid: [[T]] = Array(repeating: [], count: columns)
+        var heights: [CGFloat] = Array(repeating: 0, count: columns)
+
+        for item in items {
+            // 가장 낮은 열에 아이템 넣기
+            if let minIndex = heights.enumerated().min(by: { $0.element < $1.element })?.offset {
+                grid[minIndex].append(item)
+                heights[minIndex] += 1 // 실제 높이를 측정하려면 더 정교하게 구현 필요
+            }
+        }
+        return grid
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: spacing) {
+            ForEach(generateColumns(), id: \.self) { columnItems in
+                VStack(spacing: spacing) {
+                    ForEach(columnItems, id: \.hashValue) { item in
+                        content(item)
+                    }
+                }
+            }
+        }
+    }
 }

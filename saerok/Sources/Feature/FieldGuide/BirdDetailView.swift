@@ -119,7 +119,8 @@ private extension BirdDetailView {
                 .foregroundStyle(.srGray)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 50)
+        .padding(.vertical, 15)
+        .padding(.top, 20)
     }
     
     var classification: some View {

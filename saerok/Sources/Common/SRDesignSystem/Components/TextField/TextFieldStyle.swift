@@ -16,7 +16,6 @@ struct SRTextFieldStyle: ViewModifier {
             .autocorrectionDisabled()
             .focused(isFocused)
             .background(.srWhite)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(isFocused.wrappedValue ? Color.main : .border, lineWidth:2)

@@ -8,21 +8,11 @@
 
 import Foundation
 
-extension Bundle {
-    var kakaoAPIKey: String? {
-        return infoDictionary?["KAKAO_API_KEY"] as? String
-    }
-}
-
 enum KakaoEndpoint: Endpoint {
     case keyword(_ keyword: String)
     case address(lng: Double, lat: Double)
     
-    private var apiKey: String {
-        guard let apiKey = Bundle.main.kakaoAPIKey else { return "" }
-        
-        return apiKey
-    }
+    private var apiKey: String { Bundle.main.kakaoAPIKey }
     
     var baseURL: String {
         return "https://dapi.kakao.com/v2/"
