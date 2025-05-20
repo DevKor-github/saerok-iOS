@@ -35,8 +35,6 @@ private extension AppEnvironment {
         do {
 //            return try ModelContainer.appModelContainer()
             return ModelContainer.previewable
-        } catch {
-            return ModelContainer.previewable
         }
     }
     

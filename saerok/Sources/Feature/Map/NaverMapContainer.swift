@@ -78,7 +78,6 @@ extension NaverMapContainer {
         func mapView(_ mapView: NMFMapView, didTapMap latlng: NMGLatLng, point: CGPoint) {
             parent.coord = latlng.toDouble
         }
-        
     }
 }
 

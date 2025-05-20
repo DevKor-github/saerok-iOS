@@ -133,7 +133,7 @@ extension Local.CollectionBird {
             locationDescription: "서울 용산구 이태원동",
             note: "카페 옥상 근처 전선에서 지저귐",
             imageURL: [
-                "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182924628_EI613HDL5.jpg/ia82_328_i3.jpg?type=m1500",
+                "https://dbscthumb-phinf.pstatic.net/5041_000_1/20171207142615274_7IO0RPQAT.jpg/ib68_188_i3.jpg?type=m1500",
                 "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182923020_JG5PUWXDQ.jpg/ia82_328_i2.jpg?type=m1500"
             ],
             lastModified: Date()

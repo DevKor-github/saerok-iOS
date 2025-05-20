@@ -16,7 +16,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.body1)
+            .font(.SRFontSet.button1)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
@@ -36,7 +36,7 @@ struct DeleteButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.body1)
+            .font(.SRFontSet.button1)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
             .foregroundColor(.red)
@@ -51,7 +51,7 @@ struct DeleteButtonStyle: ButtonStyle {
     }
 }
 
-struct NormalButtonStyle: ButtonStyle {
+struct BorderedButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     var defaultColor: Color = .main
@@ -60,7 +60,7 @@ struct NormalButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.body1)
+            .font(.SRFontSet.button1)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
             .foregroundColor(defaultColor)
@@ -69,6 +69,26 @@ struct NormalButtonStyle: ButtonStyle {
                     .inset(by: 0.75)
                     .stroke(defaultColor, lineWidth: 1.5)
             )
+            .cornerRadius(10)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .contentShape(Rectangle())
+    }
+}
+
+struct SecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    var defaultColor: Color = .primary
+    var pressedColor: Color = .primary
+    var disabledColor: Color = .primary
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.SRFontSet.subtitle3)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity)
+            .foregroundColor(defaultColor)
+            .background(Color.clear)
             .cornerRadius(10)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .contentShape(Rectangle())
@@ -84,6 +104,11 @@ extension ButtonStyle where Self == DeleteButtonStyle {
     static var delete: Self { Self() }
 }
 
-extension ButtonStyle where Self == NormalButtonStyle {
-    static var normal: Self { Self() }
+extension ButtonStyle where Self == BorderedButtonStyle {
+    static var bordered: Self { Self() }
 }
+
+extension ButtonStyle where Self == SecondaryButtonStyle {
+    static var secondary: Self { Self() }
+}
+

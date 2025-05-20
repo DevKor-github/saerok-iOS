@@ -20,7 +20,6 @@ struct ContentView: Routable {
     
     // MARK: View State
     
-    @State private var showSplash = false
     @State var selectedTab: TabbedItems = SRConstant.mainTab
     @State var isTabbarHidden: Bool = false
     
@@ -35,48 +34,34 @@ struct ContentView: Routable {
     }
     
     var body: some View {
-            ZStack {
-                // 메인 화면
-                NavigationStack {
-                    ZStack(alignment: .bottom) {
-                        switch selectedTab {
-                        case .fieldGuide:
-                            FieldGuideView()
-                        case .collection:
-                            CollectionView()
-                        default:
-                            Rectangle()
-                                .foregroundStyle(.clear)
-                        }
-                        
-                        TabbarView(selectedTab: selectedTab)
-                            .opacity(routingState.isTabbarHidden ? 0 : 1)
-                            .allowsHitTesting(!routingState.isTabbarHidden)
-                    }
-                    .ignoresSafeArea(edges: .bottom)
-                }
-                .opacity(showSplash ? 0 : 1)
-                .animation(.easeInOut(duration: 0.5), value: showSplash)
-                .onReceive(routingUpdate) { self.routingState = $0 }
-                .onChange(of: routingState.tabSelection, initial: true) { _, destination in
-                    selectedTab = destination
-                }
-                .onChange(of: routingState.isTabbarHidden, initial: true) { _, value in
-                    isTabbarHidden = value
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                switch selectedTab {
+                case .fieldGuide:
+                    FieldGuideView()
+                case .collection:
+                    CollectionView()
+                case .profile:
+                    MyPageView()
+                default:
+                    Rectangle()
+                        .foregroundStyle(.clear)
                 }
                 
-                if showSplash {
-                    LottieView(animationName: "splash", completion: {
-                        withAnimation {
-                            showSplash = false
-                        }
-                    })
-                    .background(Color.srWhite)
-                    .ignoresSafeArea()
-                }
+                TabbarView(selectedTab: selectedTab)
+                    .opacity(routingState.isTabbarHidden ? 0 : 1)
+                    .allowsHitTesting(!routingState.isTabbarHidden)
             }
+            .ignoresSafeArea(edges: .bottom)
         }
-    
+        .onReceive(routingUpdate) { self.routingState = $0 }
+        .onChange(of: routingState.tabSelection, initial: true) { _, destination in
+            selectedTab = destination
+        }
+        .onChange(of: routingState.isTabbarHidden, initial: true) { _, value in
+            isTabbarHidden = value
+        }
+    }
 }
 
 // MARK: - Routable

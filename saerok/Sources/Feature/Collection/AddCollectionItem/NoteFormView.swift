@@ -12,7 +12,7 @@ extension AddCollectionItemView {
     struct NoteFormView: View {
         @Binding var note: String
         @FocusState var isFocused: Bool
-
+        
         var body: some View {
             VStack(alignment: .leading) {
                 Text("한 줄 평")

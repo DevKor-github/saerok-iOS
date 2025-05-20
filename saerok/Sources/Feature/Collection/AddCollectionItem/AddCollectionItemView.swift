@@ -86,7 +86,7 @@ private extension AddCollectionItemView {
                     ImageFormView(selectedImages: $selectedImages)
                     BirdNameFormView(selectedBird: selectedBird, path: $path)
                     LocationFormView(selectedCoord: $selectedCoord, path: $path, address: address)
-                    DateFormView(date: $date)
+                    DateFormView(title: "발견 일시", date: $date)
                     NoteFormView(note: $note)
                     Spacer()
                     submitButton
@@ -117,7 +117,7 @@ private extension AddCollectionItemView {
                         showingAlert = false
                         path.removeLast()
                     },
-                    style: .normal
+                    style: .bordered
                 ),
                 trailing: .init(
                     title: "계속하기",
