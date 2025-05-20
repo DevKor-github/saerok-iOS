@@ -24,3 +24,11 @@ struct OffsetReaderView: View {
         .frame(height: 0)
     }
 }
+
+func opacityForScroll(offset: CGFloat) -> Double {
+    let scrollOpacityMinY: CGFloat = -100
+    let scrollOpacityMaxY: CGFloat = 0
+    let clampedOffset = max(min(offset, scrollOpacityMaxY), scrollOpacityMinY)
+    
+    return Double((clampedOffset - scrollOpacityMinY) / (scrollOpacityMaxY - scrollOpacityMinY))
+}

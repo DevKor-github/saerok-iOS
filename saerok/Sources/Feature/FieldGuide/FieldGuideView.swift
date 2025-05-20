@@ -84,8 +84,6 @@ private extension FieldGuideView {
         static let headerTopPadding: CGFloat = 20
         static let iconBackgroundSize: CGFloat = 40
         static let navBarSpacerHeight: CGFloat = 64
-        static let scrollOpacityMinY: CGFloat = -100
-        static let scrollOpacityMaxY: CGFloat = 0
         static let scrollableID: String = "scrollable"
     }
     
@@ -93,24 +91,19 @@ private extension FieldGuideView {
     func loadedView() -> some View {
         ZStack(alignment: .bottomTrailing) {
             Color.srWhite
+            
             LinearGradient.srGradient
                 .opacity(opacityForScroll(offset: offsetY))
+            
             VStack(spacing: 0) {
                 Color.clear.frame(height: Constants.navBarSpacerHeight)
                 navigationBar
                 scrollableSection
             }
             
-            Button {
-                offsetY = 0
-            } label: {
-                Image.SRIconSet.upper
-                    .frame(.defaultIconSizeLarge)
-            }
-            .srStyled(.iconButton)
-            .padding(.bottom, 114)
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            scrollToTopButton
         }
+        .ignoresSafeArea(.all)
         .navigationDestination(for: Route.self) { route in
             switch route {
             case .search:
@@ -133,7 +126,6 @@ private extension FieldGuideView {
         .onPreferenceChange(ScrollPreferenceKey.self) { value in
             self.offsetY = value
         }
-        .ignoresSafeArea(.all)
     }
 
     var navigationBar: some View {
@@ -169,6 +161,21 @@ private extension FieldGuideView {
         }
         .srStyled(.iconButton)
     }
+    
+    var headerSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer()
+            Text("504")
+                .font(.SRFontSet.heavy)
+                .fontWeight(.semibold)
+                .foregroundStyle(.splash)
+            Text("종의 새가 도감에 준비되어있어요.")
+                .font(.SRFontSet.caption1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: Constants.headerHeight)
+        .padding(SRDesignConstant.defaultPadding)
+    }
 
     var scrollableSection: some View {
         ScrollViewReader { proxy in
@@ -202,20 +209,17 @@ private extension FieldGuideView {
             }
         }
     }
-
-    var headerSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer()
-            Text("504")
-                .font(.SRFontSet.heavy)
-                .fontWeight(.semibold)
-                .foregroundStyle(.splash)
-            Text("종의 새가 도감에 준비되어있어요.")
-                .font(.SRFontSet.caption1)
+    
+    var scrollToTopButton: some View {
+        Button {
+            offsetY = 0
+        } label: {
+            Image.SRIconSet.upper
+                .frame(.defaultIconSizeLarge)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: Constants.headerHeight)
-        .padding(SRDesignConstant.defaultPadding)
+        .srStyled(.iconButton)
+        .padding(.bottom, 114)
+        .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
 }
 
@@ -252,10 +256,7 @@ private extension FieldGuideView {
         }
     }
 
-    func opacityForScroll(offset: CGFloat) -> Double {
-        let clampedOffset = max(min(offset, Constants.scrollOpacityMaxY), Constants.scrollOpacityMinY)
-        return Double((clampedOffset - Constants.scrollOpacityMinY) / (Constants.scrollOpacityMaxY - Constants.scrollOpacityMinY))
-    }
+    
 
     func bookmarkTapped() {
         filterKey.isBookmarked.toggle()

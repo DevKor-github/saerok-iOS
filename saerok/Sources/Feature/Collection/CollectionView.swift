@@ -20,7 +20,7 @@ struct CollectionView: Routable {
     
     @Environment(\.injected) private var injected: DIContainer
     @Environment(\.scenePhase) private var scenePhase
-
+    
     // MARK:  Routable
     
     @State var routingState: Routing = .init()
@@ -34,7 +34,8 @@ struct CollectionView: Routable {
     @State private var collections: [Local.CollectionBird]
     @State private var collectionState: Loadable<Void>
     @State private var filterKey: BirdFilter = .init()
-
+    @State private var offsetY: CGFloat = 0
+    
     // MARK:  Init
     
     init(state: Loadable<Void> = .notRequested) {
@@ -73,26 +74,28 @@ struct CollectionView: Routable {
 // MARK: - Loaded Content
 
 private extension CollectionView {
+    
+    // MARK: - Constants
+    
+    enum Constants {
+        static let headerHeight: CGFloat = 100
+        static let headerTopPadding: CGFloat = 20
+        static let iconBackgroundSize: CGFloat = 40
+        static let navBarSpacerHeight: CGFloat = 64
+        static let scrollableID: String = "scrollable"
+    }
+    
     @ViewBuilder
     func loadedView() -> some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack(alignment: .topLeading) {
+            headerBackgroundColor
             VStack(spacing: 0) {
+                Color.clear.frame(height: Constants.navBarSpacerHeight)
                 navigationBar
-                listSection
+                scrollableSection
             }
-            
-            Button {
-                routingState.addCollection = true
-                injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
-            } label: {
-                Image.SRIconSet.floatingButton
-                    .frame(.floatingButton)
-                    .shadow(color: .black.opacity(0.15), radius: 4)
-            }
-            .buttonStyle(.plain)
-            .padding(.bottom, 114)
-            .padding(.trailing, SRDesignConstant.defaultPadding)
         }
+        .ignoresSafeArea(.all)
         .navigationDestination(for: CollectionView.Route.self, destination: { route in
             switch route {
             case .collectionDetail(let collection):
@@ -116,6 +119,19 @@ private extension CollectionView {
                 routingBinding.wrappedValue.collection = nil
             }
         })
+        .onPreferenceChange(ScrollPreferenceKey.self) { value in
+            self.offsetY = value
+        }
+    }
+    
+    @ViewBuilder
+    var headerBackgroundColor: some View {
+        Color.srWhite
+        Image(.blurTemplate)
+            .opacity(opacityForScroll(offset: offsetY))
+        Rectangle()
+            .fill(.thinMaterial)
+            .ignoresSafeArea()
     }
     
     var navigationBar: some View {
@@ -125,70 +141,110 @@ private extension CollectionView {
                     .font(.SRFontSet.headline1)
             },
             trailing: {
-                HStack(spacing: 12) {                    
+                HStack(spacing: 12) {
                     Button {
                         // TODO: 검색기능
                     } label: {
                         Image.SRIconSet.search
                             .frame(.defaultIconSizeLarge)
                     }
+                    .buttonStyle(.icon)
                 }
-                .font(.system(size: 24))
-            }
+            },
+            backgroundColor: .clear
         )
     }
     
-    var listSection: some View {
-//        ScrollView(.vertical, showsIndicators: false) {
-//            ForEach(collections) { bird in
-//                Button {
-//                    injected.appState[\.routing.collectionView.collection] = bird
-//                } label: {
-//                    BirdCollectionCardView(bird)
-//                }
-//                .buttonStyle(.plain)
-//            }
-//            .padding(SRDesignConstant.defaultPadding)
-//        }
-//        .background(Color.whiteGray)
-//        
-        ScrollView {
-            StaggeredGrid(items: collections, columns: 2) { bird in
-                Button {
-                    injected.appState[\.routing.collectionView.collection] = bird
-                } label: {
-                    if let url = bird.imageURL.first {
-                        VStack(alignment: .leading) {
-                            ReactiveAsyncImage(
-                                url: url,
-                                scale: .medium,
-                                quality: 0.8,
-                                downsampling: true
-                            )
-                            .scaledToFit()
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            
-                            Text(bird.bird?.name ?? "")
-                                .font(.SRFontSet.caption2)
-                                .padding(.leading, 8)
+    var headerSection: some View {
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 0) {
+                Spacer()
+                Text("504")
+                    .font(.SRFontSet.heavy)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.splash)
+                Text("종의 새가 도감에 준비되어있어요.")
+                    .font(.SRFontSet.caption1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            addButton
+        }
+        .frame(height: Constants.headerHeight)
+        .padding(SRDesignConstant.defaultPadding)
+    }
+    
+    var scrollableSection: some View {
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                OffsetReaderView()
+                    .id(Constants.scrollableID)
+                
+                VStack(spacing: 0) {
+                    headerSection
+                    
+                    StaggeredGrid(items: collections, columns: 2) { bird in
+                        Button {
+                            injected.appState[\.routing.collectionView.collection] = bird
+                        } label: {
+                            if let url = bird.imageURL.first {
+                                VStack(alignment: .leading) {
+                                    ReactiveAsyncImage(
+                                        url: url,
+                                        scale: .medium,
+                                        quality: 0.8,
+                                        downsampling: true
+                                    )
+                                    .scaledToFit()
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    
+                                    Text(bird.bird?.name ?? "")
+                                        .font(.SRFontSet.caption2)
+                                        .padding(.leading, 8)
+                                }
+                                
+                            } else if let imageData = bird.imageData.first {
+                                VStack(alignment: .leading) {
+                                    Image(uiImage: UIImage(data: imageData) ?? .birdPreview)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    
+                                    Text(bird.bird?.name ?? "")
+                                        .font(.SRFontSet.caption2)
+                                        .padding(.leading, 8)
+                                }
+                            }
                         }
-       
-                    } else if let imageData = bird.imageData.first {
-                        VStack(alignment: .leading) {
-                            Image(uiImage: UIImage(data: imageData) ?? .birdPreview)
-                                .resizable()
-                                .scaledToFit()
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                            
-                            Text(bird.bird?.name ?? "")
-                                .font(.SRFontSet.caption2)
-                                .padding(.leading, 8)
-                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
+                    .background(Color.whiteGray)
+                }
+            }
+            .onChange(of: offsetY) { _, newValue in
+                if newValue == 0 {
+                    withAnimation {
+                        proxy.scrollTo(Constants.scrollableID, anchor: .top)
                     }
                 }
-                .buttonStyle(.plain)
             }
-            .padding(.horizontal)
+        }
+    }
+    
+    var addButton: some View {
+        Button {
+            routingState.addCollection = true
+            injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
+        } label: {
+            Image.SRIconSet.penFill
+                .frame(.defaultIconSizeVeryLarge)
+                .foregroundStyle(.black)
+                .background(
+                    Circle().fill(.glassWhite)
+                        .frame(width: 61, height: 61)
+                )
+                .frame(width: 61, height: 61)
         }
     }
 }
@@ -244,40 +300,32 @@ extension CollectionView {
     }
 }
 
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
-}
-
-
 struct StaggeredGrid<Content: View, T: Hashable>: View {
     var items: [T]
     var columns: Int
     var spacing: CGFloat
     var content: (T) -> Content
-
+    
     init(items: [T], columns: Int, spacing: CGFloat = 8, @ViewBuilder content: @escaping (T) -> Content) {
         self.items = items
         self.columns = columns
         self.spacing = spacing
         self.content = content
     }
-
+    
     private func generateColumns() -> [[T]] {
         var grid: [[T]] = Array(repeating: [], count: columns)
         var heights: [CGFloat] = Array(repeating: 0, count: columns)
-
+        
         for item in items {
-            // 가장 낮은 열에 아이템 넣기
             if let minIndex = heights.enumerated().min(by: { $0.element < $1.element })?.offset {
                 grid[minIndex].append(item)
-                heights[minIndex] += 1 // 실제 높이를 측정하려면 더 정교하게 구현 필요
+                heights[minIndex] += 1
             }
         }
         return grid
     }
-
+    
     var body: some View {
         HStack(alignment: .top, spacing: spacing) {
             ForEach(generateColumns(), id: \.self) { columnItems in
@@ -285,8 +333,21 @@ struct StaggeredGrid<Content: View, T: Hashable>: View {
                     ForEach(columnItems, id: \.hashValue) { item in
                         content(item)
                     }
+                    
+                    Group {
+                        Rectangle()
+                        Rectangle()
+                    }
+                    .foregroundStyle(.clear)
+                    .frame(height: 200)
                 }
             }
         }
+        .padding(.vertical)
     }
+}
+
+#Preview {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    appDelegate.rootView
 }

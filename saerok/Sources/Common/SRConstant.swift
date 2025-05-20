@@ -7,7 +7,7 @@
 
 enum SRConstant {
     static let bundleIdentifier = "com.apu.saerok"
-    static let mainTab: TabbedItems = .fieldGuide
+    static let mainTab: TabbedItems = .collection
 }
 
 enum SRDesignConstant {

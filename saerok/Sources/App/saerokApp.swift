@@ -43,17 +43,18 @@ extension AppEnvironment {
 
 struct RootSelectorView: View {
     @Query var users: [User]
-    //    @State var isLoggedIn: Bool = true
-    @State var isLoggedIn: Bool = false
-    
+        @State var isLoggedIn: Bool = true
+//    @State var isLoggedIn: Bool = false
+//    @State private var showSplash = true
+
     @State private var showSplash = false
     
     @ViewBuilder
     var body: some View {
         ZStack {
             Group {
-                if !users.isEmpty && isLoggedIn {
-                    //                    if true {
+//                if !users.isEmpty && isLoggedIn {
+                                        if true {
                     
                     ContentView()
                         .transition(.opacity)
