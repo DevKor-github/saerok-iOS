@@ -24,10 +24,10 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
 
     func refreshFieldGuide() async throws {
         do {
-            guard try await repository.isBirdListEmpty() else {
-                return
-            }
-            
+//            guard try await repository.isBirdListEmpty() else {
+//                return
+//            }
+
             let birdDTOs = try await networkService.fetchBirdList(endpoint: .fullSync)
             try await repository.store(birdDTOs)
             await repository.storeMockData()

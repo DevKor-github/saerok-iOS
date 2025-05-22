@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 import KakaoSDKCommon
 import KakaoSDKAuth
@@ -37,44 +38,85 @@ extension AppEnvironment {
                     let _ = AuthController.handleOpenUrl(url: url)
                 }
             }
+            .onAppear {
+                try? KeyChain.delete(key: .appleLogin)
+                try? KeyChain.delete(key: .kakaoLogin)
+            }
     }
 }
 
-
 struct RootSelectorView: View {
-    @Query var users: [User]
-        @State var isLoggedIn: Bool = true
-//    @State var isLoggedIn: Bool = false
-//    @State private var showSplash = true
-
+    @Environment(\.injected) private var injected
+    @State private var authStatus: AppState.AuthStatus = .notDetermined
+    @State private var user: User = .init()
     @State private var showSplash = false
+    var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
+        injected.appState.updates(for: \.authStatus)
+    }
     
-    @ViewBuilder
     var body: some View {
+        content
+            .onReceive(authStatusUpdate) { authStatus = $0 }
+            .onAppear {
+                checkAutoLogin()
+            }
+    }
+    
+    private var content: some View {
         ZStack {
-            Group {
-//                if !users.isEmpty && isLoggedIn {
-                                        if true {
-                    
+            switch authStatus {
+            case .notDetermined:
+                LoginView($user)
+            case .guest:
+                ContentView()
+            case .signedIn(let isRegistered):
+                if isRegistered {
                     ContentView()
-                        .transition(.opacity)
-                        .animation(.easeInOut(duration: 1.5), value: isLoggedIn)
                 } else {
-                    LoginView($isLoggedIn)
-                        .transition(.opacity)
-                        .animation(.easeInOut(duration: 0.3), value: isLoggedIn)
+                    LoginView($user)
                 }
             }
             
-            if showSplash {
-                LottieView(animationName: "splash", completion: {
-                    withAnimation(.easeInOut(duration: 2)) {
-                        showSplash = false
-                    }
-                })
-                .background(Color.srWhite)
-                .ignoresSafeArea()
-            }
+            splashView
         }
     }
+    
+    @ViewBuilder
+    private var splashView: some View {
+        if showSplash {
+            LottieView(animationName: "splash", completion: {
+                withAnimation(.easeInOut(duration: 0.8)) {
+                    showSplash = false
+                }
+            })
+            .background(Color.srWhite)
+            .ignoresSafeArea()
+        }
+    }
+    
+    private func checkAutoLogin() {
+        if let _ = try? KeyChain.read(key: .appleLogin) {
+            injected.appState[\.authStatus] = .signedIn(isRegistered: true)
+        } else if let _ = try? KeyChain.read(key: .kakaoLogin) {
+            injected.appState[\.authStatus] = .signedIn(isRegistered: true)
+        } else {
+            injected.appState[\.authStatus] = .notDetermined
+        }
+    }
+    
+//    private func checkAutoLogin() {
+//        if let token = try? KeyChain.read(key: .appleLogin) {
+//            Task {
+//                let isRegistered = await verifyTokenWithServer(provider: "apple", token: token)
+//                injected.appState[\.authStatus] = .signedIn(isRegistered: isRegistered)
+//            }
+//        } else if let token = try? KeyChain.read(key: .kakaoLogin) {
+//            Task {
+//                let isRegistered = await verifyTokenWithServer(provider: "kakao", token: token)
+//                injected.appState[\.authStatus] = .signedIn(isRegistered: isRegistered)
+//            }
+//        } else {
+//            injected.appState[\.authStatus] = .guest
+//        }
+//    }
 }

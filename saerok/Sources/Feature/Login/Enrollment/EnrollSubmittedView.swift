@@ -10,7 +10,7 @@ import SwiftUI
 
 extension EnrollView {
     struct EnrollSubmittedView: View {
-        @Binding var isLoggined: Bool
+        @Environment(\.injected) var injected
         
         var body: some View {
             VStack(alignment: .leading) {
@@ -33,7 +33,7 @@ extension EnrollView {
 
         private func startButtonTapped() {
             withAnimation(.easeInOut(duration: 2.0)) {
-                isLoggined = true
+                injected.appState[\.authStatus] = .signedIn(isRegistered: true)
             }
         }
     }

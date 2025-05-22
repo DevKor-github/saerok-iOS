@@ -19,28 +19,30 @@ struct EnrollView: View {
     @Environment(\.modelContext) var context
 
     @Binding var user: User
-    @Binding var path: NavigationPath
 
     @State private var currentStep: Step = .first
 
-    init(path: Binding<NavigationPath>, user: Binding<User>) {
-        self._path = path
+    init(user: Binding<User>) {
         self._user = user
     }
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             navigationBar
-            headerSection
-            formSection
+            Group {
+                headerSection
+                Rectangle().fill(.clear)
+                    .frame(height: 40)
+                formSection
+            }
+            .padding(.horizontal, SRDesignConstant.defaultPadding)
             Spacer()
         }
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
         .regainSwipeBack()
     }
-
+    
     // MARK: - Subviews
-
+    
     private var navigationBar: some View {
         NavigationBar(leading: {
             Button(action: handleBackButton) {
@@ -51,7 +53,7 @@ struct EnrollView: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        HStack(spacing: 12) {
             Text("회원가입")
                 .font(.SRFontSet.headline1)
 
@@ -60,7 +62,6 @@ struct EnrollView: View {
                 stepIndicators
             }
             .frame(height: 38)
-            .padding(.bottom, 54)
         }
     }
 
@@ -113,7 +114,7 @@ struct EnrollView: View {
 
     private func handleBackButton() {
         if currentStep == .first {
-            path.removeLast()
+            injected.appState[\.authStatus] = .notDetermined
         } else {
             currentStep = .first
         }
@@ -131,4 +132,10 @@ extension EnrollView {
         static let deleteButtonOffset: CGFloat = imageSize / 2
         static let stepCircleSize: CGFloat = 38
     }
+}
+
+#Preview {
+    @Previewable @State var user: User = .init()
+    
+    EnrollView(user: $user)
 }

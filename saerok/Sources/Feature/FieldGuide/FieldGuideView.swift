@@ -253,10 +253,9 @@ private extension FieldGuideView {
     func loadFieldGuide() {
         $fieldGuideState.load {
             try? await injected.interactors.fieldGuide.refreshFieldGuide()
+            print("새 로드완료")
         }
     }
-
-    
 
     func bookmarkTapped() {
         filterKey.isBookmarked.toggle()

@@ -12,6 +12,7 @@ import Combine
 struct AppState: Equatable {
     var routing = ViewRouting()
     var system = System()
+    var authStatus: AuthStatus = .notDetermined
 }
 
 extension AppState {
@@ -24,9 +25,21 @@ extension AppState {
 }
 
 extension AppState {
-    struct System: Equatable { }
+    struct System: Equatable {
+        var isSignedIn: Bool = false
+    }
+}
+
+extension AppState {
+    enum AuthStatus: Equatable {
+        case notDetermined
+        case guest
+        case signedIn(isRegistered: Bool)
+    }
 }
 
 func == (lhs: AppState, rhs: AppState) -> Bool {
-    return lhs.routing == rhs.routing && lhs.system == rhs.system
+    lhs.routing == rhs.routing &&
+    lhs.system == rhs.system &&
+    lhs.authStatus == rhs.authStatus
 }
