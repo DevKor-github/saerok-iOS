@@ -19,33 +19,31 @@ struct FindPlaceView: View {
     
     @Environment(\.injected) var injected
     
-    // MARK: View State
+    // MARK: - View State
+    
+    @ObservedObject var collectionDraft: Local.CollectionDraft
+    @Binding var path: NavigationPath
     
     @State private var mode: Mode = .idle
-
-    @Binding var selectedPosition: (Double, Double)
-    @State private var text: String = ""
     @State private var response: [Local.KakaoPlace] = []
-
+    @State private var showingSheet: Bool = false
     @FocusState private var isFocused: Bool
     
     @StateObject private var mapController = MapController()
     
     private var networkService: SRNetworkService { injected.networkService }
-
-    // MARK: Navigation
     
-    @Binding var path: NavigationPath
-        
     var body: some View {
         VStack(spacing: 0) {
             navigationBar
             searchBarSection
             resultSection
         }
-        .onAppear {
-            mapController.moveToUserLocation()
+        .sheet(isPresented: $showingSheet) {
+            PlaceDetailSheet(address: collectionDraft.address, text: $collectionDraft.locationAlias, submitButtonTapped)
+                .presentationDetents([.height(340)])
         }
+        .onAppear { mapController.moveToUserLocation() }
         .regainSwipeBack()
     }
 }
@@ -67,12 +65,11 @@ private extension FindPlaceView {
     
     var searchBarSection: some View {
         HStack {
-            TextField("장소를 입력해주세요", text: $text)
+            TextField("장소를 입력해주세요", text: $collectionDraft.address)
             Button {
                 Task {
-                    response = try await networkService.fetchLocalSearchResult(endpoint: .keyword(text))
-                        .documents
-                        .toLocal()
+                    let searchResponse: DTO.KakaoSearchResponse = try await networkService.performKakaoRequest(.keyword(collectionDraft.address))
+                    response = searchResponse.documents.toLocal()
                     mode = .resultShown
                 }
             } label: {
@@ -80,7 +77,7 @@ private extension FindPlaceView {
                     .padding(.trailing, 30)
             }
         }
-        .textFieldDeletable(text: $text)
+        .textFieldDeletable(text: $collectionDraft.address)
         .padding(.vertical, 14)
         .padding(.leading, 18)
         .frame(height: 44)
@@ -90,7 +87,7 @@ private extension FindPlaceView {
         .onTapGesture {
             mode = .searching
         }
-        .onChange(of: text) { _, new in
+        .onChange(of: collectionDraft.address) { _, new in
             if new.isEmpty && mode == .searching {
                 mode = .searching
             } else if !new.isEmpty && mode == .idle {
@@ -108,14 +105,14 @@ private extension FindPlaceView {
                 .allowsHitTesting(mode != .idle)
 
             ZStack(alignment: .bottom) {
-                MapView(coord: $selectedPosition, controller: mapController)
+                NaverMapView(coord: $collectionDraft.coordinate, controller: mapController)
                 Button {
-                    path.removeLast()
-                    injected.appState[\.routing.addCollectionItemView.locationSelected] = true
+                    showingSheet.toggle()
                 } label: {
                     Text("이 위치로 입력할게요")
                         .font(.SRFontSet.body1)
                         .frame(maxWidth: .infinity)
+                        .frame(height: 28)
                 }
                 .buttonStyle(.primary)
                 .padding(SRDesignConstant.defaultPadding)
@@ -139,10 +136,7 @@ private extension FindPlaceView {
                         searchCell(item)
                         .listRowInsets(.init())
                         .onTapGesture {
-                            selectedPosition = (item.latitude, item.longtitude)
-                            mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
-                            text = item.placeName
-                            mode = .idle
+                            searchItemTapped(item)
                         }
                     }
                 }
@@ -173,10 +167,62 @@ private extension FindPlaceView {
         .frame(maxWidth: .infinity)
         .background(Color.srWhite)
     }
+    
+    func searchItemTapped(_ item: Local.KakaoPlace) {
+        collectionDraft.coordinate = (item.latitude, item.longtitude)
+        mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
+        collectionDraft.address = item.placeName
+        mode = .idle
+    }
+    
+    func submitButtonTapped() {
+        injected.appState[\.routing.addCollectionItemView.locationSelected] = true
+        showingSheet = false
+        path.removeLast()
+    }
 }
 
-#Preview {
-    @Previewable @State var path = NavigationPath()
-    @Previewable @State var coord = (0.0,0.0)
-    FindPlaceView(selectedPosition: $coord, path: $path)
+// MARK: - Place Detail Sheet
+
+private extension FindPlaceView {
+    struct PlaceDetailSheet: View {
+        @FocusState private var isFocused: Bool
+        @Binding var text: String
+        let placeAddress: String
+        let buttonAction: () -> Void
+
+        init(address: String, text: Binding<String>, _ buttonAction: @escaping () -> Void) {
+            self.placeAddress = address
+            self._text = text
+            self.buttonAction = buttonAction
+        }
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 7) {
+                
+                    Text("어디서 봤냐면요...")
+                        .font(.SRFontSet.subtitle1)
+                    Text("이 장소가 어디인지 소개해주세요!")
+                        .font(.SRFontSet.body2)
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 27)
+                    TextField("ex. 난지한강공원, 푸르른 산속 ...", text: $text)
+                        .padding(.vertical, 13)
+                        .padding(.horizontal, 20)
+                        .srStyled(.textField(isFocused: $isFocused))
+                    Text(placeAddress)
+                        .font(.SRFontSet.caption1)
+                
+                
+                Spacer()
+                
+                Button("발견 장소 등록", action: buttonAction)
+                    .font(.SRFontSet.button1)
+                    .buttonStyle(.primary)
+                    .frame(height: 53)
+            }
+            .padding(SRDesignConstant.defaultPadding)
+
+        }
+    }
 }

@@ -16,6 +16,7 @@ struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T
     @Binding var isPresented: Bool
     @Binding var selection: Set<T>
     let detents: Set<PresentationDetent>
+    let style: EnumPickerStyle
 
     var isActive: Bool {
         !selection.isEmpty
@@ -48,7 +49,8 @@ struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T
             isPresented: $isPresented,
             title: title,
             selection: $selection,
-            presentationDetents: detents
+            presentationDetents: detents,
+            style: style
         )
     }
 }

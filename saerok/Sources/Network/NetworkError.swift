@@ -9,5 +9,6 @@ enum NetworkError: Error {
     case unknownError
     case clientError(Int)
     case serverError(Int)
-    case decodingError(String) 
+    case decodingError(String)
+    case typeError
 }

@@ -9,8 +9,9 @@ import SwiftUI
 import AuthenticationServices
 
 struct AppleLoginView: View {
-    @Binding var user: User
     @Environment(\.injected) private var injected: DIContainer
+
+    @Binding var user: User
 
     var body: some View {
         signInButton
@@ -51,18 +52,19 @@ private extension AppleLoginView {
     func handleAuthorization(result: Result<ASAuthorization, Error>) {
         switch result {
         case .success(let authorization):
-            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
-                  let identityTokenData = credential.identityToken,
-                  let identityToken = String(data: identityTokenData, encoding: .utf8) else {
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
                 print("❌ Failed to get identityToken")
                 return
             }
-
+            
+            guard let authorizationCode = credential.authorizationCode,
+                  let codeString = String(data: authorizationCode, encoding: .utf8) else { return }
+            
             Task {
                 await handleAppleLogin(
                     id: credential.user,
                     email: credential.email,
-                    identityToken: identityToken
+                    authorizationCode: codeString
                 )
             }
 
@@ -70,19 +72,20 @@ private extension AppleLoginView {
             print("❌ Apple Authorization failed: \(error.localizedDescription)")
         }
     }
-
-    func handleAppleLogin(id: String, email: String?, identityToken: String) async {
+    
+    func handleAppleLogin(id: String, email: String?, authorizationCode: String) async {
         do {
-            // TODO: 서버 로그인 요청 및 키체인 등록
-            // let response = try await injected.networkService.socialLogin(provider: .apple, token: identityToken)
-            try KeyChain.create(key: .accessToken, token: "test-access-token") // 예시용
-
+            let response: DTO.AuthResponse = try await injected
+                .networkService
+                .performSRRequest(.appleLogin(authorizationCode: authorizationCode))
+            
+            TokenManager.shared.trySocialLogin(accessToken: response.accessToken)
             await MainActor.run {
                 user.id = id
                 user.email = email ?? "Unknown"
                 user.provider = .apple
-
-                injected.appState[\.authStatus] = .signedIn(isRegistered: false)
+                
+                injected.appState[\.authStatus] = .signedIn(isRegistered: response.signupStatus == .completed)
             }
         } catch {
             print("❌ Apple login failed:", error)

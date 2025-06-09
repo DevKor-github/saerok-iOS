@@ -9,9 +9,9 @@ import SwiftUI
 
 enum TabbedItems: Int, CaseIterable {
 //    case community = 0
-    case fieldGuide = 0
+    case collection = 0
+    case fieldGuide 
     case home
-    case collection
     case profile
     
     var title: String {
@@ -25,7 +25,7 @@ enum TabbedItems: Int, CaseIterable {
         case .collection:
             return "새록"
         case .profile:
-            return "MY"
+            return "마이"
         }
     }
     

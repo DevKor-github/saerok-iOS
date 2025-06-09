@@ -98,17 +98,8 @@ private extension FieldGuideSearchView {
         .padding(.vertical, Layout.verticalPadding)
         .padding(.leading, Layout.horizontalPadding)
         .frame(height: Layout.textFieldHeight)
-        .srStyled(.textField(isFocused: $isSearchBarFocused))
+        .srStyled(.textField(isFocused: $isSearchBarFocused, alwaysFocused: true))
         .padding(.horizontal, SRDesignConstant.defaultPadding)
-    }
-    
-    func bookmarkButtonSection(_ bird: Local.Bird) -> some View {
-        Button(action: { bookmarkButtonTapped(bird) }) {
-            (bird.isBookmarked
-             ? Image.SRIconSet.bookmarkFilled
-             : Image.SRIconSet.bookmark)
-            .frame(.defaultIconSize)
-        }
     }
     
     @ViewBuilder
@@ -169,6 +160,18 @@ private extension FieldGuideSearchView {
         .background(Color.srWhite)
     }
     
+    func bookmarkButtonSection(_ bird: Local.Bird) -> some View {
+        Button {
+            bookmarkButtonTapped(bird)
+        } label: {
+            (bird.isBookmarked
+             ? Image.SRIconSet.bookmarkFilled
+             : Image.SRIconSet.bookmarkSecondary)
+            .frame(.defaultIconSizeLarge)
+            .foregroundStyle(.border)
+        }
+    }
+    
     func recentItem(_ search: Local.RecentSearchEntity) -> some View {
         HStack {
             Button(action: { recentItemTapped(search) }) {
@@ -215,7 +218,11 @@ private extension FieldGuideSearchView {
     }
     
     func bookmarkButtonTapped(_ bird: Local.Bird) {
-        bird.isBookmarked.toggle()
+        Task {
+            HapticManager.shared.trigger(.light)
+            bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+            HapticManager.shared.trigger(.success)
+        }
     }
     
     func searchItemTapped(_ bird: Local.Bird) {

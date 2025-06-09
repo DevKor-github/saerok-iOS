@@ -15,7 +15,6 @@ class User {
     var provider: SocialLoginProvider?
     var nickname: String
     var email: String
-    var gender: Gender
     var birthDate: Date?
     var startBirdingDate: Date?
     
@@ -23,7 +22,6 @@ class User {
         self.id = ""
         self.email = ""
         self.nickname = ""
-        self.gender = .other
     }
 }
 

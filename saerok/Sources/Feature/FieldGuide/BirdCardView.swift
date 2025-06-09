@@ -11,6 +11,8 @@ import SwiftUI
 struct BirdCardView: View {
     private let bird: Local.Bird
     
+    @Environment(\.injected) var injected
+    
     init(_ bird: Local.Bird) {
         self.bird = bird
     }
@@ -27,13 +29,6 @@ struct BirdCardView: View {
                         downsampling: true
                     )
                     .clipped()
-                    .overlay {
-                        VStack {
-                            Color.clear
-                            LinearGradient.birdCardBackground
-                                .frame(height: Constants.gradientHeight)
-                        }
-                    }
                 }
                 Color.srWhite
             }
@@ -65,22 +60,47 @@ private extension BirdCardView {
                 .font(.SRFontSet.caption1)
                 .foregroundStyle(.secondary)
         }
-        .frame(height: Constants.nameSectionHeight)
-        .frame(maxWidth: .infinity, alignment: .bottomLeading)
         .padding(.horizontal, Constants.nameSectionPaddingH)
         .padding(.vertical, Constants.nameSectionPaddingV)
+        .padding(.bottom, 3)
+        .frame(height: Constants.nameSectionHeight)
+        .frame(maxWidth: .infinity, alignment: .bottomLeading)
+        .background(nameGradientBackground)
+        .cornerRadius(10)
     }
-    
+
+    var nameGradientBackground: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .frame(height: Constants.gradientHeight)
+                .foregroundColor(.clear)
+                .background(
+                    LinearGradient(
+                        stops: [
+                            .init(color: Color.white.opacity(0.8), location: 0),
+                            .init(color: .white, location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: UnitPoint(x: 0.5, y: 0.96)
+                    )
+                )
+
+            Color.srWhite
+        }
+    }
+
     var bookmarkButton: some View {
         Button {
-            bird.isBookmarked.toggle()
+            Task {
+                HapticManager.shared.trigger(.light)
+                self.bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                HapticManager.shared.trigger(.success)
+            }
         } label: {
-            (bird.isBookmarked
-             ? Image.SRIconSet.scrapFilled
-             : Image.SRIconSet.scrap)
-            .frame(.defaultIconSizeLarge)
-            .padding(.trailing, Constants.bookmarkPaddingTrailing)
-            .padding(.top, Constants.bookmarkPaddingTop)
+            (bird.isBookmarked ? Image.SRIconSet.scrapFilled : Image.SRIconSet.scrap)
+                .frame(.defaultIconSizeLarge)
+                .padding(.top, Constants.bookmarkPaddingTop)
+                .padding(.trailing, Constants.bookmarkPaddingTrailing)
         }
     }
 }
@@ -90,13 +110,18 @@ private extension BirdCardView {
 private extension BirdCardView {
     enum Constants {
         static let imageSize = CGSize(width: 120, height: 170)
-        static let gradientHeight: CGFloat = 85
+        static let gradientHeight: CGFloat = 23
         static let cardHeight: CGFloat = 198
-        static let nameSectionHeight: CGFloat = 40
+        static let nameSectionHeight: CGFloat = 52
         static let nameSectionPaddingH: CGFloat = 13
-        static let nameSectionPaddingV: CGFloat = 11
+        static let nameSectionPaddingV: CGFloat = 10
         static let bookmarkPaddingTop: CGFloat = 7
         static let bookmarkPaddingTrailing: CGFloat = 6
         static let shadowRadius: CGFloat = 3
     }
+}
+
+#Preview {
+    BirdCardView(.mockData[0])
+        .frame(width: 165)
 }

@@ -34,6 +34,7 @@ extension Image {
         case habitatWhite
         case bookmark
         case bookmarkFilled
+        case bookmarkSecondary
         case alert
         case insta
         case search
@@ -42,7 +43,18 @@ extension Image {
         case floatingButton
         case option
         case pin
+        case clock
         case upper
+        case global
+        case edit
+        case reset
+        case login
+        case checkboxMiniDefault
+        case checkboxMiniChecked
+        case checkboxMiniCheckedReverse
+        case checkboxDefault
+        case checkboxChecked
+        case xmarkCircle
         
         // MARK: Tabbar
         case doongzi
@@ -118,78 +130,57 @@ extension Image {
 extension Image.SRIconSet {
     private var image: Image {
         switch self {
-        case .chevronLeft:
-            return Image(systemName: "chevron.left")
-        case .chevronRight:
-            return Image(systemName: "chevron.right")
-        case .xmarkCircleFill:
-            return Image(systemName: "xmark.circle.fill")
-        case .scrap:
-            return Image(.scrap)
-        case .scrapFilled:
-            return Image(.scrapFilled)
-        case .season:
-            return Image(.season)
-        case .seasonWhite:
-            return Image(.seasonWhite)
-        case .size:
-            return Image(.birdSize)
-        case .sizeWhite:
-            return Image(.sizeWhite)
-        case .habitat:
-            return Image(.habitat)
-        case .habitatWhite:
-            return Image(.habitatWhite)
-        case .alert:
-            return Image(.alert)
-        case .insta:
-            return Image(.insta)
-        case .delete:
-            return Image(.delete)
-        case .option:
-            return Image(.option)
-        case .pin:
-            return Image(.pin)
-        case .upper:
-            return Image(.upper)
-        case .floatingButton:
-            return Image(.floatingButton)
-        case .search:
-            return Image(.search)
-        case .searchSecondary:
-            return Image(.searchSecondary)
-        case .bookmark:
-            return Image(.bookmark)
-        case .bookmarkFilled:
-            return Image(.bookmarkFilled)
-        case .penFill:
-            return Image(.penFill)
-        case .textFormat:
-            return Image(systemName: "textformat")
-        case .down:
-            return Image(systemName: "chevron.down")
-        case .dogam:
-            return Image(.dogam)
-        case .dogamFilled:
-            return Image(.dogamFilled)
-        case .heart:
-            return Image(.heart)
-        case .heartFilled:
-            return Image(.heartFilled)
-        case .my:
-            return Image(.my)
-        case .myFilled:
-            return Image(.myFilled)
-        case .home:
-            return Image(.home)
-        case .homeFilled:
-            return Image(.homeFilled)
-        case .doongzi:
-            return Image(.doongzi)
-        case .doongziFilled:
-            return Image(.doongziFilled)
-        default:
-            return Image(self.rawValue, bundle: Image.SRIconSet.bundle)
+        case .chevronLeft: return Image(systemName: "chevron.left")
+        case .chevronRight: return Image(systemName: "chevron.right")
+        case .xmarkCircleFill: return Image(systemName: "xmark.circle.fill")
+        case .scrap: return Image(.scrap)
+        case .scrapFilled: return Image(.scrapFilled)
+        case .season: return Image(.season)
+        case .seasonWhite: return Image(.seasonWhite)
+        case .size: return Image(.birdSize)
+        case .sizeWhite: return Image(.sizeWhite)
+        case .habitat: return Image(.habitat)
+        case .habitatWhite: return Image(.habitatWhite)
+        case .alert: return Image(.alert)
+        case .insta: return Image(.insta)
+        case .delete: return Image(.delete)
+        case .edit: return Image(.edit)
+        case .option: return Image(.option)
+        case .pin: return Image(.pin)
+        case .login: return Image(.login)
+        case .clock: return Image(.clock)
+        case .reset: return Image(.reset)
+        case .upper: return Image(.upper)
+        case .floatingButton: return Image(.floatingButton)
+        case .search: return Image(.search)
+        case .searchSecondary: return Image(.searchSecondary)
+        case .global: return Image(.global)
+        case .bookmark: return Image(.bookmark)
+        case .bookmarkFilled: return Image(.bookmarkFilled)
+        case .bookmarkSecondary: return Image(.bookmarkSecondary)
+        case .penFill:  return Image(.penFill)
+        case .checkboxChecked: return Image(.checkboxActive)
+        case .checkboxDefault: return Image(.checkboxDefault)
+        case .checkboxMiniChecked: return Image(.checkboxMiniActive)
+        case .checkboxMiniDefault: return Image(.checkboxMiniDefault)
+        case .checkboxMiniCheckedReverse: return Image(.checkboxMiniActiveReverse)
+        case .xmarkCircle: return Image(.xmarkCircle)
+        case .xmark: return Image(systemName: "xmark")
+            
+        case .textFormat: return Image(systemName: "textformat")
+        case .down: return Image(systemName: "chevron.down")
+            
+        case .dogam: return Image(.dogam)
+        case .dogamFilled: return Image(.dogamFilled)
+        case .heart: return Image(.heart)
+        case .heartFilled: return Image(.heartFilled)
+        case .my: return Image(.my)
+        case .myFilled: return Image(.myFilled)
+        case .home: return Image(.home)
+        case .homeFilled: return Image(.homeFilled)
+        case .doongzi: return Image(.doongzi)
+        case .doongziFilled: return Image(.doongziFilled)
+        default: return Image(self.rawValue, bundle: Image.SRIconSet.bundle)
         }
     }
 }

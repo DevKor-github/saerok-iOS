@@ -10,7 +10,7 @@ import SwiftUI
 
 struct DateFormView: View {
     let title: String
-    @Binding var date: Date?
+    @Binding var date: Date
     @State var isDateSelecting: Bool = false
     @FocusState var isFocused: Bool
     
@@ -20,8 +20,8 @@ struct DateFormView: View {
                 .font(.SRFontSet.caption1)
                 .padding(.horizontal, 10)
             
-            Text(date?.toFullString ?? "날짜를 선택해주세요")
-                .foregroundStyle(date != nil ? .primary : .tertiary)
+            Text(date.toFullString)
+                .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 20)
                 .padding(.trailing, 10)
@@ -39,7 +39,7 @@ struct DateFormView: View {
             
             if isDateSelecting {
                 DatePicker("", selection: Binding(
-                    get: { date ?? Date() },
+                    get: { date },
                     set: {
                         date = $0
                         isDateSelecting.toggle()

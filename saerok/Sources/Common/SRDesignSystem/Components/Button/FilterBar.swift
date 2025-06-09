@@ -14,6 +14,12 @@ struct FilterBar: View {
     @Binding var showSizeSheet: Bool
     @Binding var filterKey: BirdFilter
 
+    private var isActive: Bool {
+        filterKey.selectedHabitats.count > 0 ||
+        filterKey.selectedSeasons.count > 0 ||
+        filterKey.selectedSizes.count > 0
+    }
+    
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
@@ -24,7 +30,8 @@ struct FilterBar: View {
                     title: "계절 선택",
                     isPresented: $showSeasonSheet,
                     selection: $filterKey.selectedSeasons,
-                    detents: [.fraction(0.3)]
+                    detents: [.fraction(0.4)],
+                    style: .compact
                 )
                 FilterButton<Habitat>(
                     icon: Image.SRIconSet.habitat,
@@ -33,7 +40,8 @@ struct FilterBar: View {
                     title: "서식지 선택",
                     isPresented: $showHabitatSheet,
                     selection: $filterKey.selectedHabitats,
-                    detents: [.fraction(0.7)]
+                    detents: [.fraction(0.6)],
+                    style: .adaptive
                 )
                 FilterButton<BirdSize>(
                     icon: Image.SRIconSet.size,
@@ -42,9 +50,20 @@ struct FilterBar: View {
                     title: "크기 선택",
                     isPresented: $showSizeSheet,
                     selection: $filterKey.selectedSizes,
-                    detents: [.fraction(0.3)]
+                    detents: [.fraction(0.45)],
+                    style: .birdSize
                 )
-
+                
+                if isActive {
+                    Button {
+                        filterKey.reset()
+                    } label: {
+                        Image.SRIconSet.reset
+                            .frame(.defaultIconSize)
+                    }
+                    .srStyled(.filterButton(isActive: false))
+                }
+            
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 24)

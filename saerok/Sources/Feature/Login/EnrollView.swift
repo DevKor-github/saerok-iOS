@@ -19,7 +19,6 @@ struct EnrollView: View {
     @Environment(\.modelContext) var context
 
     @Binding var user: User
-
     @State private var currentStep: Step = .first
 
     init(user: Binding<User>) {
@@ -38,6 +37,7 @@ struct EnrollView: View {
             .padding(.horizontal, SRDesignConstant.defaultPadding)
             Spacer()
         }
+        .padding(.vertical, 43)
         .regainSwipeBack()
     }
     
@@ -59,7 +59,7 @@ struct EnrollView: View {
 
             ZStack {
                 dashedLine
-                stepIndicators
+//                stepIndicators
             }
             .frame(height: 38)
         }
@@ -79,35 +79,26 @@ struct EnrollView: View {
         .frame(height: 1)
     }
 
-    private var stepIndicators: some View {
-        HStack(spacing: 34) {
-            Spacer()
-            ForEach(Step.allCases, id: \.rawValue) { step in
-                Text("\(step.rawValue + 1)")
-                    .font(.SRFontSet.subtitle3)
-                    .bold()
-                    .foregroundStyle(.srWhite)
-                    .background(
-                        Circle()
-                            .frame(width: Constants.stepCircleSize, height: Constants.stepCircleSize)
-                            .foregroundStyle(currentStep == step ? .main : .whiteGray)
-                    )
-                    .frame(width: Constants.stepCircleSize, height: Constants.stepCircleSize)
-            }
-        }
-    }
+//    private var stepIndicators: some View {
+//        HStack(spacing: 34) {
+//            Spacer()
+//            ForEach(Step.allCases, id: \.rawValue) { step in
+//                Text("\(step.rawValue + 1)")
+//                    .font(.SRFontSet.subtitle3)
+//                    .bold()
+//                    .foregroundStyle(.srWhite)
+//                    .background(
+//                        Circle()
+//                            .frame(width: Constants.stepCircleSize, height: Constants.stepCircleSize)
+//                            .foregroundStyle(currentStep == step ? .main : .whiteGray)
+//                    )
+//                    .frame(width: Constants.stepCircleSize, height: Constants.stepCircleSize)
+//            }
+//        }
+//    }
 
     private var formSection: some View {
-        NonSwipeablePageTabView(
-            currentPage: Binding(
-                get: { currentStep.rawValue },
-                set: { currentStep = Step(rawValue: $0) ?? .first }
-            ),
-            pages: [
-                AnyView(EnrollFirstFormView(currentStep: $currentStep, user: $user)),
-                AnyView(EnrollSecondFormView(currentStep: $currentStep, user: $user))
-            ]
-        )
+        EnrollFirstFormView(currentStep: $currentStep, user: $user)
     }
 
     // MARK: - Button Actions

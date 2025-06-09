@@ -15,21 +15,21 @@ struct FieldGuideView: Routable {
         case search
         case birdDetail(Local.Bird)
     }
-
+    
     // MARK: - Dependencies
-
+    
     @Environment(\.injected) private var injected: DIContainer
-
+    
     // MARK: - Routable
-
+    
     @State var routingState: Routing = .init()
-
+    
     // MARK: - Navigation
-
-    @State var navigationPath = NavigationPath()
-
+    
+    @Binding var navigationPath: NavigationPath
+    
     // MARK: - View State
-
+    
     @State private var fieldGuide: [Local.Bird]
     @State private var fieldGuideState: Loadable<Void>
     @State private var filterKey: BirdFilter = .init()
@@ -37,34 +37,53 @@ struct FieldGuideView: Routable {
     @State private var showHabitatSheet = false
     @State private var showSizeSheet = false
     @State private var offsetY: CGFloat = 0
-
+    
     // MARK: - Init
-
-    init(state: Loadable<Void> = .notRequested) {
+    
+    init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
         self.fieldGuide = []
         self._fieldGuideState = .init(initialValue: state)
+        self._navigationPath = path
     }
-
+    
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            content
-                .query(key: filterKey, results: $fieldGuide) { filterKey in
-                    Query(
-                        filter: filterKey.build(),
-                        sort: \Local.Bird.name
-                    )
+        content
+            .query(key: filterKey, results: $fieldGuide) { filterKey in
+                Query(
+                    filter: filterKey.build(),
+                    sort: \Local.Bird.name
+                )
+            }
+            .onReceive(routingUpdate) { self.routingState = $0 }
+            .navigationDestination(for: FieldGuideView.Route.self) { route in
+                switch route {
+                case .search:
+                    FieldGuideSearchView(path: $navigationPath)
+                case .birdDetail(let bird):
+                    BirdDetailView(bird: bird, path: $navigationPath)
                 }
-        }
-        .onReceive(routingUpdate) { self.routingState = $0 }
+            }
+            .onChange(of: routingState.birdName, initial: true, { _, name in
+                guard let name,
+                      let bird = fieldGuide.first(where: { $0.name == name })
+                else { return }
+                navigateToBirdDetail(bird)
+            })
+            .onChange(of: navigationPath, { _, path in
+                if !path.isEmpty {
+                    routingBinding.wrappedValue.birdName = nil
+                }
+            })
+            .onPreferenceChange(ScrollPreferenceKey.self) { value in
+                self.offsetY = value
+            }
     }
-
+    
     @ViewBuilder
     private var content: some View {
         switch fieldGuideState {
-        case .notRequested:
+        case .notRequested, .isLoading:
             defaultView()
-        case .isLoading:
-            loadingView()
         case .loaded:
             loadedView()
         case let .failed(error):
@@ -78,7 +97,7 @@ struct FieldGuideView: Routable {
 private extension FieldGuideView {
     
     // MARK: - Constants
-
+    
     private enum Constants {
         static let headerHeight: CGFloat = 100
         static let headerTopPadding: CGFloat = 20
@@ -104,30 +123,8 @@ private extension FieldGuideView {
             scrollToTopButton
         }
         .ignoresSafeArea(.all)
-        .navigationDestination(for: Route.self) { route in
-            switch route {
-            case .search:
-                FieldGuideSearchView(path: $navigationPath)
-            case .birdDetail(let bird):
-                BirdDetailView(bird, path: $navigationPath)
-            }
-        }
-        .onChange(of: routingState.birdName, initial: true, { _, name in
-            guard let name,
-                  let bird = fieldGuide.first(where: { $0.name == name })
-            else { return }
-            navigateToBirdDetail(bird)
-        })
-        .onChange(of: navigationPath, { _, path in
-            if !path.isEmpty {
-                routingBinding.wrappedValue.birdName = nil
-            }
-        })
-        .onPreferenceChange(ScrollPreferenceKey.self) { value in
-            self.offsetY = value
-        }
     }
-
+    
     var navigationBar: some View {
         NavigationBar(
             leading: {
@@ -143,7 +140,7 @@ private extension FieldGuideView {
             backgroundColor: .clear
         )
     }
-
+    
     var bookmarkFilterButton: some View {
         Button(action: bookmarkTapped) {
             (filterKey.isBookmarked
@@ -153,7 +150,7 @@ private extension FieldGuideView {
         }
         .srStyled(.iconButton)
     }
-
+    
     var searchButton: some View {
         Button(action: searchButtonTapped) {
             Image.SRIconSet.search
@@ -176,7 +173,7 @@ private extension FieldGuideView {
         .frame(height: Constants.headerHeight)
         .padding(SRDesignConstant.defaultPadding)
     }
-
+    
     var scrollableSection: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical, showsIndicators: false) {
@@ -227,20 +224,32 @@ private extension FieldGuideView {
 
 private extension FieldGuideView {
     func defaultView() -> some View {
-        Text("")
-            .onAppear {
-                if !fieldGuide.isEmpty {
-                    fieldGuideState = .loaded(())
-                }
-                loadFieldGuide()
+        ZStack(alignment: .bottomTrailing) {
+            Color.srWhite
+            
+            LinearGradient.srGradient
+                .opacity(opacityForScroll(offset: offsetY))
+            
+            VStack(spacing: 0) {
+                Color.clear.frame(height: Constants.navBarSpacerHeight)
+                navigationBar
+                Spacer()
             }
+        }
+        .ignoresSafeArea(.all)
+        .onAppear {
+            if !fieldGuide.isEmpty {
+                fieldGuideState = .loaded(())
+            }
+            loadFieldGuide()
+        }
     }
-
+    
     func loadingView() -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
     }
-
+    
     func failedView(_ error: Error) -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
@@ -253,20 +262,19 @@ private extension FieldGuideView {
     func loadFieldGuide() {
         $fieldGuideState.load {
             try? await injected.interactors.fieldGuide.refreshFieldGuide()
-            print("새 로드완료")
         }
     }
-
+    
     func bookmarkTapped() {
         filterKey.isBookmarked.toggle()
     }
-
+    
     func searchButtonTapped() {
         navigationPath.append(Route.search)
     }
-
+    
     func navigateToBirdDetail(_ bird: Local.Bird) {
-        navigationPath.append(Route.birdDetail(bird))
+        navigationPath.append(FieldGuideView.Route.birdDetail(bird))
     }
 }
 
@@ -276,11 +284,11 @@ extension FieldGuideView {
     struct Routing: Equatable {
         var birdName: String?
     }
-
+    
     var routingUpdate: AnyPublisher<Routing, Never> {
         injected.appState.updates(for: \.routing.fieldGuideView)
     }
-
+    
     var routingBinding: Binding<Routing> {
         $routingState.dispatched(to: injected.appState, \.routing.fieldGuideView)
     }

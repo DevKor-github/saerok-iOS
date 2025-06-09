@@ -34,25 +34,25 @@ extension DIContainer {
     struct Interactors {
         let fieldGuide: FieldGuideInteractor
         let collection: CollectionInteractor
-
-        static var stub: Self {
-            .init(
-                fieldGuide: MockFieldGuideInteractorImpl(),
-                collection: MockCollectionInteractorImpl()
-            )
-        }
+        
+        static let stub: Interactors = .init(
+            fieldGuide: MockFieldGuideInteractorImpl(),
+            collection: MockCollectionInteractorImpl()
+        )
     }
 }
 
 // MARK: - 의존성 주입 관련
 
 extension EnvironmentValues {
-    /// DIContainer를 SwiftUI의 @Environment에 등록
-    @Entry var injected: DIContainer = DIContainer(
-        appState: AppState(),
-        interactors: .stub,
-        networkSevice: SRNetworkServiceImpl()
-    )
+    /// DIContainer를 SwiftUI의 @Environment에 등록합니다.
+    ///
+    /// 뷰 계층 어디서든 `@Environment(\.injected)`를 통해 DIContainer에 접근할 수 있게 됩니다.
+    @Entry var injected: DIContainer =
+        .init(appState: AppState(),
+              interactors: .stub,
+              networkSevice: SRNetworkServiceImpl()
+        )
 }
 
 extension View {

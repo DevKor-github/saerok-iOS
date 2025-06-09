@@ -27,6 +27,7 @@ extension EnrollView {
                 .buttonStyle(.primary)
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.vertical, 43)
         }
         
         // MARK: - Button Actions

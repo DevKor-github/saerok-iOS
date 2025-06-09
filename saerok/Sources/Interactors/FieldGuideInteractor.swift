@@ -8,7 +8,8 @@
 
 protocol FieldGuideInteractor {
     func refreshFieldGuide() async throws
-    func loadBirdDetails(birdName: String) async throws -> Local.Bird
+    func loadBirdDetails(birdID: Int) async throws -> Local.Bird
+    func toggleBookmark(birdID: Int) async throws -> Bool
 }
 
 enum FieldGuideInteractorError: Error {
@@ -19,21 +20,13 @@ enum FieldGuideInteractorError: Error {
 }
 
 struct FieldGuideInteractorImpl: FieldGuideInteractor {
-    let networkService: SRNetworkService
     let repository: BirdsRepository
 
     func refreshFieldGuide() async throws {
         do {
-//            guard try await repository.isBirdListEmpty() else {
-//                return
-//            }
-
-            let birdDTOs = try await networkService.fetchBirdList(endpoint: .fullSync)
-            try await repository.store(birdDTOs)
-            await repository.storeMockData()
+            try await repository.fetchAndStoreBirds()
+            try await repository.syncBookmarks()
             
-        } catch let error as NetworkError {
-            throw FieldGuideInteractorError.networkError(error)
         } catch let error as BirdsRepositoryError {
             throw FieldGuideInteractorError.repositoryError(error)
         } catch {
@@ -42,8 +35,15 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
     }
 
     @MainActor
-    func loadBirdDetails(birdName: String) throws -> Local.Bird {
-        return try repository.birdDetail(for: birdName)!
+    func loadBirdDetails(birdID: Int) throws -> Local.Bird {
+        guard let bird = try repository.birdDetail(for: birdID) else {
+            throw FieldGuideInteractorError.birdNotFound
+        }
+        return bird
+    }
+    
+    func toggleBookmark(birdID: Int) async throws -> Bool {
+        return try await repository.toggleBookmark(for: birdID)
     }
 }
 
@@ -54,8 +54,12 @@ struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
 //        await repository.storeMockData()
     }
     
-    func loadBirdDetails(birdName: String) throws -> Local.Bird {
+    func loadBirdDetails(birdID: Int) throws -> Local.Bird {
         return Local.Bird.mockData[0]
+    }
+    
+    func toggleBookmark(birdID: Int) async throws -> Bool {
+        true
     }
 }
 

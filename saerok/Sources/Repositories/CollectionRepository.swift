@@ -10,24 +10,56 @@ import SwiftData
 import Foundation
 
 protocol CollectionRepository {
-    func collectionBird(for bird: Local.Bird) async throws -> Local.CollectionBird?
-    func store(_ birds: [Local.CollectionBird]) async throws
+    func fetchCollectionSummaries() async throws -> [Local.CollectionSummary]
+    func fetchCollectionDetail(for id: Int) async throws -> Local.CollectionDetail
+    func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse
+    func getPresignedURL(collectionId: Int, contentType: String) async throws -> DTO.PresignedURLResponse
+    func registerImageMetadata(collectionId: Int, request: DTO.RegisterImageRequest) async throws -> DTO.RegisterImageResponse
+    func deleteCollection(_ id: Int) async throws
+    func editCollection(id: Int, isBirdUpdated: Bool, _ draft: Local.CollectionDraft) async throws
 }
 
 
 extension MainRepository: CollectionRepository {
-    func collectionBird(for bird: Local.Bird) throws -> Local.CollectionBird? {
-        let predicate: Predicate<Local.CollectionBird> = #Predicate { $0.isIdentified }
-        let fetchDescriptor: FetchDescriptor<Local.CollectionBird> = .init(predicate: predicate)
-        return try modelContext.fetch(fetchDescriptor).first
+    func fetchCollectionSummaries() async throws -> [Local.CollectionSummary] {
+        let collectionSummaryDTOs: DTO.MyCollectionsResponse = try await networkService.performSRRequest(.myCollections)
+        return collectionSummaryDTOs.items.compactMap { Local.CollectionSummary.from(dto: $0) }
     }
     
-    func store(_ birds: [Local.CollectionBird]) async throws {
-        try modelContext.transaction {
-            birds
-                .forEach {
-                    modelContext.insert($0)
-                }
-        }
+    func fetchCollectionDetail(for id: Int) async throws -> Local.CollectionDetail {
+        let collectionDetailDTO: DTO.CollectionDetailResponse = try await networkService.performSRRequest(.collectionDetail(collectionId: id))
+        return Local.CollectionDetail.from(dto: collectionDetailDTO)
+    }
+    
+    func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse {
+        return try await networkService.performSRRequest(.createCollection(
+            birdId: request.birdId.map { Int64($0) },
+            discoveredDate: request.discoveredDate,
+            latitude: request.latitude,
+            longitude: request.longitude,
+            locationAlias: request.locationAlias,
+            address: request.address,
+            note: request.note
+        ))
+    }
+    
+    func getPresignedURL(collectionId: Int, contentType: String) async throws -> DTO.PresignedURLResponse {
+        try await networkService.performSRRequest(.getPresignedURL(collectionId: collectionId, contentType: contentType))
+    }
+    
+    func registerImageMetadata(collectionId: Int, request: DTO.RegisterImageRequest) async throws -> DTO.RegisterImageResponse {
+        try await networkService.performSRRequest(.registerUploadedImage(collectionId: collectionId, body: request))
+    }
+    
+    func deleteCollection(_ id: Int) async throws {
+        let _: EmptyResponse = try await networkService.performSRRequest(.deleteCollection(collectionId: id))
+    }
+    
+    func editCollection(id: Int, isBirdUpdated: Bool, _ draft: Local.CollectionDraft) async throws {
+        let dto = draft.toEditDTO(isBirdUpdated: isBirdUpdated)
+        let _: DTO.CollectionEditResponse = try await networkService.performSRRequest(.editCollection(
+            collectionId: id,
+            body: dto
+        ))
     }
 }
