@@ -5,6 +5,8 @@
 //  Created by HanSeung on 4/17/25.
 //
 
+import SwiftUICore
+
 enum Season: String, Codable, CaseIterable, Equatable {
     case spring = "봄"
     case summer = "여름"
@@ -23,17 +25,17 @@ enum Season: String, Codable, CaseIterable, Equatable {
 }
 
 enum Habitat: String, Codable, CaseIterable, Equatable {
-    case forest = "산림"
-    case wetland = "습지"
-    case riverLake = "강/호수"
-    case urban = "도시"
-    case coastal = "해안"
-    case farmland = "농경지"
     case mudflat = "갯벌"
-    case artificial = "인공 구조물"
-    case plainsForest = "초지/산림"
-    case cave = "동굴"
+    case farmland = "농경지"
+    case forest = "산림"
+    case coastal = "해양"
     case residential = "주거지"
+    case plainsForest = "평지/숲"
+    case riverLake = "하천/호수"
+    case artificial = "인공시설"
+    case cave = "동굴"
+    case wetland = "습지"
+    case urban = "도시"
     case others = "기타"
 
     init(serverRawValue: String) {
@@ -56,17 +58,38 @@ enum Habitat: String, Codable, CaseIterable, Equatable {
 }
 
 enum BirdSize: String, Codable, CaseIterable, Equatable {
-    case hummingbird = "벌새"
+    case sparrow = "참새"
     case pigeon = "비둘기"
-    case eagle = "독수리"
+    case duck = "오리"
+    case kayak = "기러기"
 }
 
 extension BirdSize {
     static func fromLength(_ length: Double) -> BirdSize {
         switch length {
-        case ..<10: return .hummingbird
-        case 10..<20: return .pigeon
-        default: return .eagle
+        case ..<15: return .sparrow
+        case 15..<30: return .pigeon
+        case 30..<54: return .duck
+        case 54... : return .kayak
+        default: return .sparrow
+        }
+    }
+    
+    var lengthDescription: String {
+        switch self {
+        case .sparrow: "~15cm"
+        case .pigeon: "~30cm"
+        case .duck: "~54cm"
+        case .kayak: "54cm 이상"
+        }
+    }
+    
+    var image: Image {
+        switch self {
+        case .sparrow: .init(.birdFilter1)
+        case .pigeon: .init(.birdFilter2)
+        case .duck: .init(.birdFilter3)
+        case .kayak: .init(.birdFilter4)
         }
     }
 }

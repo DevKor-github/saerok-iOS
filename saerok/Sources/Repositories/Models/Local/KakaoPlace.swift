@@ -11,6 +11,7 @@ extension Local {
         let id: Int
         let placeName: String
         let address: String
+        let roadAddress: String
         let category: String
         let latitude: Double
         let longtitude: Double
@@ -20,6 +21,7 @@ extension Local {
                 id: Int(dto.id) ?? 0,
                 placeName: dto.placeName,
                 address: dto.roadAddressName,
+                roadAddress: dto.roadAddressName,
                 category: dto.categoryGroupName,
                 latitude: Double(dto.y) ?? 0,
                 longtitude: Double(dto.x) ?? 0

@@ -11,10 +11,13 @@ import SwiftData
 
 protocol BirdsRepository {
     @MainActor
-    func isBirdListEmpty() throws -> Bool
+    func isBirdListEmpty() async throws -> Bool
     @MainActor
-    func birdDetail(for name: String) throws -> Local.Bird?
-    func store(_ birds: [DTO.Bird]) async throws
+    func birdDetail(for id: Int) throws -> Local.Bird?
+    
+    func fetchAndStoreBirds() async throws
+    func syncBookmarks() async throws
+    func toggleBookmark(for id: Int) async throws -> Bool
     func storeMockData() async
 }
 
@@ -25,52 +28,97 @@ enum BirdsRepositoryError: Error {
 }
 
 extension MainRepository: BirdsRepository {
+    
     @MainActor
-    func isBirdListEmpty() throws -> Bool {
+    func isBirdListEmpty() async throws -> Bool {
         let fetchDescriptor = FetchDescriptor<Local.Bird>()
         let result = try modelContainer.mainContext.fetch(fetchDescriptor)
         return result.isEmpty
     }
     
     @MainActor
-    func birdDetail(for name: String) throws -> Local.Bird? {
+    func birdDetail(for id: Int) throws -> Local.Bird? {
         let fetchDescriptor = FetchDescriptor(predicate: #Predicate<Local.Bird> {
-            $0.name == name
+            $0.id == id
         })
-        
         return try modelContainer.mainContext.fetch(fetchDescriptor).first
+    }
+    
+    func fetchAndStoreBirds() async throws {
+        let birdDTOs: DTO.BirdsResponse = try await networkService.performSRRequest(.fullSync)
+        try await store(birdDTOs.birds)
+    }
+    
+    func syncBookmarks() async throws {
+        let bookmarks: [DTO.MyBookmarkResponse] = try await networkService.performSRRequest(.myBookmarks)
+        let bookmarkedIds = Set(bookmarks.map { $0.birdId })
+        
+        for id in bookmarkedIds {
+            let fetchDescriptor = FetchDescriptor<Local.Bird>(predicate: #Predicate {
+                $0.id == id
+            })
+            if let bird = try modelContext.fetch(fetchDescriptor).first {
+                bird.isBookmarked = true
+            }
+        }
+        
+        let notBookmarkedDescriptor = FetchDescriptor<Local.Bird>(predicate: #Predicate {
+            !bookmarkedIds.contains($0.id)
+        })
+        let unbookmarkedBirds = try modelContext.fetch(notBookmarkedDescriptor)
+        for bird in unbookmarkedBirds {
+            bird.isBookmarked = false
+        }
+
+        try? save()
+    }
+    
+    func toggleBookmark(for id: Int) async throws -> Bool {
+        let result: DTO.ToggleBookmarkResponse = try await networkService.performSRRequest(.toggleBookmark(birdId: id))
+        return result.bookmarked
     }
     
     func store(_ birds: [DTO.Bird]) async throws {
         try modelContext.transaction {
-            let localBirds = birds.compactMap { dto -> Local.Bird? in
-                guard let localBird = Local.Bird.from(dto: dto) else {
-                    return nil
-                }
-                return localBird
-            }
-            
+            try clearExistingBirds()
+            let localBirds = convert(dtoBirds: birds)
             if localBirds.isEmpty {
                 throw BirdsRepositoryError.invalidBirdDTO
             }
-            
-            localBirds.forEach {
-                modelContext.insert($0)
-            }
-            
+            insertBirds(localBirds)
             storeMockData()
         }
-        
-        do {
-            try modelContext.save()
-        } catch {
-            throw BirdsRepositoryError.failedToSaveBirds
-        }
+        try? save()
     }
     
     func storeMockData() {
         Local.Bird.mockData.forEach {
             modelContext.insert($0)
+        }
+    }
+}
+
+// MARK: - Helper Method
+
+private extension MainRepository {
+    func clearExistingBirds() throws {
+        let existingBirds = try modelContext.fetch(FetchDescriptor<Local.Bird>())
+        existingBirds.forEach { modelContext.delete($0) }
+    }
+    
+    func convert(dtoBirds: [DTO.Bird]) -> [Local.Bird] {
+        dtoBirds.compactMap { Local.Bird.from(dto: $0) }
+    }
+    
+    func insertBirds(_ birds: [Local.Bird]) {
+        birds.forEach { modelContext.insert($0) }
+    }
+    
+    func save() throws {
+        do {
+            try modelContext.save()
+        } catch {
+            throw BirdsRepositoryError.failedToSaveBirds
         }
     }
 }

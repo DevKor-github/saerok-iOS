@@ -12,60 +12,70 @@ import SwiftUI
 
 struct CollectionView: Routable {
     enum Route: Hashable {
-        case collectionDetail(_ collection: Local.CollectionBird)
+        case collectionDetail(Int)
         case addCollection
     }
     
-    // MARK:  Dependencies
+    // MARK: - Dependencies
     
     @Environment(\.injected) private var injected: DIContainer
     @Environment(\.scenePhase) private var scenePhase
-
-    // MARK:  Routable
+    
+    // MARK: - Routing
     
     @State var routingState: Routing = .init()
+    @Binding var navigationPath: NavigationPath
     
-    // MARK: Navigation
+    // MARK: - View State
     
-    @State internal var navigationPath = NavigationPath()
+    private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
+    @State private var collectionSummaries: [Local.CollectionSummary] = []
+    @State private var collectionState: Loadable<Void> = .notRequested
+    @State private var offsetY: CGFloat = 0
     
-    // MARK: View State
+    // MARK: - Init
     
-    @State private var collections: [Local.CollectionBird]
-    @State private var collectionState: Loadable<Void>
-    @State private var filterKey: BirdFilter = .init()
-
-    // MARK:  Init
-    
-    init(state: Loadable<Void> = .notRequested) {
-        self.collections = []
+    init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
         self._collectionState = .init(initialValue: state)
+        self._navigationPath = path
     }
     
+    // MARK: - Body
+    
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            content
-                .query(key: filterKey, results: $collections) { filterKey in
-                    Query(
-                        filter: filterKey.buildForCollection(),
-                        sort: \Local.CollectionBird.latitude
-                    )
+        content
+            .onReceive(routingUpdate) { routingState = $0 }
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .collectionDetail(let id):
+                    CollectionDetailView(collectionID: id, path: $navigationPath)
+                case .addCollection:
+                    CollectionFormView(mode: .add, path: $navigationPath)
                 }
-        }
-        .onReceive(routingUpdate) { self.routingState = $0 }
+            }
+            .onChange(of: routingState.collectionID, initial: true) { _, id in
+                guard let id else { return }
+                navigationPath.append(Route.collectionDetail(id))
+            }
+            .onChange(of: routingState.addCollection, initial: true) { _, isTrue in
+                if isTrue { navigationPath.append(Route.addCollection) }
+            }
+            .onChange(of: navigationPath) { _, path in
+                if !path.isEmpty {
+                    routingBinding.wrappedValue.collectionID = nil
+                }
+            }
+            .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
+            .onAppear { loadMyCollections() }
     }
     
     @ViewBuilder
     private var content: some View {
         switch collectionState {
-        case .notRequested:
-            defaultView()
-        case .isLoading:
-            loadingView()
-        case .loaded:
-            loadedView()
-        case let .failed(error):
-            failedView(error)
+        case .notRequested: defaultView()
+        case .isLoading: loadingView()
+        case .loaded: loadedView()
+        case .failed(let error): failedView(error)
         }
     }
 }
@@ -73,137 +83,128 @@ struct CollectionView: Routable {
 // MARK: - Loaded Content
 
 private extension CollectionView {
+    enum Constants {
+        static let navBarSpacerHeight: CGFloat = 64
+        static let scrollableID = "scrollable"
+    }
+    
     @ViewBuilder
     func loadedView() -> some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack(alignment: .topLeading) {
+            headerBackgroundColor
             VStack(spacing: 0) {
-                navigationBar
-                listSection
+                scrollableSection
             }
-            
-            Button {
-                routingState.addCollection = true
-                injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
-            } label: {
-                Image.SRIconSet.floatingButton
-                    .frame(.floatingButton)
-                    .shadow(color: .black.opacity(0.15), radius: 4)
-            }
-            .buttonStyle(.plain)
-            .padding(.bottom, 114)
-            .padding(.trailing, SRDesignConstant.defaultPadding)
         }
-        .navigationDestination(for: CollectionView.Route.self, destination: { route in
-            switch route {
-            case .collectionDetail(let collection):
-                CollectionDetailView(collection, path: $navigationPath)
-            case .addCollection:
-                AddCollectionItemView(path: $navigationPath)
-            }
-        })
-        .onChange(of: routingState.collection, initial: true, { _, collection in
-            guard let collection else { return }
-            
-            navigationPath.append(Route.collectionDetail(collection))
-        })
-        .onChange(of: routingState.addCollection, initial: true, { _, isTrue in
-            if isTrue {
-                navigationPath.append(Route.addCollection)
-            }
-        })
-        .onChange(of: navigationPath, { _, path in
-            if !path.isEmpty {
-                routingBinding.wrappedValue.collection = nil
-            }
-        })
+        .ignoresSafeArea(.all)
+    }
+    
+    @ViewBuilder
+    var headerBackgroundColor: some View {
+        Color.srWhite
+        Image(.blurTemplate).opacity(opacityForScroll(offset: offsetY))
+        Rectangle().fill(.thinMaterial).ignoresSafeArea()
     }
     
     var navigationBar: some View {
-        NavigationBar(
-            leading: {
-                Text("나의 새록")
-                    .font(.SRFontSet.headline1)
-            },
-            trailing: {
-                HStack(spacing: 12) {                    
+        ZStack(alignment: .topLeading) {
+            NavigationBar(
+                trailing: {
                     Button {
-                        // TODO: 검색기능
+                        // TODO: 검색 기능
                     } label: {
-                        Image.SRIconSet.search
-                            .frame(.defaultIconSizeLarge)
+                        Image.SRIconSet.search.frame(.defaultIconSizeLarge)
                     }
-                }
-                .font(.system(size: 24))
-            }
-        )
+                    .buttonStyle(.icon)
+                },
+                backgroundColor: .clear
+            )
+            
+            Text("어떤 새를\n관찰해볼까요?")
+                .font(.SRFontSet.headline1)
+                .padding(.horizontal, SRDesignConstant.defaultPadding)
+                .padding(.top, 12)
+        }
     }
     
-    var listSection: some View {
-//        ScrollView(.vertical, showsIndicators: false) {
-//            ForEach(collections) { bird in
-//                Button {
-//                    injected.appState[\.routing.collectionView.collection] = bird
-//                } label: {
-//                    BirdCollectionCardView(bird)
-//                }
-//                .buttonStyle(.plain)
-//            }
-//            .padding(SRDesignConstant.defaultPadding)
-//        }
-//        .background(Color.whiteGray)
-//        
-        ScrollView {
-            StaggeredGrid(items: collections, columns: 2) { bird in
-                Button {
-                    injected.appState[\.routing.collectionView.collection] = bird
-                } label: {
-                    if let url = bird.imageURL.first {
-                        VStack(alignment: .leading) {
-                            ReactiveAsyncImage(
-                                url: url,
-                                scale: .medium,
-                                quality: 0.8,
-                                downsampling: true
-                            )
-                            .scaledToFit()
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            
-                            Text(bird.bird?.name ?? "")
-                                .font(.SRFontSet.caption2)
-                                .padding(.leading, 8)
+    @ViewBuilder
+    var scrollableSection: some View {
+        if collectionSummaries.isEmpty {
+            Color.clear.frame(height: Constants.navBarSpacerHeight)
+            navigationBar
+            CollectionEmptyStateView(isGuest: isGuestMode, addButtonTapped: addButtonTapped)
+        } else {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    OffsetReaderView().id(Constants.scrollableID).hidden()
+                    Color.clear.frame(height: Constants.navBarSpacerHeight)
+                    navigationBar
+                    VStack(spacing: 0) {
+                        CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
+                        
+                        StaggeredGrid(items: collectionSummaries, columns: 2) { bird in
+                            birdView(for: bird)
                         }
-       
-                    } else if let imageData = bird.imageData.first {
-                        VStack(alignment: .leading) {
-                            Image(uiImage: UIImage(data: imageData) ?? .birdPreview)
-                                .resizable()
-                                .scaledToFit()
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                            
-                            Text(bird.bird?.name ?? "")
-                                .font(.SRFontSet.caption2)
-                                .padding(.leading, 8)
-                        }
+                        .padding(.horizontal)
+                        .background(Color.srWhite)
                     }
                 }
-                .buttonStyle(.plain)
+                .refreshable { loadMyCollections() }
+                .onChange(of: offsetY) { _, newValue in
+                    if newValue == 0 {
+                        withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
+                    }
+                }
             }
-            .padding(.horizontal)
         }
+    }
+    
+    func birdView(for bird: Local.CollectionSummary) -> some View {
+        Button {
+            injected.appState[\.routing.collectionView.collectionID] = bird.id
+        } label: {
+            VStack(alignment: .leading) {
+                ReactiveAsyncImage(
+                    url: bird.imageURL ?? "",
+                    scale: .medium,
+                    quality: 0.8,
+                    downsampling: true
+                )
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                
+                Text(bird.birdName ?? "어디선가 본 새")
+                    .font(.SRFontSet.caption2)
+                    .padding(.leading, 8)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+    
+    func addButtonTapped() {
+        routingState.addCollection = true
+        injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
     }
 }
 
-// MARK: - Loading Content
+// MARK: - Loading & Error Views
 
 private extension CollectionView {
     func defaultView() -> some View {
-        Text("")
-            .onAppear {
-                if !collections.isEmpty {
-                    collectionState = .loaded(())
-                }
-                loadFieldGuide()
+        ZStack(alignment: .topLeading) {
+            headerBackgroundColor
+            VStack(spacing: 0) {
+                Color.clear.frame(height: Constants.navBarSpacerHeight)
+                navigationBar
+                CollectionEmptyStateView(isGuest: isGuestMode, addButtonTapped: {})
             }
+        }
+        .onAppear {
+            if !isGuestMode {
+                collectionState = .loaded(())
+                loadMyCollections()
+            }
+        }
     }
     
     func loadingView() -> some View {
@@ -220,9 +221,15 @@ private extension CollectionView {
 // MARK: - Side Effects
 
 private extension CollectionView {
-    func loadFieldGuide() {
-        $collectionState.load {
-            try await injected.interactors.collection.refreshCollection()
+    func loadMyCollections() {
+        if !isGuestMode {
+            $collectionState.load {
+                do {
+                    collectionSummaries = try await injected.interactors.collection.fetchMyCollections()
+                } catch {
+                    print("콜렉션에러: \(error)")
+                }
+            }
         }
     }
 }
@@ -231,7 +238,7 @@ private extension CollectionView {
 
 extension CollectionView {
     struct Routing: Equatable {
-        var collection: Local.CollectionBird?
+        var collectionID: Int?
         var addCollection: Bool = false
     }
     
@@ -244,49 +251,14 @@ extension CollectionView {
     }
 }
 
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
-}
+// MARK: - Preview
 
+//#Preview {
+//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+//    appDelegate.rootView
+//}
 
-struct StaggeredGrid<Content: View, T: Hashable>: View {
-    var items: [T]
-    var columns: Int
-    var spacing: CGFloat
-    var content: (T) -> Content
-
-    init(items: [T], columns: Int, spacing: CGFloat = 8, @ViewBuilder content: @escaping (T) -> Content) {
-        self.items = items
-        self.columns = columns
-        self.spacing = spacing
-        self.content = content
-    }
-
-    private func generateColumns() -> [[T]] {
-        var grid: [[T]] = Array(repeating: [], count: columns)
-        var heights: [CGFloat] = Array(repeating: 0, count: columns)
-
-        for item in items {
-            // 가장 낮은 열에 아이템 넣기
-            if let minIndex = heights.enumerated().min(by: { $0.element < $1.element })?.offset {
-                grid[minIndex].append(item)
-                heights[minIndex] += 1 // 실제 높이를 측정하려면 더 정교하게 구현 필요
-            }
-        }
-        return grid
-    }
-
-    var body: some View {
-        HStack(alignment: .top, spacing: spacing) {
-            ForEach(generateColumns(), id: \.self) { columnItems in
-                VStack(spacing: spacing) {
-                    ForEach(columnItems, id: \.hashValue) { item in
-                        content(item)
-                    }
-                }
-            }
-        }
-    }
-}
+#Preview(body: {
+    @State var path: NavigationPath = .init()
+    CollectionView(path: $path)
+})

@@ -11,7 +11,9 @@ import Foundation
 enum KakaoEndpoint: Endpoint {
     case keyword(_ keyword: String)
     case address(lng: Double, lat: Double)
-    
+}
+
+extension KakaoEndpoint {
     private var apiKey: String { Bundle.main.kakaoAPIKey }
     
     var baseURL: String {
@@ -58,4 +60,15 @@ enum KakaoEndpoint: Endpoint {
             ]
         }
     }
+}
+
+extension KakaoEndpoint {
+    var expectedResponseType: Decodable.Type {
+            switch self {
+            case .address:
+                return DTO.KakaoAddressResponse.self
+            case .keyword:
+                return DTO.KakaoSearchResponse.self
+            }
+        }
 }

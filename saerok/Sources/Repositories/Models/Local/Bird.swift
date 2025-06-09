@@ -12,7 +12,7 @@ import SwiftData
 extension Local {
     @Model
     final class Bird {
-        @Attribute(.unique) var id: Int64
+        @Attribute(.unique) var id: Int
         var name: String              // 국명
         var scientificName: String    // 학명
         var detail: String            // 세부 내용 (생김새, 분포 등)
@@ -30,7 +30,7 @@ extension Local {
         var sizeRaw: String
         
         init(
-            id: Int64,
+            id: Int,
             name: String,
             scientificName: String,
             detail: String,
@@ -105,7 +105,7 @@ extension Local.Bird {
             classification: "딱따구리목 > 딱따구리과 > 딱따구리속",
             seasons: [.spring, .summer],
             habitats: [.wetland],
-            size: .hummingbird,
+            size: .sparrow,
             imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/%D0%A1%D0%B5%D0%B4%D0%BE%D0%B9_%D0%B4%D1%8F%D1%82%D0%B5%D0%BB_%D1%83_%D0%B1%D0%BE%D0%BB%D0%BE%D1%82%D0%B0_%D1%80%D0%B5%D1%87%D0%BA%D0%B8_%D0%97%D0%B8%D0%BC%D1%91%D0%BD%D0%BA%D0%B8.jpg/960px-%D0%A1%D0%B5%D0%B4%D0%BE%D0%B9_%D0%B4%D1%8F%D1%82%D0%B5%D0%BB_%D1%83_%D0%B1%D0%BE%D0%BB%D0%BE%D1%82%D0%B0_%D1%80%D0%B5%D1%87%D0%BA%D0%B8_%D0%97%D0%B8%D0%BC%D1%91%D0%BD%D0%BA%D0%B8.jpg"
         ),
         .init(
@@ -116,7 +116,7 @@ extension Local.Bird {
             classification: "참새목 > 참새과 > 참새속",
             seasons: [.spring, .summer, .autumn, .winter],
             habitats: [.forest, .urban],
-            size: .hummingbird,
+            size: .sparrow,
             imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Tree_Sparrow_August_2007_Osaka_Japan.jpg/960px-Tree_Sparrow_August_2007_Osaka_Japan.jpg"
         ),
 
@@ -140,7 +140,7 @@ extension Local.Bird {
             classification: "파랑새목 > 물총새과 > 물총새속",
             seasons: [.spring, .summer, .autumn],
             habitats: [.wetland],
-            size: .hummingbird,
+            size: .sparrow,
             imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706155335721_0XCGKN3XR.jpg/ia82_132_i2.jpg?type=m1500"
         ),
 
@@ -152,7 +152,7 @@ extension Local.Bird {
             classification: "황새목 > 백로과 > 백로속",
             seasons: [.spring, .summer],
             habitats: [.wetland],
-            size: .eagle,
+            size: .kayak,
             imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Egretta_garzetta_-_Little_egret_01.jpg/960px-Egretta_garzetta_-_Little_egret_01.jpg"
         ),
 
@@ -175,7 +175,7 @@ extension Local.Bird {
             classification: "매목 > 매과 > 매속",
             seasons: [.spring, .autumn],
             habitats: [.forest],
-            size: .hummingbird,
+            size: .sparrow,
             imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706160452691_JI99WEUYC.jpg/ia82_148_i1.jpg?type=m1500"
         ),
         .init(
@@ -186,7 +186,7 @@ extension Local.Bird {
                 classification: "참새목 > 오목눈이과 > 오목눈이속",
                 seasons: [.spring, .autumn, .winter],
                 habitats: [.forest],
-                size: .hummingbird,
+                size: .sparrow,
                 imageURL: "https://dbscthumb-phinf.pstatic.net/2765_000_32/20241114060540131_LT2LRTVXY.jpg/13029503.jpg?type=m1500"
             ),
         .init(
@@ -197,7 +197,7 @@ extension Local.Bird {
                 classification: "참새목 > 딱새과 > 긴꼬리딱새속",
                 seasons: [.summer],
                 habitats: [.forest],
-                size: .hummingbird,
+                size: .sparrow,
                 imageURL: "https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA2MDNfNTYg%2FMDAxNzE3Mzc1Njk2MzM1.FBuebOCbKQ4URHUDBhcAOW9v9W9u1z0qnS5ljwTfLbog.YlfRFXym1eqpVpSMWqoXJJ-TZ0b4k46YK7spWfY-bbkg.JPEG%2FJKPT8352.JPG&type=sc960_832"
             ),
             .init(
@@ -219,7 +219,7 @@ extension Local.Bird {
                 classification: "도요목 > 물떼새과 > 물떼새속",
                 seasons: [.spring, .summer],
                 habitats: [.wetland],
-                size: .hummingbird,
+                size: .sparrow,
                 imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706185010184_HJI9F0WND.jpg/ia82_354_i5.jpg?type=m1500"
             )
     ]

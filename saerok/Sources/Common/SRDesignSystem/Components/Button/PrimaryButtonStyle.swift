@@ -11,12 +11,12 @@ struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     var defaultColor: Color = .main
-    var pressedColor: Color = .main
+    var pressedColor: Color = .main.opacity(0.7)
     var disabledColor: Color = .border
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.button1)
+            .font(.SRFontSet.button2)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
@@ -36,7 +36,7 @@ struct DeleteButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.button1)
+            .font(.SRFontSet.button2)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
             .foregroundColor(.red)
@@ -60,7 +60,7 @@ struct BorderedButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.button1)
+            .font(.SRFontSet.button2)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
             .foregroundColor(defaultColor)

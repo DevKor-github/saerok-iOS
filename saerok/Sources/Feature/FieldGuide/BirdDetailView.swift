@@ -5,44 +5,86 @@
 //  Created by HanSeung on 4/12/25.
 //
 
-
 import Combine
 import SwiftUI
 
 struct BirdDetailView: View {
     @Environment(\.injected) var injected
-    
-    private let bird: Local.Bird
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var birdID: Int? = nil
+    @State private var bird: Local.Bird? = nil
     @Binding var path: NavigationPath
     
-    init(_ bird: Local.Bird, path: Binding<NavigationPath>) {
-        self.bird = bird
+    // MARK: - 초기화: birdID로 받는 경우
+    
+    init(birdID: Int, path: Binding<NavigationPath>) {
         self._path = path
+        self._birdID = State(initialValue: birdID)
+        self._bird = State(initialValue: nil)
+    }
+    
+    // MARK: - 초기화: Local.Bird로 받는 경우
+    
+    init(bird: Local.Bird, path: Binding<NavigationPath>) {
+        self._path = path
+        self._bird = State(initialValue: bird)
+        self._birdID = State(initialValue: nil)
     }
     
     var body: some View {
+        Group {
+            if let bird = bird {
+                contentView(bird: bird)
+            } else {
+                ProgressView("로딩 중...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .onAppear {
+                        loadBirdIfNeeded()
+                    }
+            }
+        }
+        .regainSwipeBack()
+    }
+    
+    // MARK: - 본문 뷰
+    @ViewBuilder
+    private func contentView(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.mainSpacing) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: Constants.scrollContentSpacing) {
-                    birdImageWithTag
+                    birdImageWithTag(bird: bird)
                     Group {
-                        title
-                        classification
-                        description
+                        title(bird: bird)
+                        classification(bird: bird)
+                        description(bird: bird)
                     }
                     .padding(.horizontal, SRDesignConstant.defaultPadding)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
-        .regainSwipeBack()
+    }
+}
+
+// MARK: - 데이터 로딩
+
+private extension BirdDetailView {
+    func loadBirdIfNeeded() {
+        guard bird == nil, let birdID = birdID else { return }
+        
+        Task { @MainActor in
+            if let foundBird = try? await injected.interactors.fieldGuide.loadBirdDetails(birdID: birdID) {
+                self.bird = foundBird
+            }
+        }
     }
 }
 
 // MARK: - UI Components
 
 private extension BirdDetailView {
-    var birdImageWithTag: some View {
+    func birdImageWithTag(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.birdImageSpacing) {
             if let url = bird.imageURL {
                 ZStack(alignment: .bottomTrailing) {
@@ -51,9 +93,9 @@ private extension BirdDetailView {
                         .frame(maxWidth: .infinity)
                         .cornerRadius(Constants.imageCornerRadius)
                         .padding(.horizontal, SRDesignConstant.defaultPadding)
-                        
-                    topLeadingButton
-                    bottomTrailingButtons
+                    
+                    topLeadingButton()
+                    bottomTrailingButtons(bird: bird)
                 }
             }
             
@@ -69,13 +111,12 @@ private extension BirdDetailView {
         }
     }
     
-    var topLeadingButton: some View {
+    func topLeadingButton() -> some View {
         VStack {
             HStack {
                 Button(action: backButtonTapped) {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
-                        
                 }
                 .srStyled(.iconButton)
                 Spacer()
@@ -86,9 +127,11 @@ private extension BirdDetailView {
         .padding(.leading, SRDesignConstant.defaultPadding)
     }
     
-    var bottomTrailingButtons: some View {
+    func bottomTrailingButtons(bird: Local.Bird) -> some View {
         HStack(spacing: 7) {
-            Button(action: bookmarkButtonTapped) {
+            Button(action: {
+                bookmarkButtonTapped(bird: bird)
+            }) {
                 Group {
                     (bird.isBookmarked
                      ? Image.SRIconSet.bookmarkFilled
@@ -98,7 +141,7 @@ private extension BirdDetailView {
                 .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
             }
             
-            Button(action: saerokButtonTapped) {
+            Button(action: { saerokButtonTapped(bird: bird) }) {
                 Image.SRIconSet.penFill
                     .frame(.custom(width: Constants.penIconWidth, height: Constants.penIconHeight))
                     .padding(.top, Constants.penIconTopPadding)
@@ -110,7 +153,7 @@ private extension BirdDetailView {
         .padding(.trailing, SRDesignConstant.defaultPadding)
     }
     
-    var title: some View {
+    func title(bird: Local.Bird) -> some View {
         VStack(alignment: .center) {
             Text(bird.name)
                 .font(.SRFontSet.subtitle1)
@@ -123,7 +166,7 @@ private extension BirdDetailView {
         .padding(.top, 20)
     }
     
-    var classification: some View {
+    func classification(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
             Text("분류")
                 .font(.SRFontSet.subtitle2)
@@ -135,7 +178,7 @@ private extension BirdDetailView {
         }
     }
     
-    var description: some View {
+    func description(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
             Text("상세 설명")
                 .font(.SRFontSet.subtitle2)
@@ -148,9 +191,7 @@ private extension BirdDetailView {
             Color.clear.frame(height: Constants.bottomSpacerHeight)
         }
     }
-}
-
-private extension BirdDetailView {
+    
     struct ChipList<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
         let icon: Image.SRIconSet
         let list: [T]
@@ -183,11 +224,15 @@ private extension BirdDetailView {
         path.removeLast()
     }
     
-    func bookmarkButtonTapped() {
-        bird.isBookmarked.toggle()
+    func bookmarkButtonTapped(bird: Local.Bird) {
+        Task {
+            HapticManager.shared.trigger(.light)
+            self.bird?.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+            HapticManager.shared.trigger(.success)
+        }
     }
     
-    func saerokButtonTapped() {
+    func saerokButtonTapped(bird: Local.Bird) {
         injected.appState[\.routing.contentView.tabSelection] = .collection
         injected.appState[\.routing.collectionView.addCollection] = true
         injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
@@ -219,9 +264,8 @@ private extension BirdDetailView {
     }
 }
 
-
 #Preview {
     @Previewable @State var path: NavigationPath = .init()
     
-    BirdDetailView(.mockData[0], path: $path)
+    BirdDetailView(bird: .mockData[0], path: $path)
 }

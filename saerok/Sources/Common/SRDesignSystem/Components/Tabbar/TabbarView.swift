@@ -10,12 +10,12 @@ import SwiftUI
 struct TabbarView: View {
     var selectedTab: TabbedItems
     @Environment(\.injected) var injected
-
+    
     var body: some View {
         VStack {
             Spacer()
-                tabItems
-                    .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 0)
+            tabItems
+                .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 0)
         }
         .padding()
     }
@@ -27,6 +27,7 @@ struct TabbarView: View {
             ForEach((TabbedItems.allCases), id: \.self){ item in
                 Button {
                     injected.appState[\.routing.contentView.tabSelection] = item
+                    HapticManager.shared.trigger(.light)
                 } label: {
                     HStack {
                         Spacer()

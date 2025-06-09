@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum SRComponentStyle {
-    case textField(isFocused: FocusState<Bool>.Binding)
+    case textField(isFocused: FocusState<Bool>.Binding, alwaysFocused: Bool = false)
     case filterButton(isActive: Bool)
     case defaultItem
     case iconButton
@@ -16,8 +16,8 @@ enum SRComponentStyle {
     @MainActor @ViewBuilder
     func apply(to view: some View) -> some View {
         switch self {
-        case .textField(let isFocused):
-            view.modifier(SRTextFieldStyle(isFocused: isFocused))
+        case .textField(let isFocused, let alwaysFocused):
+            view.modifier(SRTextFieldStyle(isFocused: isFocused, alwaysFocused: alwaysFocused))
         case .filterButton(let isActive):
             view.buttonStyle(FilterButtonStyle(isActive: isActive))
         case .defaultItem:

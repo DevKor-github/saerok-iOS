@@ -5,6 +5,7 @@
 //  Created by HanSeung on 5/18/25.
 //
 
+import Combine
 import SwiftUI
 import SwiftData
 import KakaoSDKAuth
@@ -15,41 +16,76 @@ struct LoginView: View {
         case enroll
     }
     
-    @Binding var isLoggined: Bool
-    @State private var path = NavigationPath()
-    @State private var user: User = .init()
+    @Environment(\.injected) var injected
+    @State var showingAlert: Bool = false
+    @Binding private var user: User
     @Query private var users: [User]
+    @Binding private var authStatus: AppState.AuthStatus
+    var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
+        injected.appState.updates(for: \.authStatus)
+    }
     
-    init(_ isLoggined: Binding<Bool>) {
-        self._isLoggined = isLoggined
+    init(_ user: Binding<User>, authStatus: Binding<AppState.AuthStatus>) {
+        self._user = user
+        self._authStatus = authStatus
     }
     
     var body: some View {
-        if let _ = users.first, !isLoggined {
-            EnrollView.EnrollSubmittedView(isLoggined: $isLoggined)
-                .transition(.opacity)
-                .animation(.easeInOut, value: isLoggined)
-        } else {
-            NavigationStack(path: $path) {
-                ZStack(alignment: .center) {
-                    logo
-                    loginButtonSection
-                }
-                .regainSwipeBack()
-                .navigationDestination(for: LoginView.Route.self) { route in
-                    switch route {
-                    case .enroll:
-                        EnrollView(path: $path, user: $user)
-                    }
-                }
-            }
-        }
+        content
+            .onReceive(authStatusUpdate) { authStatus = $0 }
     }
 }
 
 // MARK: - Subviews
 
 private extension LoginView {
+    @ViewBuilder
+    var content: some View {
+        switch authStatus {
+        case .notDetermined:
+            loginView
+        case .signedIn:
+            if users.isEmpty {
+                EnrollView(user: $user)
+            } else {
+                EnrollView.EnrollSubmittedView()
+            }
+        default:
+            EmptyView()
+        }
+    }
+    
+    var loginView: some View {
+        ZStack(alignment: .center) {
+            logo
+            loginButtonSection
+        }
+        .customPopup(isPresented: $showingAlert) { alertView }
+    }
+    
+    var alertView: CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "로그인 없이 이용하시겠어요?",
+            message: "도감과 지도만 열람할 수 있어요!",
+            leading: .init(
+                title: "취소",
+                action: {
+                    showingAlert = false
+                },
+                style: .bordered
+            ),
+            trailing: .init(
+                title: "계속하기",
+                action: {
+                    showingAlert = false
+                    injected.appState[\.authStatus] = .guest
+                },
+                style: .primary
+            ),
+            center: nil
+        )
+    }
+    
     var logo: some View {
         Image(.logo)
             .resizable()
@@ -60,47 +96,25 @@ private extension LoginView {
     var loginButtonSection: some View {
         VStack {
             Spacer()
-            KakaoLogin(action: startLoginWithKakaoTalk)
-                .padding(.horizontal, SRDesignConstant.defaultPadding)
-                .padding(.bottom, Constants.bottomPadding)
+            AppleLoginView(user: $user)
+            KakaoLoginView(user: $user)
+            continueWithoutLoginButton
         }
+        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.bottom, Constants.bottomPadding)
         .ignoresSafeArea(.all)
     }
     
-    // MARK: - Login Flow
-    
-    func startLoginWithKakaoTalk() {
-        if UserApi.isKakaoTalkLoginAvailable() {
-            UserApi.shared.loginWithKakaoTalk { oauthToken, error in
-                if let error = error {
-                    print("❌ Kakao login failed:", error)
-                } else if let token = oauthToken {
-                    print("✅ Kakao login success")
-                    fetchKakaoUserAndEnroll(token: token)
-                }
-            }
+    var continueWithoutLoginButton: some View {
+        Button(action: {
+            showingAlert = true
+        }) {
+            Text("로그인 없이 이용하기")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding()
         }
-    }
-    
-    func fetchKakaoUserAndEnroll(token: OAuthToken) {
-        UserApi.shared.me { user, error in
-            if let error = error {
-                print("❌ Failed to fetch Kakao user:", error)
-            } else if let kakaoUser = user {
-                let id = String(kakaoUser.id ?? 0)
-                let name = kakaoUser.kakaoAccount?.name ?? "이름 없음"
-                let email = kakaoUser.kakaoAccount?.email ?? "이메일 없음"
-                
-                Task {
-                    await MainActor.run {
-                        self.user.id = id
-                        self.user.nickname = name
-                        self.user.email = email
-                    }
-                    path.append(Route.enroll)
-                }
-            }
-        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -111,9 +125,4 @@ private extension LoginView {
         static let logoWidth: CGFloat = 103
         static let bottomPadding: CGFloat = 42
     }
-}
-
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    appDelegate.rootView
 }

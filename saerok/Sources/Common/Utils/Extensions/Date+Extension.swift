@@ -23,4 +23,8 @@ extension Date {
     var toFullString: String {
         return toString(format: "yyyy.MM.dd")
     }
+    
+    var toUploadType: String {
+        return toString(format: "yyyy-MM-dd")
+    }
 }

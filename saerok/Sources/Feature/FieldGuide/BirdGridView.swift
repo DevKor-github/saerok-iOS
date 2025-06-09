@@ -32,9 +32,11 @@ struct BirdGridView: View {
             Group {
                 Rectangle()
                 Rectangle()
+                Rectangle()
+                Rectangle()
             }
             .foregroundStyle(.clear)
-            .frame(height: 600)
+            .frame(height: 198)
         }
         .padding(SRDesignConstant.defaultPadding)
         .background(Color.whiteGray)

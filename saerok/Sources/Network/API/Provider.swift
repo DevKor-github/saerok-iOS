@@ -16,7 +16,7 @@ final class Provider {
     
     func request<T: Decodable>(_ request: URLRequest) async throws -> T {
         let (data, response) = try await defaultURLSession.data(for: request)
-        
+
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }

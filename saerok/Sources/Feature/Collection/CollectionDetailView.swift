@@ -6,158 +6,217 @@
 //
 
 
-import Combine
 import SwiftUI
 
 struct CollectionDetailView: View {
-    private let collectionBird: Local.CollectionBird
+    enum Route {
+        case edit
+    }
     
+    let collectionID: Int
+    let isFromMapView: Bool
+    
+    @State private var collectionBird: Local.CollectionDetail = .mockData[0]
+    @State private var isLoading = true
+    @State private var error: Error? = nil
+
     // MARK:  Dependencies
     
     @Environment(\.injected) private var injected: DIContainer
     
     // MARK: Navigation
 
-    @Binding var path: NavigationPath
+    var path: Binding<NavigationPath>?
     
     // MARK: - Init
-
-    init(_ bird: Local.CollectionBird, path: Binding<NavigationPath>) {
-        self.collectionBird = bird
-        self._path = path
+    
+    init(
+        collectionID: Int,
+        path: Binding<NavigationPath>? = nil,
+        isFromMap: Bool = false
+    ) {
+        self.collectionID = collectionID
+        self.path = path
+        self.isFromMapView = isFromMap
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 11) {
-            navigationBar
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
+        ScrollView {
+            ZStack(alignment: .top) {
+                VStack(alignment: .center, spacing: 0) {
                     imageSection
                     contentSection
                         .padding(SRDesignConstant.defaultPadding)
                 }
+                navigationBar
             }
+            .shimmer(when: $isLoading)
         }
+        .ignoresSafeArea(.all)
         .regainSwipeBack()
+        .onAppear {
+            fetchCollectionDetail()
+        }
+        .navigationDestination(for: CollectionDetailView.Route.self, destination: { route in
+            switch route {
+            case .edit:
+                if let path = path {
+                    CollectionFormView(mode: .edit(collectionBird), path: path)
+                }
+            }
+        })
     }
 }
 
 private extension CollectionDetailView {
-    @ViewBuilder
     var imageSection: some View {
-        if !collectionBird.imageURL.isEmpty {
-            TabView {
-                ForEach(collectionBird.imageURL, id: \.self) { url in
-                    ReactiveAsyncImage(
-                        url: url,
-                        scale: .medium,
-                        quality: 1.0,
-                        downsampling: true
-                    )
-                    .frame(height: 300)
-                }
-            }
-            .tabViewStyle(PageTabViewStyle())
-            .frame(height: 300)
-        } else if let imageData = collectionBird.imageData.first {
-            TabView {
-                ForEach(collectionBird.imageData, id: \.self) { data in
-                    Image(uiImage: UIImage(data: data) ?? .birdPreview)
-                        .resizable()
-                        .clipShape(Rectangle())
-                    .frame(height: 300)
-                }
-            }
-            .tabViewStyle(PageTabViewStyle())
-            .frame(height: 300)
-            
-        } else {
-            Text("이미지 없음")
-                .frame(height: 300)
-        }
+        ReactiveAsyncImage(
+            url: collectionBird.imageURL,
+            scale: .medium,
+            quality: 1.0,
+            downsampling: true
+        )
+        .aspectRatio(contentMode: .fill)
+        .frame(maxWidth: .infinity)
     }
     
     var contentSection: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text("관찰정보")
-                    .font(.SRFontSet.subtitle2)
-                    .fontWeight(.bold)
+                VStack(alignment: .leading) {
+                    Text(collectionBird.birdName ?? "어디선가 본 새")
+                        .font(.SRFontSet.headline2)
+                        .fontWeight(.bold)
+                    Text(collectionBird.scientificName ?? "")
+                        .font(.SRFontSet.body2)
+                        .foregroundStyle(.srGray)
+                }
                 
                 Spacer()
                 
-                NavigationLink {
-                    BirdDetailView(collectionBird.bird ?? .mockData[0], path: $path)
-                } label: {
-                    Text("도감 보기")
-                        .font(.SRFontSet.body1)
-                        .bold()
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(Color.main)
-                        .foregroundStyle(.srWhite)
-                        .cornerRadius(8)
+                if let birdID = collectionBird.birdID {
+                    if let bindingPath = path {
+                        NavigationLink {
+                            BirdDetailView(birdID: birdID, path: bindingPath)
+                        } label: {
+                            HStack {
+                                Text("도감 보기")
+                                    .font(.SRFontSet.body1)
+                                Image.SRIconSet.chevronRight
+                                    .frame(.custom(width: 17, height: 17))
+                            }
+                            .foregroundStyle(Color.main)
+                        }
+                    } else {
+                        Button {
+                            injected.appState[\.routing.contentView.tabSelection] = .fieldGuide
+                            injected.appState[\.routing.fieldGuideView.birdName] = collectionBird.birdName
+                        } label: {
+                            HStack {
+                                Text("도감 보기")
+                                    .font(.SRFontSet.body1)
+                                Image.SRIconSet.chevronRight
+                                    .frame(.custom(width: 17, height: 17))
+                            }
+                            .foregroundStyle(Color.main)
+                        }
+                    }
+                }
+   
+            }
+            
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Image.SRIconSet.pin.frame(.defaultIconSizeLarge)
+                    VStack(alignment: .leading) {
+                        Text(collectionBird.locationAlias)
+                            .font(.SRFontSet.body2)
+                        Text(collectionBird.address)
+                            .font(.SRFontSet.caption3)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("발견 일시")
+                    Image.SRIconSet.clock.frame(.defaultIconSizeLarge)
+                    
+                    Text(collectionBird.discoveredDate.toFullString)
                         .font(.SRFontSet.body2)
-                        .foregroundStyle(.secondary)
-                    Text(collectionBird.date.toFullString)
-                        .font(.SRFontSet.body1)
-                }
-                HStack {
-                    Text("발견 장소")
-                        .font(.SRFontSet.body2)
-                        .foregroundStyle(.secondary)
-                    Text(collectionBird.locationDescription ?? "위치 정보 없음")
-                        .font(.SRFontSet.body1)
                 }
             }
             
-            if let note = collectionBird.note, !note.isEmpty {
-                Text(note)
-                    .font(.SRFontSet.caption1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 13)
-                    .padding(.horizontal, 17)
-                    .background(Color.whiteGray)
-                    .cornerRadius(8)
-            }
+            Text(collectionBird.note)
+                .font(.SRFontSet.caption1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 13)
+                .padding(.horizontal, 17)
+                .background(Color.whiteGray)
+                .cornerRadius(8)
             Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    var leadingButton: some View {
+        if path != nil {
+            Button(action: {
+                path?.wrappedValue.removeLast()
+            }) {
+                Image.SRIconSet.chevronLeft
+                    .frame(.defaultIconSize)
+            }
+            .srStyled(.iconButton)
+        }
+    }
+    
+    @ViewBuilder
+    var trailingButtons: some View {
+        if !isFromMapView {
+            HStack(spacing: 7) {
+                Button(action: {
+                    
+                }) {
+                    Image.SRIconSet.insta.frame(.defaultIconSizeLarge)
+                }
+                
+                Button(action: {
+                    if let paths = path {
+                        paths.wrappedValue.append(Route.edit)
+                    }
+                }) {
+                    Image.SRIconSet.edit.frame(.defaultIconSizeLarge)
+                }
+            }
+            .srStyled(.iconButton)
         }
     }
     
     var navigationBar: some View {
         NavigationBar(
             leading: {
-                HStack(spacing: 16) {
-                    Button {
-                        path.removeLast()
-                    } label: {
-                        Image.SRIconSet.chevronLeft
-                            .frame(.defaultIconSize)
-                    }
-                    .buttonStyle(.plain)
-                    
-                    VStack(alignment: .leading) {
-                        Text((collectionBird.bird?.name ?? collectionBird.customName)!)
-                            .font(.SRFontSet.subtitle1)
-                        Text(collectionBird.bird?.scientificName ?? "")
-                            .font(.SRFontSet.caption1)
-                            .foregroundStyle(.srGray)
-                    }
-                }
-            }
+                leadingButton
+            },
+            trailing: {
+                trailingButtons
+            },
+            backgroundColor: .clear
         )
+        .padding(.top, 54)
+    }
+}
+
+private extension CollectionDetailView {
+    func fetchCollectionDetail() {
+        Task {
+            if let collectionBird = try? await injected.interactors.collection.fetchCollectionDetail(id: collectionID) {
+                self.collectionBird = collectionBird
+            }
+            isLoading = false
+        }
     }
 }
 
 #Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
+    @Previewable @State var path: NavigationPath = .init()
+    CollectionDetailView(collectionID: 1, path: $path)
 }

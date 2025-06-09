@@ -23,4 +23,6 @@ extension ModelContainer {
 }
 
 @ModelActor
-final actor MainRepository { }
+final actor MainRepository: ModelActor {
+    let networkService =  SRNetworkServiceImpl()
+}

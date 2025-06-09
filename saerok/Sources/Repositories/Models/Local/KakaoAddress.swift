@@ -8,13 +8,13 @@
 
 extension Local {
     struct KakaoAddress {
-        let address: String
-        let roadAddress: String
+        let address: String?
+        let roadAddress: String?
         
         static func toLocal(dto: DTO.KakaoAddress) -> Local.KakaoAddress {
             Local.KakaoAddress(
-                address: dto.address?.addressName ?? "주소 없음",
-                roadAddress: dto.roadAddress?.addressName ?? "도로명 주소 없음"
+                address: dto.address?.addressName,
+                roadAddress: dto.roadAddress?.addressName
             )
         }
     }

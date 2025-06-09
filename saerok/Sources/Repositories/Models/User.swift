@@ -12,9 +12,9 @@ import Foundation
 @Model
 class User {
     @Attribute(.unique) var id: String
+    var provider: SocialLoginProvider?
     var nickname: String
     var email: String
-    var gender: Gender
     var birthDate: Date?
     var startBirdingDate: Date?
     
@@ -22,7 +22,6 @@ class User {
         self.id = ""
         self.email = ""
         self.nickname = ""
-        self.gender = .other
     }
 }
 
@@ -31,6 +30,11 @@ extension User {
         case male
         case female
         case other
+    }
+    
+    enum SocialLoginProvider: String, Codable {
+        case apple
+        case kakao
     }
 }
 

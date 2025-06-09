@@ -8,13 +8,11 @@
 
 import SwiftUI
 
-extension AddCollectionItemView {
+extension CollectionFormView {
     struct LocationFormView: View {
         @Binding var selectedCoord: (Double, Double)
         @Binding var path: NavigationPath
-        
         var address: String
-
         @FocusState var isFocused: Bool
 
         var body: some View {
