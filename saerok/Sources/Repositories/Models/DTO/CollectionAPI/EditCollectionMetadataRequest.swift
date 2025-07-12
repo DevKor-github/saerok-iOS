@@ -15,6 +15,7 @@ extension DTO {
         let locationAlias: String?
         let address: String?
         let note: String?
+        let accessLevel: String
     }
 }
 

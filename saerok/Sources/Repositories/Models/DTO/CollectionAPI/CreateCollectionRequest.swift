@@ -17,6 +17,7 @@ extension DTO {
         let locationAlias: String
         let address: String
         let note: String
+        let accessLevel: String
         
         init(
             birdId: Int?,
@@ -25,7 +26,8 @@ extension DTO {
             longitude: Double,
             locationAlias: String,
             address: String,
-            note: String
+            note: String,
+            accessLevel: String
         ) {
             self.birdId = birdId
             self.discoveredDate = discoveredDate.toUploadType
@@ -34,6 +36,7 @@ extension DTO {
             self.locationAlias = locationAlias
             self.address = address
             self.note = note
+            self.accessLevel = accessLevel
         }
     }
 }

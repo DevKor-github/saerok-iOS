@@ -55,11 +55,11 @@ extension Local.CollectionDetail {
         
         return .init(
             id: dto.collectionId,
-            imageURL: dto.imageUrl,
-            discoveredDate: formatter.date(from: dto.discoveredDate) ?? .now,
+            imageURL: dto.imageUrl ?? "",
+            discoveredDate: formatter.date(from: dto.discoveredDate ?? "2025-06-19") ?? .now,
             coordinate: (dto.latitude, dto.longitude),
-            address: dto.address,
-            locationAlias: dto.locationAlias,
+            address: dto.address ?? "",
+            locationAlias: dto.locationAlias ?? "",
             note: dto.note,
             accessLevel: Local.AccessLevel(rawValue: dto.accessLevel.rawValue) ?? .publicAccess,
             birdName: dto.bird.koreanName,

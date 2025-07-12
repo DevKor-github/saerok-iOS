@@ -20,18 +20,22 @@ struct MapView: View {
     // MARK: - Dependencies
     
     @Environment(\.injected) var injected
+    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     
     // MARK: - View State
     
+    private var locationManager: LocationManager { LocationManager.shared }
+    @StateObject private var mapController: MapController
+    
     @State private var mapViewState: Loadable<Void>
-    @StateObject private var mapController = MapController()
     @State private var position: (Double, Double) = (37.59080, 127.0278)
     @State private var text: String = ""
     @State private var response: [Local.KakaoPlace] = []
     @State private var mode: Mode = .idle
     @FocusState private var isFocused: Bool
-    @State private var isGlobalOn: Bool = true
-    @State private var item: [Local.CollectionDetail] = []
+    @State private var isMineOnly: Bool = false
+    @State private var item: [Local.NearbyCollectionSummary] = []
+    @State private var searchDebounceTask: Task<Void, Never>? = nil
     
     @Binding private var path: NavigationPath
     
@@ -41,6 +45,10 @@ struct MapView: View {
     init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
         self._mapViewState = .init(initialValue: state)
         self._path = path
+        
+        let mapController = MapController(locationManager: LocationManager.shared)
+        
+        self._mapController = .init(wrappedValue: mapController)
     }
     
     // MARK: - Body
@@ -50,7 +58,6 @@ struct MapView: View {
             .ignoresSafeArea(.all)
             .onAppear {
                 mapController.selectedBird = nil
-//                item = injected.interactors.collection.fetchMyCollections()
             }
             .navigationDestination(for: MapView.Route.self) { route in
                 switch route  {
@@ -60,7 +67,7 @@ struct MapView: View {
             }
             .onChange(of: mapController.selectedBird) { _, newBird in
                 if let newBird = newBird {
-                    path.append(MapView.Route.detail(newBird.id))
+                    path.append(MapView.Route.detail(newBird.collectionId))
                 }
             }
     }
@@ -72,9 +79,17 @@ struct MapView: View {
         switch mapViewState {
         case .notRequested:
             Text("")
-                .onAppear {
-                    loadMarkers()
+            .task {
+                if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
+                    Task {
+                        position = (location.latitude, location.longitude)
+                        try? await fetchNearby()
+                        mapViewState = .loaded(())
+                    }
+                } else {
+                    mapViewState = .loaded(())
                 }
+            }
         case .loaded:
             ZStack(alignment: .top) {
                 resultSection
@@ -84,51 +99,44 @@ struct MapView: View {
         default: Text("")
         }
     }
-    
-    func loadMarkers() {
-        $mapViewState.load {
-            mapController.refreshBirdMarkers(item)
-        }
-    }
 }
 
 // MARK: - Subviews
 
 private extension MapView {
     var searchBarSection: some View {
-        VStack {
+        VStack(spacing: 14) {
             Color.clear.frame(height: 60)
-            HStack {
-                Button {
-                    mode = .idle
-                } label: {
-                    isModeIdle ? Image.SRIconSet.searchSecondary.frame(.defaultIconSize) :
-                    Image.SRIconSet.chevronLeft.frame(.defaultIconSize)
-                }
-                TextField("원하는 장소를 입력하세요", text: $text)
-                Button("검색") {
-                    Task {
-                        let searchResponse: DTO.KakaoSearchResponse = try await networkService.performKakaoRequest(.keyword(text))
-                        response = searchResponse.documents.toLocal()
-                        mode = .resultShown
+            SearchInputBar(
+                isModeIdle: isModeIdle,
+                text: $text,
+                isFocused: $isFocused,
+                mode: $mode,
+                onTap: {
+                    mode = .searching
+                },
+                onTextChange: { new in
+                    searchDebounceTask?.cancel()
+                    searchDebounceTask = Task {
+                        try? await Task.sleep(nanoseconds: 800_000_000) 
+                        if !Task.isCancelled && !new.isEmpty {
+                            await performSearch()
+                        }
                     }
+                    mode = (new.isEmpty ? .searching : (mode == .idle ? .idle : mode))
                 }
-                .padding(.trailing, 30)
+            )
+            
+            SearchRefreshButton {
+                refreshButtonTapped()
             }
-            .frame(height: 44)
-            .padding(.leading, 14)
-            .textFieldDeletable(text: $text)
-            .srStyled(.textField(isFocused: $isFocused, alwaysFocused: true))
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
-            .onTapGesture { mode = .searching }
-            .onChange(of: text) { _, new in
-                mode = (new.isEmpty ? .searching : (mode == .idle ? .idle : mode))
-            }
+            .opacity(mode == .idle ? 1 : 0)
+            .allowsHitTesting(mode == .idle)
         }
     }
     
     var resultSection: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             searchResultSection()
                 .opacity(!isModeIdle ? 1 : 0)
                 .allowsHitTesting(!isModeIdle)
@@ -152,7 +160,12 @@ private extension MapView {
                         .frame(width: 42, height: 42)
                 }
                 Spacer()
-                GlobalToggleButton(isOn: $isGlobalOn)
+                
+                if !isGuest {
+                    GlobalToggleButton(isOff: $isMineOnly) {
+                        globalToggleButtonTapped()
+                    }
+                }
             }
         }
         .padding(SRDesignConstant.defaultPadding)
@@ -182,20 +195,18 @@ private extension MapView {
             Image.SRIconSet.pin.frame(.defaultIconSizeLarge)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.placeName)
-                    .font(.SRFontSet.body3)
+                    .font(.SRFontSet.body3_2)
                 Text(item.address.isEmpty ? item.roadAddress : item.address)
                     .font(.SRFontSet.caption1)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            VStack {
-                Text(item.category)
-                    .font(.SRFontSet.caption1)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
+            Image.SRIconSet.chevronRight
+                .frame(.defaultIconSizeSmall)
+                .foregroundStyle(.black)
         }
         .padding(SRDesignConstant.defaultPadding)
+        .frame(height: 68)
         .frame(maxWidth: .infinity)
         .background(Color.srWhite)
         .onTapGesture {
@@ -206,30 +217,137 @@ private extension MapView {
     func searchCellTapped(_ item: Local.KakaoPlace) {
         position = (item.latitude, item.longtitude)
         mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
-        text = item.placeName
         mode = .idle
+    }
+    
+    func globalToggleButtonTapped() {
+        Task {
+            do {
+                HapticManager.shared.trigger(.light)
+                isMineOnly.toggle()
+                try await fetchNearby()
+                HapticManager.shared.trigger(.success)
+            } catch {
+                isMineOnly.toggle()
+                HapticManager.shared.trigger(.error)
+            }
+        }
+    }
+    
+    func refreshButtonTapped() {
+        Task {
+            HapticManager.shared.trigger(.light)
+            try? await fetchNearby()
+            HapticManager.shared.trigger(.success)
+        }
+    }
+    
+    func fetchNearby() async throws {
+        clearMarkers()
+        item = try await  injected.interactors.collection.fetchNearbyCollections(
+            lat: position.0,
+            lng: position.1,
+            rad: 5000,
+            isMineOnly: isMineOnly,
+            isGuest: isGuest
+        )
+        loadMarkers(item)
+    }
+    
+    func clearMarkers() {
+        mapController.clearMarkers()
+    }
+    
+    func loadMarkers(_ items: [Local.NearbyCollectionSummary]) {
+        mapController.refreshBirdMarkers(items)
+    }
+    
+    private func performSearch() async {
+        do {
+            let searchResponse: DTO.KakaoSearchResponse = try await networkService.performKakaoRequest(.keyword(text))
+            response = searchResponse.documents.toLocal()
+            mode = .resultShown
+        } catch {
+            // Handle error silently or add error state if needed
+        }
+    }
+    
+    struct SearchInputBar: View {
+        let isModeIdle: Bool
+        @Binding var text: String
+        @FocusState.Binding var isFocused: Bool
+        @Binding var mode: Mode
+        let onTap: () -> Void
+        let onTextChange: (String) -> Void
+        
+        var body: some View {
+            HStack {
+                Button {
+                    mode = .idle
+                } label: {
+                    isModeIdle ? Image.SRIconSet.searchSecondary.frame(.defaultIconSize) :
+                    Image.SRIconSet.chevronLeft.frame(.defaultIconSize)
+                }
+                TextField("원하는 장소를 입력하세요", text: $text)
+                // Removed the '검색' button as per instructions
+            }
+            .frame(height: 44)
+            .padding(.leading, 14)
+            .textFieldDeletable(text: $text)
+            .srStyled(.textField(isFocused: $isFocused, alwaysFocused: true))
+            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .onTapGesture { onTap() }
+            .onChange(of: text) { _, new in
+                onTextChange(new)
+            }
+        }
+    }
+    
+    struct SearchRefreshButton: View {
+        let onTap: () -> Void
+        
+        var body: some View {
+            Button {
+                onTap()
+            } label: {
+                HStack {
+                    Image.SRIconSet.reset
+                        .frame(.defaultIconSize)
+                        .foregroundStyle(.splash)
+                    Text("이 지역 재검색하기")
+                        .font(.SRFontSet.body2)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.srWhite)
+                .cornerRadius(.infinity)
+                .shadow(radius: 2)
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 
 // MARK: - Global Toggle Button
 
 private struct GlobalToggleButton: View {
-    @Binding var isOn: Bool
+    @Binding var isOff: Bool
+    let buttonAction: () -> Void
     
     var body: some View {
         Button(action: {
             withAnimation(.bouncy(duration: 0.4)) {
-                isOn.toggle()
+                buttonAction()
             }
         }) {
-            ZStack(alignment: isOn ? .trailing : .leading) {
+            ZStack(alignment: isOff ? .leading : .trailing) {
                 RoundedRectangle(cornerRadius: .infinity)
-                    .fill(isOn ? Color.main : Color.whiteGray)
+                    .fill(isOff ? Color.whiteGray : Color.main)
                     .frame(width: 72, height: 42)
                     .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
                 
                 Circle()
-                    .fill(isOn ? Color.splash : .clear)
+                    .fill(isOff ? Color.clear : .splash)
                     .frame(width: 38, height: 38)
                     .padding(.horizontal, 2)
 

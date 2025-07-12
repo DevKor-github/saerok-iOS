@@ -10,5 +10,6 @@ extension DTO {
     struct MeResponse: Decodable {
         let nickname: String
         let email: String
+        let joinedDate: String?
     }
 }

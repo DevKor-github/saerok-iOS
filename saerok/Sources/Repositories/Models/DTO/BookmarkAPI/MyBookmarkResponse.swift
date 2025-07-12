@@ -7,6 +7,10 @@
 
 extension DTO {
     struct MyBookmarkResponse: Decodable {
+        let items: [BookmarkItem]
+    }
+    
+    struct BookmarkItem: Decodable {
         let id: Int
         let birdId: Int
     }

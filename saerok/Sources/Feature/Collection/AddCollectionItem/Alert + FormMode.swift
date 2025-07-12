@@ -45,7 +45,7 @@ enum CollectionFormMode {
 }
 
 extension CollectionFormView {
-    var addModeExitConfirmPopup: CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, PrimaryButtonStyle> {
+    var addModeExitConfirmPopup: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "작성 중인 내용이 있어요",
             message: "이대로 나가면 변경사항이 저장되지 않아요.\n취소할까요?",
@@ -62,13 +62,13 @@ extension CollectionFormView {
                 action: {
                     activePopup = .none
                 },
-                style: .primary
+                style: .confirm
             ),
             center: nil
         )
     }
     
-    var editModeSaveConfirmPopup: CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, PrimaryButtonStyle> {
+    var editModeSaveConfirmPopup: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "내용을 저장할까요?",
             message: "이대로 나가면 변경사항이 저장되지 않아요.\n취소할까요?",
@@ -86,13 +86,13 @@ extension CollectionFormView {
                     activePopup = .none
                     editCollection()
                 },
-                style: .primary
+                style: .confirm
             ),
             center: nil
         )
     }
     
-    var editModeDeleteConfirmPopup: CustomPopup<DeleteButtonStyle, PrimaryButtonStyle, PrimaryButtonStyle> {
+    var editModeDeleteConfirmPopup: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "삭제하시겠어요?",
             message: "'\(self.collectionDraft.bird?.name ?? "이름 모를 새")' 새록이 삭제돼요.",
@@ -109,7 +109,7 @@ extension CollectionFormView {
                 action: {
                     activePopup = .none
                 },
-                style: .primary
+                style: .confirm
             ),
             center: nil
         )

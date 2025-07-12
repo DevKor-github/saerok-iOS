@@ -16,6 +16,7 @@ extension DTO {
         let address: String
         let locationAlias: String
         let note: String
-        let imageUrls: [String]
+        let imageUrl: String
+        let accessLevel: String
     }
 }

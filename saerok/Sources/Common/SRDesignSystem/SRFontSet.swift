@@ -5,7 +5,7 @@
 //  Created by HanSeung on 3/18/25.
 //
 
-import SwiftUICore
+import SwiftUI
 
 extension Font {
     enum SRFontSet {
@@ -16,7 +16,8 @@ extension Font {
 
         static let headline1: Font = .custom(Jalpullineunharu.regular.rawValue, size: 30)
         static let headline2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 22)
-        
+        static let headline2_2: Font = .custom(Moneygraphy.regular.rawValue, size: 22)
+
         static let subtitle1: Font = .custom(Moneygraphy.regular.rawValue, size: 20)
         static let subtitle2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 18)
         static let subtitle3: Font = .custom(Pretendard.regular.rawValue, size: 18)
@@ -26,6 +27,7 @@ extension Font {
         static let body1: Font = .custom(Pretendard.semiBold.rawValue, size: 15)
         static let body2: Font = .custom(Pretendard.regular.rawValue, size: 15)
         static let body3: Font = .custom(Moneygraphy.regular.rawValue, size: 15)
+        static let body3_2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 15)
         
         static let caption1: Font = .custom(Pretendard.regular.rawValue, size: 13)
         static let caption2: Font = .custom(Moneygraphy.regular.rawValue, size: 13)

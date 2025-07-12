@@ -11,10 +11,7 @@ import SwiftData
 
 protocol BirdsRepository {
     @MainActor
-    func isBirdListEmpty() async throws -> Bool
-    @MainActor
     func birdDetail(for id: Int) throws -> Local.Bird?
-    
     func fetchAndStoreBirds() async throws
     func syncBookmarks() async throws
     func toggleBookmark(for id: Int) async throws -> Bool
@@ -28,14 +25,6 @@ enum BirdsRepositoryError: Error {
 }
 
 extension MainRepository: BirdsRepository {
-    
-    @MainActor
-    func isBirdListEmpty() async throws -> Bool {
-        let fetchDescriptor = FetchDescriptor<Local.Bird>()
-        let result = try modelContainer.mainContext.fetch(fetchDescriptor)
-        return result.isEmpty
-    }
-    
     @MainActor
     func birdDetail(for id: Int) throws -> Local.Bird? {
         let fetchDescriptor = FetchDescriptor(predicate: #Predicate<Local.Bird> {
@@ -45,13 +34,15 @@ extension MainRepository: BirdsRepository {
     }
     
     func fetchAndStoreBirds() async throws {
-        let birdDTOs: DTO.BirdsResponse = try await networkService.performSRRequest(.fullSync)
-        try await store(birdDTOs.birds)
+        if try isBirdsEmpty() {
+            let birdDTOs: DTO.BirdsResponse = try await networkService.performSRRequest(.fullSync)
+            try await store(birdDTOs.birds)
+        }
     }
     
     func syncBookmarks() async throws {
-        let bookmarks: [DTO.MyBookmarkResponse] = try await networkService.performSRRequest(.myBookmarks)
-        let bookmarkedIds = Set(bookmarks.map { $0.birdId })
+        let bookmarks: DTO.MyBookmarkResponse = try await networkService.performSRRequest(.myBookmarks)
+        let bookmarkedIds = Set(bookmarks.items.map { $0.birdId })
         
         for id in bookmarkedIds {
             let fetchDescriptor = FetchDescriptor<Local.Bird>(predicate: #Predicate {
@@ -86,9 +77,14 @@ extension MainRepository: BirdsRepository {
                 throw BirdsRepositoryError.invalidBirdDTO
             }
             insertBirds(localBirds)
-            storeMockData()
         }
         try? save()
+    }
+    
+    private func isBirdsEmpty() throws -> Bool {
+        var descriptor = FetchDescriptor<Local.Bird>()
+        descriptor.fetchLimit = 1
+        return try modelContext.fetch(descriptor).isEmpty
     }
     
     func storeMockData() {

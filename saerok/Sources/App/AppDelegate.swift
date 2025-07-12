@@ -5,7 +5,7 @@
 //  Created by HanSeung on 4/8/25.
 //
 
-import SwiftUICore
+import SwiftUI
 import UIKit
 
 @MainActor

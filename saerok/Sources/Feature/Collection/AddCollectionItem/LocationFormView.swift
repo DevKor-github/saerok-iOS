@@ -12,8 +12,9 @@ extension CollectionFormView {
     struct LocationFormView: View {
         @Binding var selectedCoord: (Double, Double)
         @Binding var path: NavigationPath
-        var address: String
         @FocusState var isFocused: Bool
+
+        var address: String
 
         var body: some View {
             VStack(alignment: .leading) {
@@ -22,9 +23,9 @@ extension CollectionFormView {
                     .padding(.horizontal, 10)
 
                 HStack {
-                    Text(selectedCoord == (0,0) ? "장소를 선택해주세요" : address)
+                    Text(address.isEmpty ? "장소를 선택해주세요" : address)
                         .lineLimit(1)
-                        .foregroundStyle(selectedCoord != (0,0) ? .primary : .tertiary)
+                        .foregroundStyle(!address.isEmpty ? .primary : .tertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Image.SRIconSet.searchSecondary.frame(.defaultIconSize)
                         .foregroundStyle(.border)

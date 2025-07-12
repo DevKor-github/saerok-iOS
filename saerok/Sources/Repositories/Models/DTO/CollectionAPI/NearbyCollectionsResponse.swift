@@ -13,8 +13,12 @@ extension DTO {
 
     struct NearbyCollectionItem: Decodable {
         let collectionId: Int
-        let imageUrl: String
-        let koreanName: String
+        let imageUrl: String?
+        let koreanName: String?
         let note: String
+        let latitude: Double
+        let longitude: Double
+        let locationAlias: String
+        let address: String
     }
 }

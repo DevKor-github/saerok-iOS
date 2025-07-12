@@ -28,10 +28,13 @@ struct CollectionView: Routable {
     
     // MARK: - View State
     
-    private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
     @State private var collectionSummaries: [Local.CollectionSummary] = []
     @State private var collectionState: Loadable<Void> = .notRequested
     @State private var offsetY: CGFloat = 0
+    @State private var showPopup: Bool = false
+
+    private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
+    private let birdQuote: String = BirdQuote.random()
     
     // MARK: - Init
     
@@ -113,14 +116,14 @@ private extension CollectionView {
                     Button {
                         // TODO: 검색 기능
                     } label: {
-                        Image.SRIconSet.search.frame(.defaultIconSizeLarge)
+                        EmptyView()
                     }
                     .buttonStyle(.icon)
                 },
                 backgroundColor: .clear
             )
             
-            Text("어떤 새를\n관찰해볼까요?")
+            Text(birdQuote)
                 .font(.SRFontSet.headline1)
                 .padding(.horizontal, SRDesignConstant.defaultPadding)
                 .padding(.top, 12)
@@ -142,7 +145,7 @@ private extension CollectionView {
                     VStack(spacing: 0) {
                         CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
                         
-                        StaggeredGrid(items: collectionSummaries, columns: 2) { bird in
+                        StaggeredGrid(items: collectionSummaries.reversed(), columns: 2) { bird in
                             birdView(for: bird)
                         }
                         .padding(.horizontal)
@@ -173,12 +176,35 @@ private extension CollectionView {
                 .scaledToFit()
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
-                Text(bird.birdName ?? "어디선가 본 새")
+                Text(bird.birdName ?? "이름 모를 새")
                     .font(.SRFontSet.caption2)
                     .padding(.leading, 8)
             }
         }
         .buttonStyle(.plain)
+    }
+    
+    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "로그인이 필요한 기능이에요",
+            message: "로그인하고 더 많은 기능을 사용해보세요!",
+            leading: .init(
+                title: "취소",
+                action: {
+                    showPopup = false
+                },
+                style: .bordered
+            ),
+            trailing: .init(
+                title: "로그인",
+                action: {
+                    showPopup = false
+                    injected.appState[\.authStatus] = .notDetermined
+                },
+                style: .confirm
+            ),
+            center: nil
+        )
     }
     
     func addButtonTapped() {
@@ -196,9 +222,12 @@ private extension CollectionView {
             VStack(spacing: 0) {
                 Color.clear.frame(height: Constants.navBarSpacerHeight)
                 navigationBar
-                CollectionEmptyStateView(isGuest: isGuestMode, addButtonTapped: {})
+                CollectionEmptyStateView(isGuest: isGuestMode, addButtonTapped: {
+                    showPopup.toggle()
+                })
             }
         }
+        .customPopup(isPresented: $showPopup) { alertView }
         .onAppear {
             if !isGuestMode {
                 collectionState = .loaded(())
@@ -251,14 +280,3 @@ extension CollectionView {
     }
 }
 
-// MARK: - Preview
-
-//#Preview {
-//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-//    appDelegate.rootView
-//}
-
-#Preview(body: {
-    @State var path: NavigationPath = .init()
-    CollectionView(path: $path)
-})

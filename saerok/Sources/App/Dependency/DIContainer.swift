@@ -35,7 +35,7 @@ extension DIContainer {
         let fieldGuide: FieldGuideInteractor
         let collection: CollectionInteractor
         
-        static let stub: Interactors = .init(
+        nonisolated(unsafe) static let stub: Interactors = .init(
             fieldGuide: MockFieldGuideInteractorImpl(),
             collection: MockCollectionInteractorImpl()
         )

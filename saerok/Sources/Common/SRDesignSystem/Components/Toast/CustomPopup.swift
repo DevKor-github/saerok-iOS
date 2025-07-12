@@ -24,7 +24,7 @@ struct CustomPopup<Leading: ButtonStyle, Trailing: ButtonStyle, Center: ButtonSt
     var body: some View {
         VStack(spacing: 0) {
             Image.SRIconSet.alert
-                .frame(.defaultIconSizeLarge)
+                .frame(.defaultIconSizeLarge, tintColor: .splash)
                 .padding(.bottom, 15)
 
             VStack(alignment: .center, spacing: 6) {

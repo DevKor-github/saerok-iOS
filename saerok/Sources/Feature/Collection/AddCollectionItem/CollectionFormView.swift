@@ -34,8 +34,10 @@ struct CollectionFormView: Routable {
     // MARK: View State
     
     @State var activePopup: CollectionPopup = .none
+    @State private var isPositionInitialized: Bool = false
     @StateObject var collectionDraft: Local.CollectionDraft
-    
+    private var locationManager: LocationManager { LocationManager.shared }
+
     init(mode: CollectionFormMode, path: Binding<NavigationPath>) {
         self.mode = mode
         self._path = path
@@ -61,14 +63,17 @@ struct CollectionFormView: Routable {
             .onChange(of: routingState.selectedBird) { _, selectedBird in
                 self.collectionDraft.bird = selectedBird
             }
-            .onChange(of: routingState.locationSelected) { _, newValue in
-                if newValue {
-                    requestAddress()
-                }
-            }
             .onAppear {
                 injected.appState[\.routing.collectionView.addCollection] = false
                 loadBirdIfNeededOnEditMode()
+            }
+            .task {
+                if !isPositionInitialized,
+                   mode.isAddMode,
+                   let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
+                    collectionDraft.coordinate = (location.latitude, location.longitude)
+                    isPositionInitialized = true
+                }
             }
             .onDisappear {
                 injected.appState[\.routing.addCollectionItemView.locationSelected] = false
@@ -113,13 +118,13 @@ private extension CollectionFormView {
             case .editModeDeleteConfirm:
                 AnyView(editModeDeleteConfirmPopup)
             case .none:
-                fatalError("popupView(for:) called with `.none`, which should never happen because popup is not presented")
+                AnyView(EmptyView())
             }
         }
     }
     
     var visibilityToggleButton: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 9) {
             Button {
                 collectionDraft.isVisible.toggle()
             } label: {
@@ -145,7 +150,6 @@ private extension CollectionFormView {
             Text(mode.submitButtonTitle)
                 .font(.SRFontSet.button)
                 .frame(maxWidth: .infinity)
-                .frame(height: 31)
         }
         .disabled(!collectionDraft.submittable && mode.isAddMode)
         .buttonStyle(.primary)
@@ -231,26 +235,6 @@ extension CollectionFormView {
             } catch {
                 print("[EditCollection] ❌ 에러 발생: \(error.localizedDescription)")
                 dump(error)
-            }
-        }
-    }
-    
-    func requestAddress() {
-        Task {
-            let result: DTO.KakaoAddressResponse = try await networkService.performKakaoRequest(
-                .address(
-                    lng: collectionDraft.coordinate.0,
-                    lat: collectionDraft.coordinate.1
-                )
-            )
-            let place = result.documents.toLocal().first
-            
-            if let roadAddress = place?.roadAddress {
-                self.collectionDraft.address = roadAddress
-            } else if let address = place?.address {
-                self.collectionDraft.address = address
-            } else {
-                collectionDraft.address = "주소를 찾을 수 없음"
             }
         }
     }

@@ -10,16 +10,10 @@ import SwiftUI
 import SwiftData
 
 struct EnrollView: View {
-    enum Step: Int, CaseIterable {
-        case first = 0
-        case second
-    }
-
     @Environment(\.injected) private var injected: DIContainer
     @Environment(\.modelContext) var context
 
     @Binding var user: User
-    @State private var currentStep: Step = .first
 
     init(user: Binding<User>) {
         self._user = user
@@ -54,9 +48,14 @@ struct EnrollView: View {
 
     private var headerSection: some View {
         HStack(spacing: 12) {
-            Text("회원가입")
-                .font(.SRFontSet.headline1)
-
+            VStack(alignment: .leading, spacing: 5) {
+                Text("회원가입")
+                    .font(.SRFontSet.headline1)
+                Text("닉네임만 입력하면 회원가입이 끝나요!")
+                    .font(.SRFontSet.body2)
+                    .foregroundStyle(.secondary)
+            }
+            
             ZStack {
                 dashedLine
 //                stepIndicators
@@ -96,19 +95,15 @@ struct EnrollView: View {
 //            }
 //        }
 //    }
-
+    
     private var formSection: some View {
-        EnrollFirstFormView(currentStep: $currentStep, user: $user)
+        EnrollFirstFormView(user: $user)
     }
-
+    
     // MARK: - Button Actions
-
+    
     private func handleBackButton() {
-        if currentStep == .first {
-            injected.appState[\.authStatus] = .notDetermined
-        } else {
-            currentStep = .first
-        }
+        injected.appState[\.authStatus] = .notDetermined
     }
 }
 

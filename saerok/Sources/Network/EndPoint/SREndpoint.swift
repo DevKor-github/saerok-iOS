@@ -18,16 +18,8 @@ enum SREndpoint: Endpoint {
     
     case myCollections
     case collectionDetail(collectionId: Int)
-    case nearbyCollections(lat: Double, lng: Double, radius: Double, isMineOnly: Bool)
-    case createCollection(
-        birdId: Int64?,
-        discoveredDate: String,
-        latitude: Double,
-        longitude: Double,
-        locationAlias: String,
-        address: String,
-        note: String
-    )
+    case nearbyCollections(lat: Double, lng: Double, radius: Double, isMineOnly: Bool, isGuest: Bool = false)
+    case createCollection(body: DTO.CreateCollectionRequest)
     case getPresignedURL(collectionId: Int, contentType: String)
     case registerUploadedImage(collectionId: Int, body: DTO.RegisterImageRequest)
     case deleteCollection(collectionId: Int)
@@ -53,9 +45,13 @@ enum SREndpoint: Endpoint {
 
 extension SREndpoint {
     var baseURL: String {
-        return "http://dev-api.saerok.app/api/v1/"
+        return "http://api.saerok.app/api/v1/"
     }
-    
+//    
+//    var baseURL: String {
+//        return "https://api.saerok.app/api/v1/"
+//    }
+//    
     var path: String {
         switch self {
         case .fullSync: "birds/full-sync"
@@ -78,16 +74,19 @@ extension SREndpoint {
     
     var method: String {
         switch self {
-        case .fullSync, .checkNickname, .me, .kakaoLogin, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks: "GET"
-        case .appleLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage: "POST"
+        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks: "GET"
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage: "POST"
         case .updateMe, .editCollection: "PATCH"
         case .deleteCollection: "DELETE"
         }
     }
     
     var requiresAuth: Bool {
+        if case let .nearbyCollections(_, _, _, _, isGuest) = self {
+            return isGuest == false
+        }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .nearbyCollections, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks:
             return true
         default:
             return false
@@ -104,7 +103,7 @@ extension SREndpoint {
         }
         
         switch self {
-        case .appleLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection:
+        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection:
             headers["Content-Type"] = "application/json"
         default:
             break
@@ -115,17 +114,8 @@ extension SREndpoint {
     
     var requestBody: Data? {
         switch self {
-        case let .createCollection(birdId, discoveredDate, latitude, longitude, locationAlias, address, note):
-            let body: [String: Any?] = [
-                "birdId": birdId,
-                "discoveredDate": discoveredDate,
-                "latitude": latitude,
-                "longitude": longitude,
-                "locationAlias": locationAlias,
-                "address": address,
-                "note": note
-            ]
-            return try? JSONSerialization.data(withJSONObject: body.compactMapValues { $0 })
+        case let .createCollection(body):
+            return try? JSONEncoder().encode(body)
         case let .getPresignedURL(_, contentType):
             let body = ["contentType": "image/jpeg"]
             return try? JSONSerialization.data(withJSONObject: body)
@@ -135,6 +125,9 @@ extension SREndpoint {
             return try? JSONEncoder().encode(body)
         case .appleLogin(let authorizationCode):
             let body = ["authorizationCode": authorizationCode]
+            return try? JSONSerialization.data(withJSONObject: body)
+        case .kakaoLogin(let accessToken):
+            let body = ["accessToken": accessToken]
             return try? JSONSerialization.data(withJSONObject: body)
         case .refreshToken(let token):
             let body = ["refreshTokenJson": token]
@@ -151,9 +144,7 @@ extension SREndpoint {
         switch self {
         case .checkNickname(let nickname):
             return ["nickname": nickname]
-        case .kakaoLogin(let accessToken):
-            return ["accessToken": accessToken]
-        case .nearbyCollections(let lat, let lng, let radius, let isMineOnly):
+        case .nearbyCollections(let lat, let lng, let radius, let isMineOnly, _):
             return [
                 "latitude": "\(lat)",
                 "longitude": "\(lng)",
@@ -182,7 +173,7 @@ extension SREndpoint {
         case .registerUploadedImage:
             return DTO.RegisterImageResponse.self
         case .nearbyCollections:
-            return DTO.NearbyCollectionItem.self
+            return DTO.NearbyCollectionsResponse.self
         case .deleteCollection:
             return EmptyResponse.self
         case .editCollection:
@@ -196,7 +187,7 @@ extension SREndpoint {
         case .toggleBookmark:
             return DTO.ToggleBookmarkResponse.self
         case .myBookmarks:
-            return [DTO.MyBookmarkResponse].self
+            return DTO.MyBookmarkResponse.self
         }
     }
 }

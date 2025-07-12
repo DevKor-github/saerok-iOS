@@ -63,7 +63,7 @@ private extension LoginView {
         .customPopup(isPresented: $showingAlert) { alertView }
     }
     
-    var alertView: CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, PrimaryButtonStyle> {
+    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "로그인 없이 이용하시겠어요?",
             message: "도감과 지도만 열람할 수 있어요!",
@@ -80,7 +80,7 @@ private extension LoginView {
                     showingAlert = false
                     injected.appState[\.authStatus] = .guest
                 },
-                style: .primary
+                style: .confirm
             ),
             center: nil
         )
@@ -97,7 +97,7 @@ private extension LoginView {
         VStack {
             Spacer()
             AppleLoginView(user: $user)
-            KakaoLoginView(user: $user)
+//            KakaoLoginView(user: $user)
             continueWithoutLoginButton
         }
         .padding(.horizontal, SRDesignConstant.defaultPadding)

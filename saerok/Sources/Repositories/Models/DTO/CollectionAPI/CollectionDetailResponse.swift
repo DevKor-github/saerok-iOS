@@ -11,12 +11,12 @@ import Foundation
 extension DTO {
     struct CollectionDetailResponse: Codable {
         let collectionId: Int
-        let imageUrl: String
-        let discoveredDate: String
+        let imageUrl: String?
+        let discoveredDate: String?
         let latitude: Double
         let longitude: Double
-        let address: String
-        let locationAlias: String
+        let address: String?
+        let locationAlias: String?
         let note: String
         let accessLevel: AccessLevel
         let bird: BirdInfo

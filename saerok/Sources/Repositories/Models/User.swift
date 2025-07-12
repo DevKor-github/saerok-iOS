@@ -15,13 +15,27 @@ class User {
     var provider: SocialLoginProvider?
     var nickname: String
     var email: String
-    var birthDate: Date?
-    var startBirdingDate: Date?
+    var joinedDate: Date
+   
     
     init() {
         self.id = ""
         self.email = ""
         self.nickname = ""
+        self.joinedDate = .now
+    }
+    
+    convenience init(nickname: String, email: String = "") {
+        self.init()
+        self.nickname = nickname
+        self.email = email
+    }
+    
+    convenience init(dto: DTO.MeResponse) {
+        self.init()
+        self.nickname = dto.nickname
+        self.email = dto.email
+        self.joinedDate = Date.fromSimpleDateString(dto.joinedDate ?? "2025-06-25") ?? .now
     }
 }
 
@@ -36,5 +50,10 @@ extension User {
         case apple
         case kakao
     }
+}
+
+
+extension User {
+//    static let mock: User = .init(nickname: "하나관새록전문가")
 }
 

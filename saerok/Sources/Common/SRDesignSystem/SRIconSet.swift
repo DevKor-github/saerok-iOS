@@ -37,10 +37,13 @@ extension Image {
         case bookmarkSecondary
         case alert
         case insta
+        case download
+        case share
         case search
         case searchSecondary
         case delete
         case floatingButton
+        case floatingButtonInactive
         case option
         case pin
         case clock
@@ -48,13 +51,21 @@ extension Image {
         case global
         case edit
         case reset
+        case bell
+        case locker
+        case info
         case login
+        case logout
         case checkboxMiniDefault
         case checkboxMiniChecked
         case checkboxMiniCheckedReverse
         case checkboxDefault
         case checkboxChecked
         case xmarkCircle
+        case toDogam
+        case airplane
+        case jongchuMini
+        case board
         
         // MARK: Tabbar
         case doongzi
@@ -87,7 +98,7 @@ extension Image {
                 case .defaultIconSizeLarge:
                     return CGSize(width: 24, height: 24)
                 case .defaultIconSizeVeryLarge:
-                    return CGSize(width: 42, height: 42)
+                    return CGSize(width: 40, height: 40)
                 case .floatingButton:
                     return CGSize(width: 61, height: 61)
                 case let .custom(width, height):
@@ -107,15 +118,18 @@ extension Image {
         /// - Returns: 크기가 조정되고, 필요하면 색상이 적용된 SwiftUI 뷰
         @ViewBuilder
         func frame(size: CGSize, tintColor: Color? = nil) -> some View {
-            let imageView = image
-                .resizable()
-                .scaledToFit()
-                .frame(width: size.width, height: size.height)
-            
             if let tintColor = tintColor {
-                imageView.foregroundStyle(tintColor)
+                image
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size.width, height: size.height)
+                    .foregroundStyle(tintColor)
             } else {
-                imageView
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size.width, height: size.height)
             }
         }
         
@@ -143,15 +157,19 @@ extension Image.SRIconSet {
         case .habitatWhite: return Image(.habitatWhite)
         case .alert: return Image(.alert)
         case .insta: return Image(.insta)
+        case .download: return Image(.download)
+        case .share: return Image(.share)
         case .delete: return Image(.delete)
         case .edit: return Image(.edit)
         case .option: return Image(.option)
         case .pin: return Image(.pin)
         case .login: return Image(.login)
+        case .logout: return Image(.logout)
         case .clock: return Image(.clock)
         case .reset: return Image(.reset)
         case .upper: return Image(.upper)
         case .floatingButton: return Image(.floatingButton)
+        case .floatingButtonInactive: return Image(.floatingButtonInactive)
         case .search: return Image(.search)
         case .searchSecondary: return Image(.searchSecondary)
         case .global: return Image(.global)
@@ -166,9 +184,15 @@ extension Image.SRIconSet {
         case .checkboxMiniCheckedReverse: return Image(.checkboxMiniActiveReverse)
         case .xmarkCircle: return Image(.xmarkCircle)
         case .xmark: return Image(systemName: "xmark")
-            
+        case .toDogam: return Image(.toDogam)
+        case .airplane: return Image(.airplane)
         case .textFormat: return Image(systemName: "textformat")
         case .down: return Image(systemName: "chevron.down")
+        case .bell: return Image(.bell)
+        case .info: return Image(.info)
+        case .locker: return Image(.locke)
+        case .jongchuMini: return Image(.jongchuMini)
+        case .board: return Image(.board)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)
@@ -184,3 +208,4 @@ extension Image.SRIconSet {
         }
     }
 }
+

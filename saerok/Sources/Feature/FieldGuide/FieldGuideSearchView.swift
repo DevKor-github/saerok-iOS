@@ -16,6 +16,7 @@ struct FieldGuideSearchView: View {
     
     @Environment(\.injected) private var injected
     @Environment(\.modelContext) private var modelContext
+    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     
     // MARK: View State
     
@@ -30,7 +31,7 @@ struct FieldGuideSearchView: View {
     @State private var showHabitatSheet = false
     @State private var showSizeSheet = false
     @FocusState private var isSearchBarFocused: Bool
-    
+
     // MARK: Navigation
     
     @Binding var path: NavigationPath
@@ -63,6 +64,7 @@ struct FieldGuideSearchView: View {
             filteredBirds = hangulFinder.search(filterKey.searchText)
         }
         .regainSwipeBack()
+        .onAppear { isSearchBarFocused = true }
     }
 }
 
@@ -100,6 +102,7 @@ private extension FieldGuideSearchView {
         .frame(height: Layout.textFieldHeight)
         .srStyled(.textField(isFocused: $isSearchBarFocused, alwaysFocused: true))
         .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.top, 7)
     }
     
     @ViewBuilder
@@ -113,6 +116,13 @@ private extension FieldGuideSearchView {
                     ForEach(recentSearchItems) { search in
                         recentItem(search)
                             .listRowInsets(.init())
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    deleteRecentTapped(search)
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
+                                }
+                            }
                     }
                 }
             } else {
@@ -186,9 +196,8 @@ private extension FieldGuideSearchView {
             }
             
             Button(action: { deleteRecentTapped(search) }) {
-                Image.SRIconSet.xmark
-                    .frame(.defaultIconSizeSmall)
-                    .foregroundStyle(.secondary)
+                Image.SRIconSet.delete
+                    .frame(.defaultIconSizeSmall, tintColor: .secondary)
             }
         }
         .buttonStyle(.plain)
@@ -219,9 +228,13 @@ private extension FieldGuideSearchView {
     
     func bookmarkButtonTapped(_ bird: Local.Bird) {
         Task {
-            HapticManager.shared.trigger(.light)
-            bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
-            HapticManager.shared.trigger(.success)
+            if !isGuest {
+                HapticManager.shared.trigger(.light)
+                bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                HapticManager.shared.trigger(.success)
+            } else {
+                HapticManager.shared.trigger(.error)
+            }
         }
     }
     

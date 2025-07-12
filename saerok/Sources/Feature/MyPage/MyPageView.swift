@@ -13,23 +13,35 @@ import KakaoSDKUser
 struct MyPageView: View {
     enum Route {
         case account
+        case editName
     }
     
     @Environment(\.injected) var injected
-    @Environment(\.modelContext) private var modelContext
-    @Query var users: [User]
-    @State private var showAlert = false
-    @State private var alertMessage = ""
+    
+    @ObservedObject var userManager = UserManager.shared
+    private var user: User? { userManager.user }
     
     @Binding var path: NavigationPath
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-"
+        return "\(version)"
+    }
     
     var body: some View {
         content
-            .navigationDestination(for: MyPageView.Route.self) { route in
+            .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .account:
                     AccountView(path: $path)
+                case .editName:
+                    EditNicknameView(path: $path)
                 }
+            }
+            .onAppear {
+                syncUser()
             }
     }
 }
@@ -37,89 +49,132 @@ struct MyPageView: View {
 private extension MyPageView {
     @ViewBuilder
     var content: some View {
-        VStack(spacing: 20) {
-            if let user = users.first, let provider = user.provider {
-                Text(user.nickname)
-                    .font(.SRFontSet.body0)
-                Text("새록과 함께한 지 145일")
-                    .font(.SRFontSet.caption1)
-                    .foregroundStyle(.secondary)
-                
-                Button(role: .destructive) {
-                    if provider == .kakao {
-                        unlinkKakaoAndDeleteUser(user: user)
-                    } else {
-                        deleteAppleUserLocally(user: user)
-                    }
-                } label: {
-                    Text("연결 끊기(탈퇴)")
-                        .foregroundStyle(.red)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                }
-            } else {
-                Text("로그인 정보가 없습니다.")
+        ZStack(alignment: .topTrailing) {
+            Image(.mypageLogo)
+
+            VStack(spacing: 35) {
+                Color.clear.frame(height: 80)
+                userSection
+                settingsSection
+                Spacer()
             }
-            
-            VStack(spacing: 30) {
-                settingItem(title: "내 계정 관리", .my) { path.append(Route.account) }
-                settingItem(title: "의견 보내기", .insta) {}
-                settingItem(title: "새록 소식 및 이용 가이드", .insta) {}
-                settingItem(title: "개인정보처리방침", .insta) {}
-                settingItem(title: "앱 버전", .insta) {}
-            }
-            
-            Spacer()
+            .padding(.horizontal, SRDesignConstant.defaultPadding)
         }
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
-        .alert("알림", isPresented: $showAlert) {
-            Button("확인", role: .cancel) {
-                injected.appState[\.authStatus] = .notDetermined
-            }
-        } message: {
-            Text(alertMessage)
+        .ignoresSafeArea(.all)
+        .regainSwipeBack()
+    }
+    
+    @ViewBuilder
+    var userSection: some View {
+        if let user = user, !isGuest {
+            nicknameView(user)
+        } else {
+            toLoginView
         }
     }
     
-    func settingItem(title: String, _ icon: Image.SRIconSet, onTap: @escaping () -> Void) -> some View {
-        HStack {
-            icon
-                .frame(.defaultIconSizeLarge)
-            Text(title)
-                .font(.SRFontSet.body2)
-            Spacer()
-            Image.SRIconSet.chevronRight
-                .frame(.defaultIconSizeSmall)
+    var settingsSection: some View {
+        VStack(spacing: 16) {
+            SettingItemView(title: "내 계정 관리", icon: .my, trailing: nil, onTap: {
+                path.append(Route.account)
+            }, isDisabled: isGuest)
+            .disabled(user == nil)
+            SettingItemView(title: "새록 소식 및 이용 가이드", icon: .bell, onTap: { openInstagramPage() })
+            SettingItemView(title: "개인정보 처리 방침", icon: .locker, onTap: { open개인정보처리방침() })
+            SettingItemView(title: "의견 보내기", icon: .board, onTap: { openFeedbackForm() })
+            SettingItemView(
+                title: "버전 정보",
+                icon: .info,
+                trailing: AnyView(
+                    Text(appVersion)
+                        .foregroundStyle(.secondary)
+                ),
+                onTap: {}
+            )
+            .disabled(true)
+        }
+    }
+    
+    var toLoginView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image.SRIconSet.alert
+                    .frame(.defaultIconSizeLarge)
+                Text("현재 비회원으로 사용 중이에요.\n로그인하시겠어요?")
+                    .font(.SRFontSet.body2)
+            }
+            
+            HStack(spacing: 8) {
+                Image.SRIconSet.login
+                    .frame(.custom(width: 19, height: 20))
+                    .padding(2)
+                
+                Text("로그인 / 회원가입")
+                    .font(.SRFontSet.body2)
+                    .foregroundStyle(.srWhite)
+            }
+            .padding(.vertical, 9)
+            .padding(.horizontal, 15)
+            .background(Color.splash)
+            .cornerRadius(.infinity)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onTapGesture {
+            injected.appState[\.authStatus] = .notDetermined
+        }
+    }
+    
+    func nicknameView(_ user: User) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                path.append(Route.editName)
+            } label: {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("안녕하세요,")
+                        .font(.SRFontSet.subtitle2)
+                    HStack(alignment: .bottom, spacing: 0) {
+                        Text("\(user.nickname)")
+                            .font(.SRFontSet.headline2)
+                        Text("님!")
+                            .font(.SRFontSet.subtitle2)
+                        Image.SRIconSet.edit
+                            .frame(.defaultIconSizeLarge, tintColor: .splash)
+                    }
+                }
+            }
+            
+            Text("새록과 함께한 지 +\(user.joinedDate.daysSince)일")
+                .font(.SRFontSet.caption1)
                 .foregroundStyle(.secondary)
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .buttonStyle(.plain)
+    }
+    
+    func openInstagramPage() {
+        if let url = URL(string: "https://www.instagram.com/saerok.app/?utm_source=ig_web_button_share_sheet") {
+            UIApplication.shared.open(url)
         }
     }
     
-    func unlinkKakaoAndDeleteUser(user: User) {
-        UserApi.shared.unlink { error in
-            if let error = error {
-                alertMessage = "카카오 연결 끊기에 실패했습니다.\n\(error.localizedDescription)"
-                showAlert = true
-            } else {
-                Task { @MainActor in
-                    modelContext.delete(user)
-                    alertMessage = "카카오 연결이 성공적으로 해제되었습니다."
-                    showAlert = true
-                }
+    func open개인정보처리방침() {
+        if let url = URL(string: "https://shine-guppy-3de.notion.site/2127cea87e0581af9a9acd2f36f28e3b") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    func openFeedbackForm() {
+        if let url = URL(string: "https://shine-guppy-3de.notion.site/2127cea87e0581af9a9acd2f36f28e3b") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func syncUser() {
+        Task {
+            do {
+                let me: DTO.MeResponse = try await injected.networkService.performSRRequest(.me)
+                userManager.syncUser(from: me)
             }
-        }
-    }
-    
-    func deleteAppleUserLocally(user: User) {
-        Task { @MainActor in
-            modelContext.delete(user)
-            alertMessage = "애플 계정 연결이 해제되었습니다."
-            showAlert = true
         }
     }
 }

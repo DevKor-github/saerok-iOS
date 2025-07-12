@@ -13,9 +13,9 @@ struct FilterButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isActive ? .main : Color.whiteGray)
+            .padding(.horizontal, 15)
+            .padding(.vertical, 9)
+            .background(isActive ? .main : Color.srWhite)
             .foregroundStyle(isActive ? .srWhite : .primary)
             .clipShape(RoundedRectangle(cornerRadius: .infinity))
             .overlay {

@@ -29,7 +29,7 @@ struct DateFormView: View {
                 .srStyled(.textField(isFocused: $isFocused))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(isDateSelecting ? Color.main : .border, lineWidth: 2)
+                        .strokeBorder(isDateSelecting ? Color.main : .border, lineWidth: 2)
                 )
                 .onTapGesture {
                     withAnimation {

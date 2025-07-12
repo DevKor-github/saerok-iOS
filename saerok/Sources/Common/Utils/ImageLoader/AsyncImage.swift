@@ -8,6 +8,43 @@
 
 import SwiftUI
 
+//struct AsyncImage: View {
+//    @State private var uiImage: UIImage? = nil
+//    @State private var isLoading: Bool = true
+//    
+//    let url: String
+//    let size: CGSize
+//    let scale: ImageScale
+//    let quality: CGFloat
+//    let downsampling: Bool
+//    
+//    var body: some View {
+//        ZStack {
+//            if let image = uiImage {
+//                Image(uiImage: image)
+//                    .resizable()
+//                    .aspectRatio(contentMode: .fill)
+//                    .frame(height: size.height)
+////                    .frame(width: .infinity)// 💡 열 너비 고정
+//                    .clipped()
+//            } else {
+//                Color.border
+//                    .frame(width: size.width, height: size.height)
+//                    .shimmer(when: $isLoading)
+//            }
+//        }
+//        .task {
+//            uiImage = try? await ImageLoader.loadFromURL(
+//                from: URL(string: url),
+//                size: size,
+//                scale: scale,
+//                quality: quality,
+//                downsampled: downsampling
+//            )
+//            isLoading = false
+//        }
+//    }
+//}
 struct AsyncImage: View {
     @State private var uiImage: UIImage? = nil
     @State private var isLoading: Bool = true
@@ -59,8 +96,11 @@ struct AsyncImage: View {
         if width > height {
             Image(uiImage: image)
                 .resizable()
+                .aspectRatio(contentMode: .fill)
                 .frame(height: size.height)
-                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: parentWidth)
+                .clipped()
+
         } else {
             Image(uiImage: image)
                 .resizable()

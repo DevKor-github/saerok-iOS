@@ -36,8 +36,9 @@ struct FieldGuideView: Routable {
     @State private var showSeasonSheet = false
     @State private var showHabitatSheet = false
     @State private var showSizeSheet = false
+    @State private var showPopup: Bool = false
     @State private var offsetY: CGFloat = 0
-    
+
     // MARK: - Init
     
     init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
@@ -123,6 +124,7 @@ private extension FieldGuideView {
             scrollToTopButton
         }
         .ignoresSafeArea(.all)
+        .customPopup(isPresented: $showPopup) { alertView }
     }
     
     var navigationBar: some View {
@@ -146,7 +148,7 @@ private extension FieldGuideView {
             (filterKey.isBookmarked
              ? Image.SRIconSet.bookmarkFilled
              : Image.SRIconSet.bookmark)
-            .frame(.defaultIconSizeLarge)
+            .frame(.defaultIconSizeLarge, tintColor: filterKey.isBookmarked ? .pointtext : .black)
         }
         .srStyled(.iconButton)
     }
@@ -162,7 +164,7 @@ private extension FieldGuideView {
     var headerSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
-            Text("504")
+            Text("585")
                 .font(.SRFontSet.heavy)
                 .fontWeight(.semibold)
                 .foregroundStyle(.splash)
@@ -193,7 +195,8 @@ private extension FieldGuideView {
                         birds: fieldGuide,
                         onTap: { bird in
                             injected.appState[\.routing.fieldGuideView.birdName] = bird.name
-                        }
+                        },
+                        showPopup: $showPopup
                     )
                 }
             }
@@ -217,6 +220,29 @@ private extension FieldGuideView {
         .srStyled(.iconButton)
         .padding(.bottom, 114)
         .padding(.horizontal, SRDesignConstant.defaultPadding)
+    }
+    
+    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "로그인이 필요한 기능이에요",
+            message: "로그인하고 더 많은 기능을 사용해보세요!",
+            leading: .init(
+                title: "취소",
+                action: {
+                    showPopup = false
+                },
+                style: .bordered
+            ),
+            trailing: .init(
+                title: "로그인",
+                action: {
+                    showPopup = false
+                    injected.appState[\.authStatus] = .notDetermined
+                },
+                style: .confirm
+            ),
+            center: nil
+        )
     }
 }
 
@@ -263,6 +289,12 @@ private extension FieldGuideView {
         $fieldGuideState.load {
             try? await injected.interactors.fieldGuide.refreshFieldGuide()
         }
+        
+        if injected.appState[\.authStatus] != .guest {
+            Task {
+                try? await injected.interactors.fieldGuide.refreshBookmarks()
+            }
+        }
     }
     
     func bookmarkTapped() {
@@ -292,9 +324,14 @@ extension FieldGuideView {
     var routingBinding: Binding<Routing> {
         $routingState.dispatched(to: injected.appState, \.routing.fieldGuideView)
     }
+    
+    var tapUpdate: AnyPublisher<ContentView.Routing, Never> {
+        injected.appState.updates(for: \.routing.contentView)
+    }
 }
 
 #Preview {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     appDelegate.rootView
 }
+

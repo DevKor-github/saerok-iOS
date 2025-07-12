@@ -14,14 +14,16 @@ struct BirdDetailView: View {
 
     @State private var birdID: Int? = nil
     @State private var bird: Local.Bird? = nil
+    @State private var showPopup: Bool = false
     @Binding var path: NavigationPath
+    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     
     // MARK: - 초기화: birdID로 받는 경우
     
     init(birdID: Int, path: Binding<NavigationPath>) {
         self._path = path
-        self._birdID = State(initialValue: birdID)
         self._bird = State(initialValue: nil)
+        self._birdID = State(initialValue: birdID)
     }
     
     // MARK: - 초기화: Local.Bird로 받는 경우
@@ -45,14 +47,15 @@ struct BirdDetailView: View {
             }
         }
         .regainSwipeBack()
+        .customPopup(isPresented: $showPopup) { alertView }
     }
     
-    // MARK: - 본문 뷰
     @ViewBuilder
     private func contentView(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.mainSpacing) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: Constants.scrollContentSpacing) {
+                    Color.clear.frame(height: 3)
                     birdImageWithTag(bird: bird)
                     Group {
                         title(bird: bird)
@@ -65,9 +68,25 @@ struct BirdDetailView: View {
             }
         }
     }
+    
+    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "로그인이 필요한 기능이에요",
+            message: "로그인하고 더 많은 기능을 사용해보세요!",
+            leading: .init(
+                title: "취소",
+                action: alertDismissTapped,
+                style: .bordered
+            ),
+            trailing: .init(
+                title: "로그인",
+                action: alertConfirmTapped,
+                style: .confirm
+            ),
+            center: nil
+        )
+    }
 }
-
-// MARK: - 데이터 로딩
 
 private extension BirdDetailView {
     func loadBirdIfNeeded() {
@@ -142,8 +161,8 @@ private extension BirdDetailView {
             }
             
             Button(action: { saerokButtonTapped(bird: bird) }) {
-                Image.SRIconSet.penFill
-                    .frame(.custom(width: Constants.penIconWidth, height: Constants.penIconHeight))
+                Image.SRIconSet.jongchuMini
+                    .frame(.defaultIconSizeLarge)
                     .padding(.top, Constants.penIconTopPadding)
             }
             .frame(alignment: .bottomTrailing)
@@ -226,16 +245,35 @@ private extension BirdDetailView {
     
     func bookmarkButtonTapped(bird: Local.Bird) {
         Task {
-            HapticManager.shared.trigger(.light)
-            self.bird?.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
-            HapticManager.shared.trigger(.success)
+            if !isGuest {
+                HapticManager.shared.trigger(.light)
+                self.bird?.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                HapticManager.shared.trigger(.success)
+            } else {
+                HapticManager.shared.trigger(.error)
+                showPopup.toggle()
+            }
         }
     }
     
     func saerokButtonTapped(bird: Local.Bird) {
-        injected.appState[\.routing.contentView.tabSelection] = .collection
-        injected.appState[\.routing.collectionView.addCollection] = true
-        injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
+        if !isGuest {
+            injected.appState[\.routing.contentView.tabSelection] = .collection
+            injected.appState[\.routing.collectionView.addCollection] = true
+            injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
+        } else {
+            HapticManager.shared.trigger(.error)
+            showPopup.toggle()
+        }
+    }
+    
+    func alertDismissTapped() {
+        showPopup = false
+    }
+    
+    func alertConfirmTapped() {
+        showPopup = false
+        injected.appState[\.authStatus] = .notDetermined
     }
 }
 

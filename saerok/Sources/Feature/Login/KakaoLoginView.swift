@@ -46,7 +46,7 @@ private extension KakaoLoginView {
                     return
                 }
                 
-                guard let token = oauthToken, let idToken = token.idToken else {
+                guard let token = oauthToken else {
                     print("❌ Failed to get idToken from Kakao")
                     return
                 }

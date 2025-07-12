@@ -9,7 +9,7 @@
 import Foundation
 
 final class TokenManager {
-    static let shared = TokenManager()
+    @MainActor static let shared = TokenManager()
 
     private init() {}
 
@@ -18,10 +18,9 @@ final class TokenManager {
     func saveTokens(accessToken: String, refreshToken: String?) {
         do {
             try KeyChain.create(key: .accessToken, token: accessToken)
-            print("액세스토큰저장")
+
             if let refreshToken {
                 try KeyChain.create(key: .refresehToken, token: refreshToken)
-                print("리프레시토큰저장")
             }
         } catch {
             print("🔒 Token 저장 실패: \(error)")
@@ -59,7 +58,6 @@ final class TokenManager {
     
     func tryAutoLogin() async -> AppState.AuthStatus {
         guard let refreshToken = getRefreshToken() else {
-            print("🔒 refreshToken 없음 - 자동 로그인 실패")
             return .notDetermined
         }
         
@@ -70,10 +68,11 @@ final class TokenManager {
             let newRefreshToken = extractRefreshTokenFromCookies() ?? refreshToken
             saveTokens(accessToken: response.accessToken, refreshToken: newRefreshToken)
             
-            print("🔓 자동 로그인 성공")
+            if response.signupStatus == .completed {
+                syncUserData()
+            }
             return .signedIn(isRegistered: response.signupStatus == .completed)
         } catch {
-            print("🔒 자동 로그인 실패: \(error)")
             return .notDetermined
         }
     }
@@ -81,5 +80,18 @@ final class TokenManager {
     func trySocialLogin(accessToken: String) {
         let newRefreshToken = extractRefreshTokenFromCookies()
         saveTokens(accessToken: accessToken, refreshToken: newRefreshToken)
+    }
+    
+    func syncUserData() {
+        Task {
+            do {
+                let endpoint = SREndpoint.me
+                let userResponse: DTO.MeResponse = try await SRNetworkServiceImpl().performSRRequest(endpoint)
+                
+                await UserManager.shared.syncUser(from: userResponse)
+            } catch {
+                print("⚠️ 유저 동기화 실패: \(error)")
+            }
+        }
     }
 }

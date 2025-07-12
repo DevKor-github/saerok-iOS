@@ -11,6 +11,21 @@ import SwiftUI
 struct BirdGridView: View {
     let birds: [Local.Bird]
     let onTap: (Local.Bird) -> Void
+    @Binding var showPopup: Bool
+
+    init(birds: [Local.Bird], onTap: @escaping (Local.Bird) -> Void, showPopup: Binding<Bool>) {
+        self.birds = birds
+        self.onTap = onTap
+        self._showPopup = showPopup
+    }
+
+    struct PressScaleStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+        }
+    }
 
     var body: some View {
         LazyVGrid(
@@ -24,9 +39,9 @@ struct BirdGridView: View {
                 Button {
                     onTap(bird)
                 } label: {
-                    BirdCardView(bird)
+                    BirdCardView(bird, showPopup: $showPopup)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressScaleStyle())
             }
 
             Group {
@@ -41,4 +56,9 @@ struct BirdGridView: View {
         .padding(SRDesignConstant.defaultPadding)
         .background(Color.whiteGray)
     }
+}
+
+#Preview {
+    @Previewable @State var showPopup = false
+    return BirdGridView(birds: Local.Bird.mockData, onTap: {_ in }, showPopup: $showPopup)
 }

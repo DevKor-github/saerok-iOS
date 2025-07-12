@@ -17,6 +17,7 @@ protocol CollectionRepository {
     func registerImageMetadata(collectionId: Int, request: DTO.RegisterImageRequest) async throws -> DTO.RegisterImageResponse
     func deleteCollection(_ id: Int) async throws
     func editCollection(id: Int, isBirdUpdated: Bool, _ draft: Local.CollectionDraft) async throws
+    func fetchNearbyCollections(_ request: Local.NearbyRequest) async throws -> [Local.NearbyCollectionSummary] 
 }
 
 
@@ -32,15 +33,7 @@ extension MainRepository: CollectionRepository {
     }
     
     func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse {
-        return try await networkService.performSRRequest(.createCollection(
-            birdId: request.birdId.map { Int64($0) },
-            discoveredDate: request.discoveredDate,
-            latitude: request.latitude,
-            longitude: request.longitude,
-            locationAlias: request.locationAlias,
-            address: request.address,
-            note: request.note
-        ))
+        return try await networkService.performSRRequest(.createCollection(body: request))
     }
     
     func getPresignedURL(collectionId: Int, contentType: String) async throws -> DTO.PresignedURLResponse {
@@ -61,5 +54,16 @@ extension MainRepository: CollectionRepository {
             collectionId: id,
             body: dto
         ))
+    }
+    
+    func fetchNearbyCollections(_ request: Local.NearbyRequest) async throws -> [Local.NearbyCollectionSummary] {
+        let dtos: DTO.NearbyCollectionsResponse = try await networkService.performSRRequest(.nearbyCollections(
+            lat: request.latitude,
+            lng: request.longtitude,
+            radius: request.radius,
+            isMineOnly: request.isMineOnly,
+            isGuest: request.isGuest
+        ))
+        return dtos.items.map { Local.NearbyCollectionSummary.from(dto: $0) }
     }
 }

@@ -22,7 +22,8 @@ struct CollectionSearchView: View {
     @State private var fieldGuide: [Local.Bird]
     @State private var filteredBirds: [Local.Bird] = []
     @State private var hangulFinder: HangulFinder<Local.Bird>
-    
+    @State private var searchDebounceTask: Task<Void, Never>? = nil
+
     @FocusState private var isSearchBarFocused: Bool
     
     // MARK: Navigation
@@ -38,29 +39,48 @@ struct CollectionSearchView: View {
     }
     
     var body: some View {
+        content
+            .query(key: filterKey, results: $fieldGuide) { filterKey in
+                Query(
+                    filter: filterKey.build(),
+                    sort: \Local.Bird.name
+                )
+            }
+            .onChange(of: fieldGuide) { _, newDataSet in
+                hangulFinder.reInitialize(newDataSet)
+                filteredBirds = hangulFinder.search(filterKey.searchText)
+            }
+            .onChange(of: filterKey, initial: true) { _, newKey in
+                searchTask(newKey)
+            }
+            .onAppear {
+                isSearchBarFocused = true
+            }
+            .regainSwipeBack()
+    }
+}
+
+private extension CollectionSearchView {
+    func searchTask(_ newKey: BirdFilter) {
+        searchDebounceTask?.cancel()
+        searchDebounceTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            if !Task.isCancelled && !newKey.searchText.isEmpty {
+                filteredBirds = hangulFinder.search(filterKey.searchText)
+            }
+        }
+    }
+}
+
+private extension CollectionSearchView {
+    var content: some View {
         VStack(spacing: 0) {
             navigationBar
             searchBarSection
             searchResultSection()
         }
-        .query(key: filterKey, results: $fieldGuide) { filterKey in
-            Query(
-                filter: filterKey.build(),
-                sort: \Local.Bird.name
-            )
-        }
-        .onChange(of: fieldGuide) { _, newDataSet in
-            hangulFinder.reInitialize(newDataSet)
-            filteredBirds = hangulFinder.search(filterKey.searchText)
-        }
-        .onChange(of: filterKey, initial: true) { _, filterKey in
-            filteredBirds = hangulFinder.search(filterKey.searchText)
-        }
-        .regainSwipeBack()
     }
-}
-
-private extension CollectionSearchView {
+    
     var navigationBar: some View {
         NavigationBar(center: {
             Text("이름 찾기")
@@ -86,16 +106,6 @@ private extension CollectionSearchView {
             .padding(.bottom, 14)
     }
     
-    func bookmarkButtonSection(_ bird: Local.Bird) -> some View {
-        Button {
-            bird.isBookmarked.toggle()
-        } label: {
-            (bird.isBookmarked
-             ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
-             : Image.SRIconSet.bookmark.frame(.defaultIconSize))
-        }
-    }
-    
     @ViewBuilder
     func searchResultSection() -> some View {
         ScrollView {
@@ -104,25 +114,27 @@ private extension CollectionSearchView {
                     .frame(height: 4)
                 
                 VStack(spacing: 2) {
-                    ForEach(filteredBirds, id: \.name) { bird in
+                    ForEach(
+                        filterKey.searchText.isEmpty
+                            ? fieldGuide.filter { $0.isBookmarked }
+                            : filteredBirds, id: \.name
+                    ) { bird in
                         searchItem(bird)
                             .listRowInsets(.init())
                     }
                 }
             }
-            
         }
         .background(Color.whiteGray)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
         HStack(spacing: 19) {
-            Button {
-                bird.isBookmarked.toggle()
-            } label: {
+            Button { } label: {
                 (bird.isBookmarked
-                 ? Image.SRIconSet.bookmarkFilled.frame(.defaultIconSize)
-                 : Image.SRIconSet.bookmark.frame(.defaultIconSize))
+                 ? Image.SRIconSet.bookmarkFilled
+                 : Image.SRIconSet.bookmark)
+                .frame(.defaultIconSizeLarge)
             }
             .frame(width: 24)
             

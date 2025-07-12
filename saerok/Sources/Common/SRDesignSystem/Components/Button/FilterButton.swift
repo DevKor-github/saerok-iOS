@@ -34,7 +34,7 @@ struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T
         } label: {
             HStack(spacing: 4) {
                 (isActive ? iconSelected : icon)
-                    .frame(.defaultIconSize)
+                    .frame(.defaultIconSize, tintColor: isActive ? .srWhite : .splash)
                 Text(
                     isActive
                     ? selection.map(\.rawValue).joined(separator: " • ")

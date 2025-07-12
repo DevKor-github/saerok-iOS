@@ -5,7 +5,7 @@
 //  Created by HanSeung on 4/17/25.
 //
 
-import SwiftUICore
+import SwiftUI
 
 enum Season: String, Codable, CaseIterable, Equatable {
     case spring = "봄"

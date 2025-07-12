@@ -78,7 +78,8 @@ extension Local.CollectionDraft {
             longitude: coordinate.1,
             locationAlias: locationAlias,
             address: address,
-            note: note
+            note: note,
+            accessLevel: isVisible ? "PUBLIC" : "PRIVATE"
         )
     }
     
@@ -91,7 +92,8 @@ extension Local.CollectionDraft {
             latitude: coordinate.0,
             locationAlias: locationAlias,
             address: address,
-            note: note
+            note: note,
+            accessLevel: isVisible ? "PUBLIC" : "PRIVATE"
         )
     }
     

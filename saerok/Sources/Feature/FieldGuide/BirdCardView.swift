@@ -10,11 +10,14 @@ import SwiftUI
 
 struct BirdCardView: View {
     private let bird: Local.Bird
+    @Binding var showPopup: Bool
     
     @Environment(\.injected) var injected
+    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     
-    init(_ bird: Local.Bird) {
+    init(_ bird: Local.Bird, showPopup: Binding<Bool>) {
         self.bird = bird
+        self._showPopup = showPopup
     }
 
     var body: some View {
@@ -43,6 +46,7 @@ struct BirdCardView: View {
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: SRDesignConstant.cardCornerRadius))
         .shadow(radius: Constants.shadowRadius)
+        .contentShape(Rectangle())
     }
 }
 
@@ -92,9 +96,14 @@ private extension BirdCardView {
     var bookmarkButton: some View {
         Button {
             Task {
-                HapticManager.shared.trigger(.light)
-                self.bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
-                HapticManager.shared.trigger(.success)
+                if !isGuest {
+                    HapticManager.shared.trigger(.light)
+                    self.bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                    HapticManager.shared.trigger(.success)
+                } else {
+                    HapticManager.shared.trigger(.error)
+                    showPopup.toggle()
+                }
             }
         } label: {
             (bird.isBookmarked ? Image.SRIconSet.scrapFilled : Image.SRIconSet.scrap)
@@ -122,6 +131,7 @@ private extension BirdCardView {
 }
 
 #Preview {
-    BirdCardView(.mockData[0])
-        .frame(width: 165)
+    @Previewable @State var showPopup = false
+    BirdGridView(birds: Local.Bird.mockData, onTap: {_ in }, showPopup: $showPopup)
+    .frame(maxWidth: .infinity)
 }

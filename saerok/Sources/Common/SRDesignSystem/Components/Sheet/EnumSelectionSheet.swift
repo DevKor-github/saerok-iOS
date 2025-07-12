@@ -8,13 +8,11 @@
 
 import SwiftUI
 
-
 enum EnumPickerStyle {
     case compact
     case adaptive
     case birdSize
 }
-
 
 extension View {
     func sheetEnumPicker<T: Hashable & RawRepresentable & CaseIterable>(
@@ -37,6 +35,7 @@ extension View {
 }
 
 private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
+        
     @Binding var isPresented: Bool
     @Binding var selection: Set<T>
     
@@ -44,12 +43,50 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
     let allOptions: [T] = Array(T.allCases)
     let presentationDetents: Set<PresentationDetent>
     let style: EnumPickerStyle
-
+    
     private let gridColumns = [
         GridItem(.flexible(), spacing: 15),
         GridItem(.flexible(), spacing: 15)
     ]
+        
+    private var header: some View {
+        ZStack {
+            Text(title)
+                .font(.SRFontSet.headline2)
+            HStack {
+                Spacer()
+                Button {
+                    isPresented.toggle()
+                } label: {
+                    Image.SRIconSet.xmarkCircle.frame(.defaultIconSize)
+                }
+            }
+        }
+        .padding(12)
+    }
     
+    private var selectButtons: some View {
+        HStack(spacing: 23) {
+            Button {
+                selection = Set(allOptions)
+            } label: {
+                let selectedAll = selection.count == allOptions.count
+                (selectedAll ? Image(.radioSelected) : Image(.radio))
+                Text("전체선택")
+            }
+            Button {
+                selection.removeAll()
+            } label: {
+                let isEmpty = selection.isEmpty
+                (!isEmpty ? Image(.radio) : Image(.radioSelected))
+                Text("전체해제")
+            }
+            Spacer()
+        }
+        .font(.SRFontSet.body2)
+        .foregroundStyle(.black)
+    }
+        
     var body: some View {
         VStack(spacing: 18) {
             header
@@ -73,13 +110,13 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                         gridItemView(for: item)
                     }
                 }
-            
+                
             case .birdSize:
                 if T.self == BirdSize.self {
                     HStack(alignment: .bottom, spacing: 0) {
                         ForEach(allOptions, id: \.rawValue) { item in
-                            if let item = item as? BirdSize {
-                                birdSizeOptionView(item)
+                            if let birdSizeItem = item as? BirdSize {
+                                birdSizeOptionView(birdSizeItem)
                             }
                         }
                     }
@@ -99,61 +136,25 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
         .padding()
         .presentationDetents(presentationDetents)
     }
-    
-    private var header: some View {
-        ZStack {
-            Text(title)
-                .font(.SRFontSet.headline2)
-            HStack {
-                Spacer()
-                Button {
-                    isPresented.toggle()
-                } label: {
-                    Image.SRIconSet.xmarkCircle.frame(.defaultIconSize)
-                }
-            }
-        }
-        .padding(12)
-    }
-    
-    private var selectButtons: some View {
-        HStack(spacing: 23) {
-            Button {
-                selection = Set(allOptions)
-            } label: {
-                (selection.count == allOptions.count ? Image(.radioSelected) : Image(.radio))
-                Text("전체선택")
-            }
-            
-            Button {
-                selection.removeAll()
-            } label: {
-                (!selection.isEmpty ? Image(.radio) : Image(.radioSelected))
-                Text("전체해제")
-            }
-            
-            Spacer()
-        }
-        .font(.SRFontSet.body2)
-        .foregroundStyle(.black)
-    }
-
+        
     @ViewBuilder
     private func gridItemView(for item: T, fixed: Bool = true) -> some View {
+        let isSelected = selection.contains(item)
+        
         HStack(spacing: 10) {
             Text(item.rawValue)
                 .font(.SRFontSet.body1)
-                .foregroundColor(selection.contains(item) ? .white : .primary)
+                .foregroundColor(isSelected ? .white : .primary)
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
             if fixed {
                 Spacer()
             }
-            (selection.contains(item) ? Image.SRIconSet.checkboxMiniCheckedReverse : .checkboxMiniDefault)
+            (isSelected ? Image.SRIconSet.checkboxMiniCheckedReverse : .checkboxMiniDefault)
                 .frame(.defaultIconSize)
         }
         .padding()
-        .background(selection.contains(item) ? Color.main : Color(.systemGray6))
+        .background(isSelected ? Color.main : Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture {
             selection.toggle(item)
@@ -162,12 +163,14 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
     
     @ViewBuilder
     private func birdSizeOptionView(_ item: BirdSize) -> some View {
+        let castedItem = item as! T
+        
         if item != .kayak {
             Spacer()
         }
         VStack {
             item.image
-            (selection.contains(item as! T) ? Image(.checkboxMiniActive) : Image(.checkboxMiniDefault))
+            (selection.contains(castedItem) ? Image(.checkboxMiniActive) : Image(.checkboxMiniDefault))
             Text(item.rawValue)
                 .font(.SRFontSet.body1)
             Text(item.lengthDescription)
@@ -175,7 +178,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                 .foregroundStyle(.secondary)
         }
         .onTapGesture {
-            selection.toggle(item as! T)
+            selection.toggle(castedItem)
         }
     }
 }

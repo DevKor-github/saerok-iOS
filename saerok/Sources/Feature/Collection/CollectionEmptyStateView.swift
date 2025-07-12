@@ -72,13 +72,12 @@ struct CollectionEmptyStateView: View {
         Button {
             injected.appState[\.authStatus] = .notDetermined
         } label: {
-            VStack(spacing: 13) {
-                HStack(spacing: 8) {
+            HStack(spacing: 8) {
                     Image.SRIconSet.login
-                        .frame(.custom(width: 19, height: 20))
+                        .frame(.custom(width: 19, height: 20), tintColor: .white)
                         .padding(2)
                     
-                    Text("로그인")
+                    Text("로그인 / 회원가입")
                         .font(.SRFontSet.body2)
                         .foregroundStyle(.srWhite)
                 }
@@ -86,15 +85,6 @@ struct CollectionEmptyStateView: View {
                 .padding(.horizontal, 15)
                 .background(Color.splash)
                 .cornerRadius(.infinity)
-                
-                HStack(spacing: 4) {
-                    Text("아직 회원이 아니신가요?")
-                    Text("회원가입하기")
-                        .underline(true)
-                }
-                .font(.SRFontSet.caption1)
-                .foregroundStyle(.secondary)
-            }
         }
         .padding(.bottom, 30)
         .buttonStyle(.plain)

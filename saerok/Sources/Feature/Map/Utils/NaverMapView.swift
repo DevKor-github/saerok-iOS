@@ -28,7 +28,7 @@ struct NaverMapView: View {
                 VStack(spacing: 2) {
                     Image(.marker)
                         .resizable()
-                        .frame(width: 40, height: 56)
+                        .frame(width: 51, height: 65.6)
                 }
                 .zIndex(1)
             }

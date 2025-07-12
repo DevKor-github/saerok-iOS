@@ -9,23 +9,23 @@
 import SwiftData
 import SwiftUI
 
+enum NicknameStatus: Equatable {
+    case empty
+    case invalid(String)
+    case notChecked
+    case checking
+    case available
+    case notAvailable(String)
+}
+
 extension EnrollView {
     struct EnrollFirstFormView: View {
-        enum NicknameStatus: Equatable {
-            case empty
-            case invalid(String)
-            case notChecked
-            case checking
-            case available
-            case notAvailable(String)
-        }
-        
         @Environment(\.injected) var injected
         @Environment(\.modelContext) var modelContext
         
         @State private var nicknameStatus: NicknameStatus = .empty
+        @State private var isAgeChecked: Bool = false
         @FocusState private var isFocused: Bool
-        @Binding var currentStep: Step
         @Binding var user: User
         
         var body: some View {
@@ -46,40 +46,36 @@ extension EnrollView {
                     .font(.SRFontSet.caption1)
                     .padding(.horizontal, Constants.horizontalTextPadding)
                 
-                HStack {
+                HStack(spacing: 6) {
                     TextField("사용할 닉네임을 입력해주세요.", text: $user.nickname)
-                    Spacer()
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 13)
+                        .srStyled(.textField(isFocused: $isFocused))
+                    
                     nicknameCheckButton
                 }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 13)
-                .srStyled(.textField(isFocused: $isFocused))
-    
-                errorSection
-                    .font(.SRFontSet.caption1)
-                    .padding(.horizontal, Constants.horizontalTextPadding)
+                .frame(maxWidth: .infinity)
                 
+                HStack {
+                    errorSection
+                        .font(.SRFontSet.caption1)
+                        .padding(.horizontal, Constants.horizontalTextPadding)
+                    Spacer()
+                }
                 Spacer()
             }
             .padding(.horizontal, Constants.fieldHorizontalPadding)
         }
         
         private var nicknameCheckButton: some View {
-            Button("중복확인") {
-                Task {
-                    nicknameStatus = .checking
-                    do {
-                        let result: DTO.CheckNicknameResponse = try await injected.networkService.performSRRequest(.checkNickname(user.nickname))
-
-                        nicknameStatus = result.isAvailable ? .available : .notAvailable(result.reason ?? "")
-                    } catch {
-                        nicknameStatus = .invalid("네트워크 오류가 발생했어요")
-                        print(error)
-                    }
-                }
+            Button(action: nicknameCheckButtonTapped) {
+                Text("중복확인")
+                    .padding(.vertical, 2)
             }
             .font(.SRFontSet.button3)
             .disabled(nicknameStatus != .notChecked)
+            .buttonStyle(.confirm)
+            .frame(width: 80)
         }
         
         @ViewBuilder
@@ -100,15 +96,29 @@ extension EnrollView {
         }
         
         private var nextButtonSection: some View {
-            VStack {
+            VStack(alignment: .leading, spacing: 25) {
                 Spacer()
+                
+                HStack(spacing: 9) {
+                    (isAgeChecked
+                    ? Image.SRIconSet.checkboxChecked
+                    : Image.SRIconSet.checkboxDefault)
+                    .frame(.defaultIconSizeLarge)
+                    
+                    Text("만 14세 이상이에요.")
+                        .font(.SRFontSet.body2)
+                        .foregroundStyle(.secondary)
+                }
+                .onTapGesture {
+                    isAgeChecked.toggle()
+                }
                 
                 Button(action: nextButtonTapped) {
                     Text("다음")
                         .frame(height: 32)
                 }
                 .buttonStyle(.primary)
-                .disabled(nicknameStatus != .available)
+                .disabled((nicknameStatus != .available) && isAgeChecked)
             }
         }
         
@@ -122,8 +132,22 @@ extension EnrollView {
                     user.nickname = me.nickname
                     user.email = me.email
                     modelContext.insert(user)
+                    try modelContext.save()
                 } catch {
                     print("요청 실패: \(error)")
+                }
+            }
+        }
+        
+        private func nicknameCheckButtonTapped() {
+            Task {
+                nicknameStatus = .checking
+                do {
+                    let result: DTO.CheckNicknameResponse = try await injected.networkService.performSRRequest(.checkNickname(user.nickname))
+
+                    nicknameStatus = result.isAvailable ? .available : .notAvailable(result.reason ?? "")
+                } catch {
+                    nicknameStatus = .invalid("네트워크 오류가 발생했어요")
                 }
             }
         }
@@ -165,3 +189,7 @@ private extension EnrollView.Constants {
     static let horizontalTextPadding: CGFloat = 10
 }
 
+#Preview {
+    @Previewable @State var user: User = .init()
+    EnrollView.EnrollFirstFormView(user: $user)
+}

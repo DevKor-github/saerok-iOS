@@ -14,6 +14,7 @@ protocol CollectionInteractor {
     func createCollection(_ draft: Local.CollectionDraft) async throws
     func deleteCollection(_ id: Int) async throws
     func editCollection(_ draft: Local.CollectionDraft) async throws
+    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary]
 }
 
 enum CollectionInteractorError: Error {
@@ -37,7 +38,7 @@ struct CollectionInteractorImpl: CollectionInteractor {
     
     func createCollection(_ draft: Local.CollectionDraft) async throws {
         guard let image = draft.image,
-              let jpegData = image.jpegData(compressionQuality: 0.8)
+              let jpegData = image.resizedAndCompressed()
         else {
             throw CollectionInteractorError.invalidImageData
         }
@@ -62,9 +63,24 @@ struct CollectionInteractorImpl: CollectionInteractor {
         let isBirdUpdated = draft.originalBirdId != draft.bird?.id
         try await repository.editCollection(id: id, isBirdUpdated: isBirdUpdated, draft)
     }
+    
+    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] {
+        let request = Local.NearbyRequest(
+            latitude: lat,
+            longtitude: lng,
+            radius: rad,
+            isMineOnly: isMineOnly,
+            isGuest: isGuest
+        )
+        return try await repository.fetchNearbyCollections(request)
+    }
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
+    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] {
+        return []
+    }
+    
     func editCollection(_ draft: Local.CollectionDraft) async throws { }
     
     func deleteCollection(_ id: Int) async throws {
@@ -83,5 +99,32 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     
     func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse {
         return .init(collectionId: 0)
+    }
+}
+
+
+import UIKit
+
+extension UIImage {
+    func resizedAndCompressed(
+        maxLength: CGFloat = 2048,
+        quality: CGFloat = 0.8
+    ) -> Data? {
+        let maxSide = max(size.width, size.height)
+        
+        guard maxSide > maxLength else {
+            // 사이즈가 이미 충분히 작으면 압축만
+            return jpegData(compressionQuality: quality)
+        }
+
+        let scale = maxLength / maxSide
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        let resized = renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+
+        return resized.jpegData(compressionQuality: quality)
     }
 }

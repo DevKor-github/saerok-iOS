@@ -5,19 +5,20 @@
 //  Created by HanSeung on 3/18/25.
 //
 
+
 import Combine
 import SwiftUI
 
 struct ContentView: Routable {
-
+    
     // MARK: Dependencies
-
+    
     @Environment(\.injected) var injected
-
+    
     // MARK: Routing
-
+    
     @State var routingState = Routing()
-
+    
     // MARK: View State
     
     @State private var selectedTab: TabbedItems = SRConstant.mainTab
@@ -25,6 +26,18 @@ struct ContentView: Routable {
     @State private var path = NavigationPath()
     
     var body: some View {
+        content
+            .onReceive(routingUpdate) { routingState = $0 }
+            .onChange(of: routingState.tabSelection, initial: true) { _, tab in
+                selectedTab = tab
+            }
+            .onChange(of: routingState.isTabbarHidden, initial: true) { _, hidden in
+                isTabbarHidden = hidden
+            }
+            .onAppear(perform: configureNavigationBar)
+    }
+    
+    private var content: some View {
         NavigationStack(path: $path) {
             ZStack {
                 CachedTabContainer(selectedTab: selectedTab, path: $path)
@@ -36,16 +49,8 @@ struct ContentView: Routable {
             .ignoresSafeArea(.all)
         }
         .ignoresSafeArea(.all)
-        .onReceive(routingUpdate) { routingState = $0 }
-        .onChange(of: routingState.tabSelection, initial: true) { _, tab in
-            selectedTab = tab
-        }
-        .onChange(of: routingState.isTabbarHidden, initial: true) { _, hidden in
-            isTabbarHidden = hidden
-        }
-        .onAppear(perform: configureNavigationBar)
     }
-
+    
     private func configureNavigationBar() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -54,16 +59,20 @@ struct ContentView: Routable {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
+}
 
+// MARK: - Routable
+
+extension ContentView {
     struct Routing: Equatable {
         var tabSelection: TabbedItems = SRConstant.mainTab
         var isTabbarHidden: Bool = false
     }
-
+    
     var routingUpdate: AnyPublisher<Routing, Never> {
         injected.appState.updates(for: \.routing.contentView)
     }
-
+    
     var routingBinding: Binding<Routing> {
         $routingState.dispatched(to: injected.appState, \.routing.contentView)
     }
@@ -73,7 +82,7 @@ struct CachedTabContainer: View {
     let selectedTab: TabbedItems
     @State private var cache: [TabbedItems: AnyView] = [:]
     @Binding var path: NavigationPath
-
+    
     var body: some View {
         ZStack {
             ForEach(TabbedItems.allCases, id: \.self) { tab in
@@ -102,7 +111,7 @@ struct CachedTabContainer: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private func viewFor(_ tab: TabbedItems, path: NavigationPath) -> some View {
         switch tab {

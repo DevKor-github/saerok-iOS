@@ -5,6 +5,7 @@
 //  Created by HanSeung on 3/20/25.
 //
 
+
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
@@ -16,79 +17,11 @@ struct PrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.SRFontSet.button2)
-            .padding(.vertical, 11)
+            .font(.SRFontSet.button1)
+            .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
             .foregroundColor(.srWhite)
-            .cornerRadius(10)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .contentShape(Rectangle())
-    }
-}
-
-struct DeleteButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    var defaultColor: Color = .red
-    var pressedColor: Color = .red
-    var disabledColor: Color = .red
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.SRFontSet.button2)
-            .padding(.vertical, 11)
-            .frame(maxWidth: .infinity)
-            .foregroundColor(.red)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .inset(by: 0.75)
-                    .stroke(.red, lineWidth: 1.5)
-            )
-            .cornerRadius(10)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .contentShape(Rectangle())
-    }
-}
-
-struct BorderedButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    var defaultColor: Color = .main
-    var pressedColor: Color = .main
-    var disabledColor: Color = .main
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.SRFontSet.button2)
-            .padding(.vertical, 11)
-            .frame(maxWidth: .infinity)
-            .foregroundColor(defaultColor)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .inset(by: 0.75)
-                    .stroke(defaultColor, lineWidth: 1.5)
-            )
-            .cornerRadius(10)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .contentShape(Rectangle())
-    }
-}
-
-struct SecondaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    var defaultColor: Color = .primary
-    var pressedColor: Color = .primary
-    var disabledColor: Color = .primary
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.SRFontSet.subtitle3)
-            .padding(.vertical, 11)
-            .frame(maxWidth: .infinity)
-            .foregroundColor(defaultColor)
-            .background(Color.clear)
             .cornerRadius(10)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .contentShape(Rectangle())
@@ -100,15 +33,6 @@ extension ButtonStyle where Self == PrimaryButtonStyle {
 }
 
 
-extension ButtonStyle where Self == DeleteButtonStyle {
-    static var delete: Self { Self() }
-}
 
-extension ButtonStyle where Self == BorderedButtonStyle {
-    static var bordered: Self { Self() }
-}
 
-extension ButtonStyle where Self == SecondaryButtonStyle {
-    static var secondary: Self { Self() }
-}
 

@@ -11,7 +11,7 @@ import SwiftData
 
 extension Local {
     @Model
-    final class Bird {
+    final class Bird: Sendable, Equatable {
         @Attribute(.unique) var id: Int
         var name: String              // 국명
         var scientificName: String    // 학명
