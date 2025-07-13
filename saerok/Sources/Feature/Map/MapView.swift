@@ -342,7 +342,7 @@ private struct GlobalToggleButton: View {
         }) {
             ZStack(alignment: isOff ? .leading : .trailing) {
                 RoundedRectangle(cornerRadius: .infinity)
-                    .fill(isOff ? Color.whiteGray : Color.main)
+                    .fill(isOff ? Color.lightGray : Color.main)
                     .frame(width: 72, height: 42)
                     .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
                 

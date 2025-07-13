@@ -153,7 +153,7 @@ private extension FindPlaceView {
                 }
             }
         }
-        .background(Color.whiteGray)
+        .background(Color.lightGray)
     }
     
     func searchCell(_ item: Local.KakaoPlace) -> some View {

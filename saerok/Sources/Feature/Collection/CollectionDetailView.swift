@@ -18,6 +18,7 @@ struct CollectionDetailView: View {
     @State private var collectionBird: Local.CollectionDetail = .mockData[0]
     @State private var isLoading: Bool = true
     @State private var showPopup: Bool = false
+    @State private var showSheet: Bool = false
     @State private var error: Error? = nil
     
     @State private var showShareSheet: Bool = false
@@ -49,9 +50,9 @@ struct CollectionDetailView: View {
         ZStack(alignment: .bottomTrailing) {
             content
             
-            shareSheetSection
-            
-            shareButton
+//            shareSheetSection
+
+//            shareButton
         }
         .regainSwipeBack()
         .onAppear {
@@ -87,8 +88,20 @@ private extension CollectionDetailView {
             .shimmer(when: $isLoading)
         }
         .customPopup(isPresented: $showPopup) { alertView }
-        .background(Color.whiteGray)
+        .background(Color.lightGray)
         .ignoresSafeArea(.all)
+        .bottomSheet(isShowing: $showSheet, backgroundColor: .lightGray) {
+            ScrollView {
+                VStack {
+                    Text("Hello")
+                        .frame(height: 240)
+                    Text("Bye")
+                        .frame(height: 1040)
+
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
     }
 
     var imageSection: some View {
@@ -98,8 +111,9 @@ private extension CollectionDetailView {
             quality: 1.0,
             downsampling: true
         )
-        .aspectRatio(contentMode: .fill)
-        .frame(maxWidth: .infinity)
+        .scaledToFill()
+        .frame(width: UIScreen.main.bounds.width)
+        .clipped()
         .cornerRadius(20)
     }
     
@@ -144,7 +158,7 @@ private extension CollectionDetailView {
             Divider()
                 .hidden()
                 .frame(height: 1)
-                .background(Color.whiteGray)
+                .background(Color.lightGray)
             
             HStack {
                 HStack {
@@ -161,17 +175,23 @@ private extension CollectionDetailView {
                 Divider()
                     .hidden()
                     .frame(width: 1)
-                    .background(Color.whiteGray)
-                HStack {
-                    Image.SRIconSet.comment.frame(.defaultIconSizeLarge)
-                        .padding(8)
-                    Spacer()
-                    Text("0")
+                    .background(Color.lightGray)
+                
+                Button {
+                    showSheet.toggle()
+                } label: {
+                    HStack {
+                        Image.SRIconSet.comment.frame(.defaultIconSizeLarge)
+                            .padding(8)
+                        Spacer()
+                        Text("0")
+                    }
+                    .frame(width: 146, height: 40)
+                    .padding(.leading, 5.5)
+                    .padding(.trailing, 20)
+                    .padding(.vertical, 8)
                 }
-                .frame(width: 146, height: 40)
-                .padding(.leading, 5.5)
-                .padding(.trailing, 20)
-                .padding(.vertical, 8)
+                .buttonStyle(.plain)
             }
         }
         .background(Color.srWhite)

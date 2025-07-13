@@ -54,7 +54,7 @@ struct BirdGridView: View {
             .frame(height: 198)
         }
         .padding(SRDesignConstant.defaultPadding)
-        .background(Color.whiteGray)
+        .background(Color.lightGray)
     }
 }
 

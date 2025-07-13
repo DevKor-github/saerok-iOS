@@ -125,7 +125,7 @@ private extension CollectionSearchView {
                 }
             }
         }
-        .background(Color.whiteGray)
+        .background(Color.lightGray)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
