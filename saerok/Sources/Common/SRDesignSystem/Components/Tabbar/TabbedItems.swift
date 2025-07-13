@@ -38,7 +38,7 @@ enum TabbedItems: Int, CaseIterable {
         case .home:
             return Image.SRIconSet.home
         case .collection:
-            return Image.SRIconSet.heart
+            return Image.SRIconSet.saerok
         case .profile:
             return Image.SRIconSet.my
         }
@@ -53,7 +53,7 @@ enum TabbedItems: Int, CaseIterable {
         case .home:
             return Image.SRIconSet.homeFilled
         case .collection:
-            return Image.SRIconSet.heartFilled
+            return Image.SRIconSet.saerokFilled
         case .profile:
             return Image.SRIconSet.myFilled
         }

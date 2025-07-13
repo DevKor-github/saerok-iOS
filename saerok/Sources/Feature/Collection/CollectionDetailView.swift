@@ -28,7 +28,7 @@ struct CollectionDetailView: View {
     @Environment(\.injected) private var injected: DIContainer
     
     // MARK: Navigation
-
+    
     var path: Binding<NavigationPath>?
     
     // MARK: - Init
@@ -79,15 +79,18 @@ private extension CollectionDetailView {
                     descriptionSection
                         .padding(.horizontal, SRDesignConstant.defaultPadding)
                         .offset(y: -30)
+                    Color.clear
+                        .frame(height: 40)
                 }
                 navigationBar
             }
             .shimmer(when: $isLoading)
         }
         .customPopup(isPresented: $showPopup) { alertView }
+        .background(Color.whiteGray)
         .ignoresSafeArea(.all)
     }
-    
+
     var imageSection: some View {
         ReactiveAsyncImage(
             url: collectionBird.imageURL,
@@ -97,73 +100,120 @@ private extension CollectionDetailView {
         )
         .aspectRatio(contentMode: .fill)
         .frame(maxWidth: .infinity)
+        .cornerRadius(20)
     }
     
     var descriptionSection: some View {
         ZStack(alignment: .topLeading) {
-            VStack(alignment: .leading, spacing: 27) {
+            VStack(alignment: .leading, spacing: 10) {
                 noteView
                 infoView
-                Spacer()
             }
-            .padding(.top, 43)
-            
+            .padding(.top, 41)
             nameView
         }
     }
     
     var nameView: some View {
-        Text(collectionBird.birdName ?? "이름 모를 새")
-            .font(.SRFontSet.headline2_2)
-            .fontWeight(.bold)
-            .padding(.vertical, 18)
-            .padding(.horizontal, 21)
-            .background(Color.srWhite)
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
+        HStack {
+            Text(collectionBird.birdName ?? "이름 모를 새")
+                .font(.SRFontSet.subtitle1)
+                .padding(.vertical, 19)
+                .padding(.horizontal, 17)
+                .background(Color.srWhite)
+                .cornerRadius(20)
+                .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
+            Spacer()
+            ZStack(alignment: .trailing) {
+                Image(.saerokTap)
+                trailingButtons
+                    .padding(11)
+            }
+        }
     }
     
     var noteView: some View {
-        Text(collectionBird.note)
-            .font(.SRFontSet.body3_2)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 20)
-            .padding(.top, 12)
-            .padding(.horizontal, 17)
-            .background(Color.whiteGray)
-            .cornerRadius(8)
+        VStack(spacing: 0) {
+            Text(collectionBird.note)
+                .font(.SRFontSet.body3_2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 19)
+                .padding(.horizontal, 26)
+                .padding(.top, 19)
+            
+            Divider()
+                .hidden()
+                .frame(height: 1)
+                .background(Color.whiteGray)
+            
+            HStack {
+                HStack {
+                    Image.SRIconSet.heart.frame(.defaultIconSizeLarge)
+                        .padding(8)
+                    Spacer()
+                    Text("0")
+                }
+                .frame(width: 146, height: 40)
+                .padding(.leading, 5.5)
+                .padding(.trailing, 20)
+                .padding(.vertical, 8)
+                
+                Divider()
+                    .hidden()
+                    .frame(width: 1)
+                    .background(Color.whiteGray)
+                HStack {
+                    Image.SRIconSet.comment.frame(.defaultIconSizeLarge)
+                        .padding(8)
+                    Spacer()
+                    Text("0")
+                }
+                .frame(width: 146, height: 40)
+                .padding(.leading, 5.5)
+                .padding(.trailing, 20)
+                .padding(.vertical, 8)
+            }
+        }
+        .background(Color.srWhite)
+        .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
     }
     
     var infoView: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
+            HStack(alignment: .top, spacing: 5) {
                 Image.SRIconSet.pin
-                    .frame(.defaultIconSizeLarge, tintColor: .pointtext)
-                VStack(alignment: .leading) {
+                    .frame(.defaultIconSize, tintColor: .pointtext)
+                
+                VStack(alignment: .leading, spacing: 3) {
                     Text(collectionBird.locationAlias)
-                        .font(.SRFontSet.body2)
+                        .font(.SRFontSet.body4)
                     Text(collectionBird.address)
                         .font(.SRFontSet.caption3)
                         .foregroundStyle(.secondary)
                 }
             }
             
-            HStack {
+            HStack(spacing: 5) {
                 Image.SRIconSet.clock
-                    .frame(.defaultIconSizeLarge, tintColor: .pointtext)
-
+                    .frame(.defaultIconSize, tintColor: .pointtext)
+                
                 Text(collectionBird.discoveredDate.korString)
-                    .font(.SRFontSet.body2)
+                    .font(.SRFontSet.body4)
             }
             
-            HStack {
+            HStack(spacing: 5) {
                 Image.SRIconSet.myFilled
-                    .frame(.defaultIconSizeLarge, tintColor: .pointtext)
-
+                    .frame(.defaultIconSize, tintColor: .pointtext)
+                
                 Text(collectionBird.userNickname)
-                    .font(.SRFontSet.body2)
+                    .font(.SRFontSet.body4)
             }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 15)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.srWhite)
+        .cornerRadius(20)
     }
     
     var alertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
@@ -201,10 +251,15 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var trailingButtons: some View {
-        HStack(spacing: 7) {
+        HStack(spacing: 9) {
             toDogamButton
             
             additionalButton
+                .background(
+                    Circle()
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                )
         }
     }
     
@@ -212,9 +267,6 @@ private extension CollectionDetailView {
         NavigationBar(
             leading: {
                 leadingButton
-            },
-            trailing: {
-                trailingButtons
             },
             backgroundColor: .clear
         )
@@ -289,9 +341,9 @@ private extension CollectionDetailView {
     }
 }
 
+// MARK: - Networking & Helpers
+
 private extension CollectionDetailView {
-    // MARK: - Networking & Helpers
-    
     func fetchCollectionDetail() {
         Task {
             if let collectionBird = try? await injected.interactors.collection.fetchCollectionDetail(id: collectionID) {

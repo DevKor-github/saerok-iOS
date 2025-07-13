@@ -66,14 +66,16 @@ extension Image {
         case airplane
         case jongchuMini
         case board
+        case heart
+        case comment
         
         // MARK: Tabbar
         case doongzi
         case doongziFilled
         case dogam
         case dogamFilled
-        case heart
-        case heartFilled
+        case saerok
+        case saerokFilled
         case my
         case myFilled
         case home
@@ -193,11 +195,13 @@ extension Image.SRIconSet {
         case .locker: return Image(.locke)
         case .jongchuMini: return Image(.jongchuMini)
         case .board: return Image(.board)
+        case .heart: return Image(.heart1)
+        case .comment: return Image(.comment)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)
-        case .heart: return Image(.heart)
-        case .heartFilled: return Image(.heartFilled)
+        case .saerok: return Image(.heart)
+        case .saerokFilled: return Image(.heartFilled)
         case .my: return Image(.my)
         case .myFilled: return Image(.myFilled)
         case .home: return Image(.home)
