@@ -15,14 +15,18 @@ struct CollectionDetailView: View {
     let collectionID: Int
     let isFromMapView: Bool
     
-    @State private var collectionBird: Local.CollectionDetail = .mockData[0]
+    @State var comments: [Local.CollectionComment] = []
+
+    @State private var collection: Local.CollectionDetail = .mockData[0]
     @State private var isLoading: Bool = true
     @State private var showPopup: Bool = false
     @State private var showSheet: Bool = false
+    @FocusState private var isFocused
     @State private var error: Error? = nil
-    
+    @State private var text: String = ""
     @State private var showShareSheet: Bool = false
     @State private var downloadedImage: UIImage?
+    @StateObject private var keyboard = KeyboardObserver()
     
     // MARK: - Environment
     
@@ -49,20 +53,23 @@ struct CollectionDetailView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             content
-            
-//            shareSheetSection
 
-//            shareButton
+            shareSheetSection
+
+            if !showSheet {
+                shareButton
+            }
         }
         .regainSwipeBack()
         .onAppear {
             fetchCollectionDetail()
+            fetchCollectionComments()
         }
         .navigationDestination(for: CollectionDetailView.Route.self, destination: { route in
             switch route {
             case .edit:
                 if let path = path {
-                    CollectionFormView(mode: .edit(collectionBird), path: path)
+                    CollectionFormView(mode: .edit(collection), path: path)
                 }
             }
         })
@@ -87,26 +94,36 @@ private extension CollectionDetailView {
             }
             .shimmer(when: $isLoading)
         }
-        .customPopup(isPresented: $showPopup) { alertView }
         .background(Color.lightGray)
-        .ignoresSafeArea(.all)
         .bottomSheet(isShowing: $showSheet, backgroundColor: .lightGray) {
-            ScrollView {
-                VStack {
-                    Text("Hello")
-                        .frame(height: 240)
-                    Text("Bye")
-                        .frame(height: 1040)
-
-                }
-                .frame(maxWidth: .infinity)
-            }
+            CollectionCommentSheet(
+                nickname: collection.userNickname,
+                comments: comments,
+                onDelete: deleteComment,
+                onReport: { showPopup = true },
+                onDismiss: { showSheet.toggle() }
+            )
+            
         }
+        .onTapGesture {
+            isFocused = false
+        }
+        .commentInputOverlay(isPresented: $showSheet) {
+            CollectionCommentInputBar(
+                text: $text,
+                isFocused: _isFocused,
+                nickname: collection.userNickname,
+                onSubmit: postComment,
+                keyboard: keyboard
+            )
+        }
+        .customPopup(isPresented: $showPopup) { alertView }
+        .ignoresSafeArea(.all)
     }
 
     var imageSection: some View {
         ReactiveAsyncImage(
-            url: collectionBird.imageURL,
+            url: collection.imageURL,
             scale: .medium,
             quality: 1.0,
             downsampling: true
@@ -124,13 +141,14 @@ private extension CollectionDetailView {
                 infoView
             }
             .padding(.top, 41)
+            
             nameView
         }
     }
     
     var nameView: some View {
         HStack {
-            Text(collectionBird.birdName ?? "이름 모를 새")
+            Text(collection.birdName ?? "이름 모를 새")
                 .font(.SRFontSet.subtitle1)
                 .padding(.vertical, 19)
                 .padding(.horizontal, 17)
@@ -148,8 +166,11 @@ private extension CollectionDetailView {
     
     var noteView: some View {
         VStack(spacing: 0) {
-            Text(collectionBird.note)
+            Text(collection.note.allowLineBreaking())
                 .font(.SRFontSet.body3_2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(nil)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 19)
                 .padding(.horizontal, 26)
@@ -160,42 +181,46 @@ private extension CollectionDetailView {
                 .frame(height: 1)
                 .background(Color.lightGray)
             
-            HStack {
-                HStack {
-                    Image.SRIconSet.heart.frame(.defaultIconSizeLarge)
-                        .padding(8)
-                    Spacer()
-                    Text("0")
+            HStack(spacing: 0) {
+                noteButton(
+                    image: (collection.isLiked ? Image.SRIconSet.heartFilled : .heart),
+                    index: collection.likeCount
+                ) {
+                    toggleLike()
                 }
-                .frame(width: 146, height: 40)
-                .padding(.leading, 5.5)
-                .padding(.trailing, 20)
-                .padding(.vertical, 8)
                 
                 Divider()
                     .hidden()
                     .frame(width: 1)
                     .background(Color.lightGray)
                 
-                Button {
+                noteButton(
+                    image: .comment,
+                    index: comments.count
+                ) {
                     showSheet.toggle()
-                } label: {
-                    HStack {
-                        Image.SRIconSet.comment.frame(.defaultIconSizeLarge)
-                            .padding(8)
-                        Spacer()
-                        Text("0")
-                    }
-                    .frame(width: 146, height: 40)
-                    .padding(.leading, 5.5)
-                    .padding(.trailing, 20)
-                    .padding(.vertical, 8)
                 }
-                .buttonStyle(.plain)
             }
         }
         .background(Color.srWhite)
         .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
+    }
+    
+    func noteButton(image: Image.SRIconSet, index: Int, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                image
+                    .frame(.defaultIconSizeLarge)
+                    .padding(8)
+                Spacer()
+                Text("\(index)")
+            }
+            .frame(width: 146, height: 40)
+            .padding(.leading, 5.5)
+            .padding(.trailing, 20)
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(.plain)
     }
     
     var infoView: some View {
@@ -205,11 +230,24 @@ private extension CollectionDetailView {
                     .frame(.defaultIconSize, tintColor: .pointtext)
                 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(collectionBird.locationAlias)
+                    Text(collection.locationAlias)
                         .font(.SRFontSet.body4)
-                    Text(collectionBird.address)
+                    Text(collection.address)
                         .font(.SRFontSet.caption3)
                         .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Button {
+                    injected.appState[\.routing.contentView.tabSelection] = .home
+                    injected.appState[\.routing.mapView.navigation] = .init(latitude: collection.coordinate.latitude, longitude: collection.coordinate.longitude)
+                    if let path = path {
+                        path.wrappedValue.removeLast()
+                    }
+                } label: {
+                    Image.SRIconSet.chevronRight
+                        .frame(.defaultIconSize, tintColor: .srGray)
                 }
             }
             
@@ -217,7 +255,7 @@ private extension CollectionDetailView {
                 Image.SRIconSet.clock
                     .frame(.defaultIconSize, tintColor: .pointtext)
                 
-                Text(collectionBird.discoveredDate.korString)
+                Text(collection.discoveredDate.korString)
                     .font(.SRFontSet.body4)
             }
             
@@ -225,7 +263,7 @@ private extension CollectionDetailView {
                 Image.SRIconSet.myFilled
                     .frame(.defaultIconSize, tintColor: .pointtext)
                 
-                Text(collectionBird.userNickname)
+                Text(collection.userNickname)
                     .font(.SRFontSet.body4)
             }
         }
@@ -295,7 +333,7 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var toDogamButton: some View {
-        if let birdID = collectionBird.birdID {
+        if let birdID = collection.birdID {
             if let bindingPath = path {
                 NavigationLink {
                     BirdDetailView(birdID: birdID, path: bindingPath)
@@ -305,9 +343,9 @@ private extension CollectionDetailView {
             } else {
                 Button {
                     injected.appState[\.routing.contentView.tabSelection] = .fieldGuide
-                    injected.appState[\.routing.fieldGuideView.birdName] = collectionBird.birdName
+                    injected.appState[\.routing.fieldGuideView.birdName] = collection.birdName
                 } label: {
-                    Image.SRIconSet.toDogam.frame(.defaultIconSizeVeryLarge)
+                    Image.SRIconSet.toDogam.frame(.defaultIconSizeLarge)
                 }
             }
         }
@@ -341,7 +379,7 @@ private extension CollectionDetailView {
     @ViewBuilder
     var shareSheetSection: some View {
         if let image = downloadedImage, showShareSheet {
-            CollectionShareView(collection: collectionBird, isPresented: $showShareSheet, image: image)
+            CollectionShareView(collection: collection, isPresented: $showShareSheet, image: image)
         }
     }
     
@@ -367,9 +405,55 @@ private extension CollectionDetailView {
     func fetchCollectionDetail() {
         Task {
             if let collectionBird = try? await injected.interactors.collection.fetchCollectionDetail(id: collectionID) {
-                self.collectionBird = collectionBird
+                self.collection = collectionBird
                 downloadImage(from: collectionBird.imageURL)
                 isLoading = false
+            }
+        }
+    }
+    
+    func fetchCollectionComments() {
+        Task {
+            do {
+                comments = try await injected.interactors.collection.fetchComments(collectionID)
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func postComment() {
+        Task {
+            do {
+                try await injected.interactors.collection.createComments(id: collectionID, text)
+                comments = try await injected.interactors.collection.fetchComments(collectionID)
+            } catch {
+                
+            }
+            text = ""
+        }
+    }
+    
+    func deleteComment(_ id: Int) {
+        Task {
+            do {
+                try await injected.interactors.collection.deleteComment(collectionId: collectionID, commentId: id)
+                collection.commentCount -= 1
+                comments = try await injected.interactors.collection.fetchComments(collectionID)
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func toggleLike() {
+        Task {
+            do {
+                HapticManager.shared.trigger(.light)
+                let isLiked = try await injected.interactors.collection.toggleLike(collectionID)
+                collection.likeToggle(isLiked)
+            } catch {
+                print(error.localizedDescription)
             }
         }
     }
@@ -392,3 +476,11 @@ private extension CollectionDetailView {
     @Previewable @State var path: NavigationPath = .init()
     CollectionDetailView(collectionID: 1, path: $path)
 }
+
+
+//#Preview {
+//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+//    
+//    appDelegate.rootView
+//}
+

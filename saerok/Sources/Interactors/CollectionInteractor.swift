@@ -5,8 +5,6 @@
 //  Created by HanSeung on 4/17/25.
 //
 
-import UIKit
-
 
 protocol CollectionInteractor {
     func fetchMyCollections() async throws -> [Local.CollectionSummary]
@@ -15,6 +13,10 @@ protocol CollectionInteractor {
     func deleteCollection(_ id: Int) async throws
     func editCollection(_ draft: Local.CollectionDraft) async throws
     func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary]
+    func fetchComments(_ id: Int) async throws -> [Local.CollectionComment]
+    func createComments(id: Int, _ content: String) async throws
+    func deleteComment(collectionId: Int, commentId: Int) async throws
+    func toggleLike(_ id: Int) async throws -> Bool
 }
 
 enum CollectionInteractorError: Error {
@@ -74,18 +76,30 @@ struct CollectionInteractorImpl: CollectionInteractor {
         )
         return try await repository.fetchNearbyCollections(request)
     }
+    
+    func fetchComments(_ id: Int) async throws -> [Local.CollectionComment] {
+        return try await repository.fetchCollectionComments(id)
+    }
+    
+    func createComments(id: Int, _ content: String) async throws {
+        try await repository.createCollectionComment(id: id, content)
+    }
+    
+    func deleteComment(collectionId: Int, commentId: Int) async throws {
+        try await repository.deleteCollectionComment(collectionId: collectionId, commentId: commentId)
+    }
+    
+    func toggleLike(_ id: Int) async throws -> Bool {
+        return try await repository.toggleCollectionLike(id)
+    }
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
-    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] {
-        return []
-    }
+    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] { [] }
     
     func editCollection(_ draft: Local.CollectionDraft) async throws { }
     
-    func deleteCollection(_ id: Int) async throws {
-        
-    }
+    func deleteCollection(_ id: Int) async throws { }
     
     func createCollection(_ draft: Local.CollectionDraft) async throws { }
     
@@ -100,6 +114,14 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse {
         return .init(collectionId: 0)
     }
+    
+    func fetchComments(_ id: Int) async throws -> [Local.CollectionComment] { [] }
+    
+    func createComments(id: Int, _ content: String) async throws { }
+    
+    func deleteComment(collectionId: Int, commentId: Int) async throws { }
+    
+    func toggleLike(_ id: Int) async throws -> Bool { true }
 }
 
 

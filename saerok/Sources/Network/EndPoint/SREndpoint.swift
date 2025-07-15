@@ -24,6 +24,10 @@ enum SREndpoint: Endpoint {
     case registerUploadedImage(collectionId: Int, body: DTO.RegisterImageRequest)
     case deleteCollection(collectionId: Int)
     case editCollection(collectionId: Int, body: DTO.EditCollectionMetadataRequest)
+    case collectionComments(collectionId: Int)
+    case createComment(collectionId: Int, body: DTO.CreateCommentRequest)
+    case likeCollection(collectionId: Int)
+    case deleteCollectionComment(collectionID: Int, commentID: Int)
     
     // MARK: Bookmark API
     
@@ -45,7 +49,7 @@ enum SREndpoint: Endpoint {
 
 extension SREndpoint {
     var baseURL: String {
-        return "http://api.saerok.app/api/v1/"
+        return "http://dev-api.saerok.app/api/v1/"
     }
 //    
 //    var baseURL: String {
@@ -56,28 +60,32 @@ extension SREndpoint {
         switch self {
         case .fullSync: "birds/full-sync"
         case .myCollections: "collections/me"
-        case .collectionDetail(let collectionId), .deleteCollection(let collectionId): "collections/\(collectionId)"
+        case .collectionDetail(let collectionID), .deleteCollection(let collectionID): "collections/\(collectionID)"
         case .createCollection: "collections/"
-        case .getPresignedURL(let collectionId, _): "collections/\(collectionId)/images/presign"
-        case .registerUploadedImage(let collectionId, _): "collections/\(collectionId)/images"
-        case .editCollection(let collectionId, _): "collections/\(collectionId)/edit"
+        case .getPresignedURL(let collectionID, _): "collections/\(collectionID)/images/presign"
+        case .registerUploadedImage(let collectionID, _): "collections/\(collectionID)/images"
+        case .editCollection(let collectionID, _): "collections/\(collectionID)/edit"
         case .nearbyCollections: "collections/nearby"
         case .appleLogin: "auth/apple/login"
         case .kakaoLogin: "auth/kakao/login"
         case .refreshToken: "auth/refresh"
         case .checkNickname: "user/check-nickname"
         case .me, .updateMe: "user/me"
-        case .toggleBookmark(let id): "birds/bookmarks/\(id)/toggle"
+        case .toggleBookmark(let ID): "birds/bookmarks/\(ID)/toggle"
         case .myBookmarks: "birds/bookmarks/"
+        case .collectionComments(let collectionID): "collections/\(collectionID)/comments"
+        case .createComment(let collectionID, _): "collections/\(collectionID)/comments"
+        case .likeCollection(collectionId: let collectionID): "collections/\(collectionID)/like"
+        case .deleteCollectionComment(let collectionID, let commentID): "collections/\(collectionID)/comments/\(commentID)"
         }
     }
     
     var method: String {
         switch self {
-        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks: "GET"
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage: "POST"
+        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments: "GET"
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection: "POST"
         case .updateMe, .editCollection: "PATCH"
-        case .deleteCollection: "DELETE"
+        case .deleteCollection, .deleteCollectionComment: "DELETE"
         }
     }
     
@@ -86,7 +94,7 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments:
             return true
         default:
             return false
@@ -103,7 +111,7 @@ extension SREndpoint {
         }
         
         switch self {
-        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection:
+        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment:
             headers["Content-Type"] = "application/json"
         default:
             break
@@ -135,6 +143,8 @@ extension SREndpoint {
         case .updateMe(let nickname):
             let body = ["nickname": nickname]
             return try? JSONSerialization.data(withJSONObject: body)
+        case .createComment(_, let body):
+            return try? JSONEncoder().encode(body)
         default:
             return nil
         }
@@ -188,8 +198,14 @@ extension SREndpoint {
             return DTO.ToggleBookmarkResponse.self
         case .myBookmarks:
             return DTO.MyBookmarkResponse.self
+        case .collectionComments:
+            return DTO.CollectionCommentsResponse.self
+        case .createComment:
+            return DTO.CreateCommentResponse.self
+        case .likeCollection:
+            return DTO.CollectionLikeToggleResponse.self
+        default:
+            return EmptyResponse.self
         }
     }
 }
-
-struct EmptyResponse: Decodable {}

@@ -55,3 +55,12 @@ extension Date {
     }
 }
 
+extension DateFormatter {
+    static let collectionComment: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0) // 서버 시간대에 따라 조정
+        return formatter
+    }()
+}

@@ -19,6 +19,9 @@ extension DTO {
         let locationAlias: String?
         let note: String
         let accessLevel: AccessLevel
+        let likeCount: Int
+        let commentCount: Int
+        let isLiked: Bool
         let bird: BirdInfo
         let user: UserInfo
     }

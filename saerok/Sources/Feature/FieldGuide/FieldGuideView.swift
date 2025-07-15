@@ -70,6 +70,11 @@ struct FieldGuideView: Routable {
                 else { return }
                 navigateToBirdDetail(bird)
             })
+            .onChange(of: routingState.scrollToTop) { _, newID in
+                guard let _ = newID else { return }
+                offsetY = 0
+                self.routingState.scrollToTop = nil
+            }
             .onChange(of: navigationPath, { _, path in
                 if !path.isEmpty {
                     routingBinding.wrappedValue.birdName = nil
@@ -190,7 +195,7 @@ private extension FieldGuideView {
                         filterKey: $filterKey
                     )
                     .padding(.top, Constants.headerTopPadding)
-                    .background(.whiteGray)
+                    .background(.lightGray)
                     BirdGridView(
                         birds: fieldGuide,
                         onTap: { bird in
@@ -315,6 +320,7 @@ private extension FieldGuideView {
 extension FieldGuideView {
     struct Routing: Equatable {
         var birdName: String?
+        var scrollToTop: UUID?
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {

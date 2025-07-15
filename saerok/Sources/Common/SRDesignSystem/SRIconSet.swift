@@ -67,7 +67,9 @@ extension Image {
         case jongchuMini
         case board
         case heart
+        case heartFilled
         case comment
+        case upperArrow
         
         // MARK: Tabbar
         case doongzi
@@ -195,13 +197,15 @@ extension Image.SRIconSet {
         case .locker: return Image(.locke)
         case .jongchuMini: return Image(.jongchuMini)
         case .board: return Image(.board)
-        case .heart: return Image(.heart1)
+        case .heart: return Image(.heart)
+        case .heartFilled: return Image(.heartFilled)
         case .comment: return Image(.comment)
+        case .upperArrow: return Image(.upperArrow)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)
-        case .saerok: return Image(.heart)
-        case .saerokFilled: return Image(.heartFilled)
+        case .saerok: return Image(.saerok)
+        case .saerokFilled: return Image(.saerokFilled)
         case .my: return Image(.my)
         case .myFilled: return Image(.myFilled)
         case .home: return Image(.home)

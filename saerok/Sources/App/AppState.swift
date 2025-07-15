@@ -21,6 +21,7 @@ extension AppState {
         var fieldGuideView = FieldGuideView.Routing()
         var collectionView = CollectionView.Routing()
         var addCollectionItemView = CollectionFormView.Routing()
+        var mapView = MapView.Routing()
     }
 }
 

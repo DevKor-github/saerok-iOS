@@ -20,9 +20,13 @@ final class Provider {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }
-        
+
         guard 200..<300 ~= httpResponse.statusCode else {
             throw self.validateStatusCode(httpResponse.statusCode)
+        }
+        
+        if T.self == EmptyResponse.self {
+            return EmptyResponse() as! T
         }
         
         do {
@@ -43,3 +47,5 @@ final class Provider {
         }
     }
 }
+
+struct EmptyResponse: Decodable {}

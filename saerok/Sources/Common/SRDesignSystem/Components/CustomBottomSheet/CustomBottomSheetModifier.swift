@@ -36,9 +36,9 @@ enum BottomSheetDetent {
     var height: CGFloat {
         switch self {
         case .medium:
-            UIScreen.main.bounds.height * 0.4
+            UIScreen.main.bounds.height * 0.65
         case .large:
-            UIScreen.main.bounds.height * 1.0
+            UIScreen.main.bounds.height * 0.95
         }
     }
 }
@@ -81,7 +81,7 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             VStack(spacing: 0) {
                 indicator
 
-                ZStack {
+                ZStack(alignment: .top) {
                     sheetContent()
                         .frame(maxHeight: UIScreen.main.bounds.height - topOffset)
                         .frame(width: UIScreen.main.bounds.width)

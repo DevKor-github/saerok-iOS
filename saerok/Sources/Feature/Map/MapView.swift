@@ -5,10 +5,12 @@
 //  Created by HanSeung on 5/22/25.
 //
 
+import Combine
 import SwiftUI
 import SwiftData
 
-struct MapView: View {
+struct MapView: Routable {
+    
     enum Route: Hashable {
         case detail(_ collectionID: Int)
     }
@@ -22,8 +24,12 @@ struct MapView: View {
     @Environment(\.injected) var injected
     private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     
-    // MARK: - View State
+    // MARK: - Routable
     
+    @State var routingState: Routing = .init()
+    
+    // MARK: - View State
+        
     private var locationManager: LocationManager { LocationManager.shared }
     @StateObject private var mapController: MapController
     
@@ -69,6 +75,10 @@ struct MapView: View {
                 if let newBird = newBird {
                     path.append(MapView.Route.detail(newBird.collectionId))
                 }
+            }
+            .onReceive(routingUpdate) { update in
+                guard let navigation = update.navigation else { return }
+                position = (navigation.latitude, navigation.longitude)
             }
     }
     
@@ -325,6 +335,29 @@ private extension MapView {
             }
             .buttonStyle(.plain)
         }
+    }
+}
+
+// MARK: - Routable
+
+extension MapView {
+    struct Routing: Equatable {
+        var navigation: Coordinate? = nil
+    }
+    
+    var routingUpdate: AnyPublisher<Routing, Never> {
+        injected.appState.updates(for: \.routing.mapView)
+    }
+    
+    var routingBinding: Binding<Routing> {
+        $routingState.dispatched(to: injected.appState, \.routing.mapView)
+    }
+}
+
+extension MapView.Routing {
+    struct Coordinate: Equatable {
+        let latitude: Double
+        let longitude: Double
     }
 }
 

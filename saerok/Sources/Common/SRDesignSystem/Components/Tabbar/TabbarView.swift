@@ -28,6 +28,9 @@ struct TabbarView: View {
                 Button {
                     injected.appState[\.routing.contentView.tabSelection] = item
                     HapticManager.shared.trigger(.light)
+                    if item == .fieldGuide {
+                        injected.appState[\.routing.fieldGuideView.scrollToTop] = UUID()
+                    }
                 } label: {
                     HStack {
                         Spacer()
