@@ -9,9 +9,52 @@ import NMapsMap
 
 // MARK: - Marker Updater
 
-final class MarkerUpdater: NMCDefaultClusterMarkerUpdater, NMCLeafMarkerUpdater {
+final class MarkerUpdater: NMCClusterMarkerUpdater, NMCLeafMarkerUpdater {
     var clusterer: NMCClusterer<ItemKey>?
+    
+    func updateClusterMarker(_ info: NMCClusterMarkerInfo, _ marker: NMFMarker) {
+        let size = info.size
+        
+        switch info.size {
+        case ..<5:
+            marker.width = 55
+            marker.height = 55
+            marker.iconImage = NMFOverlayImage(image: .cls1)
+        case 5..<10:
+            marker.width = 63
+            marker.height = 63
+            marker.iconImage = NMFOverlayImage(image: .cls2)
+        case 10..<15:
+            marker.width = 78
+            marker.height = 78
+            marker.iconImage = NMFOverlayImage(image: .cls3)
+        case 15..<20:
+            marker.width = 86
+            marker.height = 86
+            marker.iconImage = NMFOverlayImage(image: .cls4)
+        case 20...:
+            marker.width = 86
+            marker.height = 86
+            marker.iconImage = NMFOverlayImage(image: .cls5)
+        default:
+            marker.iconImage = NMFOverlayImage(image: .cls1)
+        }
 
+        marker.anchor = NMF_CLUSTER_ANCHOR_DEFAULT
+        marker.captionText = String(size)
+        marker.captionAligns = [NMFAlignType.center]
+        marker.captionColor = UIColor.white
+        marker.captionHaloColor = UIColor.clear
+        marker.touchHandler = { overlay in
+            if let mapView = overlay.mapView {let position = NMFCameraPosition(info.position, zoom: Double(info.maxZoom + 1))
+                let cameraUpdate = NMFCameraUpdate(position: position)
+                cameraUpdate.animation = .easeIn
+                mapView.moveCamera(cameraUpdate)
+            }
+            return true
+        }
+    }
+    
     func updateLeafMarker(_ info: NMCLeafMarkerInfo, _ marker: NMFMarker) {
         guard let tag = info.tag as? ItemData,
               let testMarker = marker as? SRMarker,

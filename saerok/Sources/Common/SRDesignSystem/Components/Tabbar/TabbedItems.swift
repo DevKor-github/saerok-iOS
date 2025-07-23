@@ -11,7 +11,7 @@ enum TabbedItems: Int, CaseIterable {
 //    case community = 0
     case collection = 0
     case fieldGuide 
-    case home
+    case map
     case profile
     
     var title: String {
@@ -20,7 +20,7 @@ enum TabbedItems: Int, CaseIterable {
 //            return "둥지"
         case .fieldGuide:
             return "도감"
-        case .home:
+        case .map:
             return "지도"
         case .collection:
             return "새록"
@@ -35,7 +35,7 @@ enum TabbedItems: Int, CaseIterable {
 //            return Image.SRIconSet.doongzi
         case .fieldGuide:
             return Image.SRIconSet.dogam
-        case .home:
+        case .map:
             return Image.SRIconSet.home
         case .collection:
             return Image.SRIconSet.saerok
@@ -50,7 +50,7 @@ enum TabbedItems: Int, CaseIterable {
 //            return Image.SRIconSet.doongziFilled
         case .fieldGuide:
             return Image.SRIconSet.dogamFilled
-        case .home:
+        case .map:
             return Image.SRIconSet.homeFilled
         case .collection:
             return Image.SRIconSet.saerokFilled

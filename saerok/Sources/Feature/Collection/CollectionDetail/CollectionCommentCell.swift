@@ -14,7 +14,7 @@ struct CollectionCommentCell: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 6) {
-            Image(.birdPreview)
+            Image(.defaultProfile)
                 .resizable()
                 .frame(width: 25, height: 25)
                 .clipShape(Circle())
@@ -36,13 +36,15 @@ struct CollectionCommentCell: View {
                     Spacer()
                     
                     Menu {
-                        Button {
-                            onDelete(item.id)
-                        } label: {
-                            Label("삭제하기", systemImage: "trash")
+                        if item.isMine {
+                            Button {
+                                onDelete(item.id)
+                            } label: {
+                                Label("삭제하기", systemImage: "trash")
+                            }
+                            .disabled(!item.isMine)
                         }
-                        .disabled(!item.isMine)
-
+                        
                         Button {
                             onReport()
                         } label: {

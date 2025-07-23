@@ -36,6 +36,7 @@ struct CollectionCommentSheet: View {
                             .frame(height: UIScreen.main.bounds.height * 0.5)
                     }
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
         }
     }
@@ -47,7 +48,8 @@ struct CollectionCommentSheet: View {
                 .foregroundStyle(.splash)
             Spacer()
             Button(action: onDismiss) {
-                Image.SRIconSet.delete.frame(.defaultIconSizeSmall, tintColor: .srGray)
+                Image.SRIconSet.delete
+                    .frame(.defaultIconSizeSmall, tintColor: .srGray)
             }
         }
         .font(.SRFontSet.subtitle2)

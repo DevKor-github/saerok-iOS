@@ -59,10 +59,11 @@ struct CollectionCommentInputBar: View {
         }
         .background(.srWhite)
         .padding(.bottom, keyboard.keyboardHeight)
-        .animation(.easeInOut(duration: 0.25), value: keyboard.keyboardHeight)
+        .animation(.smooth(duration: 0.25), value: keyboard.keyboardHeight)
         .disabled(isGuest)
     }
 }
+
 extension View {
     func commentInputOverlay<OverlayContent: View>(
         isPresented: Binding<Bool>,
@@ -73,7 +74,7 @@ extension View {
                 if isPresented.wrappedValue {
                     content()
                         .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .animation(.easeInOut, value: isPresented.wrappedValue)
+                        .animation(.smooth, value: isPresented.wrappedValue)
                 }
             },
             alignment: .bottom

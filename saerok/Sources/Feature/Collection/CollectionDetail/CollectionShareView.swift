@@ -160,7 +160,7 @@ private extension CollectionShareView {
         let pasteboardItems = [[
             "com.instagram.sharedSticker.stickerImage": stickerImage,
             "com.instagram.sharedSticker.backgroundTopColor" : "#F2F2F2",
-            "com.instagram.sharedSticker.backgroundBottomColor" : "#CDDDF3"
+            "com.instagram.sharedSticker.backgroundBottomColor" : "#CDDDF3",
         ]]
 
         let pasteboardOptions: [UIPasteboard.OptionsKey: Any] = [

@@ -183,7 +183,7 @@ private extension FieldGuideView {
     
     var scrollableSection: some View {
         ScrollViewReader { proxy in
-            ScrollView(.vertical, showsIndicators: false) {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 0) {
                     OffsetReaderView()
                         .id(Constants.scrollableID)
@@ -206,7 +206,7 @@ private extension FieldGuideView {
                 }
             }
             .onChange(of: offsetY) { _, newValue in
-                if newValue == 0 {
+                if newValue == 0 && routingState.scrollToTop != nil {
                     withAnimation {
                         proxy.scrollTo(Constants.scrollableID, anchor: .top)
                     }

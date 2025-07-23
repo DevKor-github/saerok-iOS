@@ -5,6 +5,7 @@
 //  Created by HanSeung on 5/22/25.
 //
 
+
 import Combine
 import SwiftUI
 import SwiftData
@@ -51,20 +52,17 @@ struct MapView: Routable {
     init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
         self._mapViewState = .init(initialValue: state)
         self._path = path
-        
         let mapController = MapController(locationManager: LocationManager.shared)
-        
         self._mapController = .init(wrappedValue: mapController)
     }
-    
-    // MARK: - Body
-    
+        
     var body: some View {
         content
             .ignoresSafeArea(.all)
             .onAppear {
                 mapController.selectedBird = nil
             }
+            .onReceive(routingUpdate) { self.routingState = $0 }
             .navigationDestination(for: MapView.Route.self) { route in
                 switch route  {
                 case .detail(let id):
@@ -76,14 +74,15 @@ struct MapView: Routable {
                     path.append(MapView.Route.detail(newBird.collectionId))
                 }
             }
-            .onReceive(routingUpdate) { update in
-                guard let navigation = update.navigation else { return }
-                position = (navigation.latitude, navigation.longitude)
+            .onChange(of: routingState.navigation) { _, update in
+                guard let update = update else { return }
+                Task { @MainActor in
+                    mapController.moveCamera(lat: update.latitude, lng: update.longitude)
+                    try? await fetchPosition(update.latitude, update.longitude)
+                }
             }
     }
-    
-    // MARK: - Content
-    
+        
     @ViewBuilder
     var content: some View {
         switch mapViewState {
@@ -128,7 +127,7 @@ private extension MapView {
                 onTextChange: { new in
                     searchDebounceTask?.cancel()
                     searchDebounceTask = Task {
-                        try? await Task.sleep(nanoseconds: 800_000_000) 
+                        try? await Task.sleep(nanoseconds: 800_000_000)
                         if !Task.isCancelled && !new.isEmpty {
                             await performSearch()
                         }
@@ -223,7 +222,11 @@ private extension MapView {
             searchCellTapped(item)
         }
     }
-    
+}
+
+// MARK: - Networking & Helpers
+
+extension MapView {
     func searchCellTapped(_ item: Local.KakaoPlace) {
         position = (item.latitude, item.longtitude)
         mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
@@ -253,11 +256,22 @@ private extension MapView {
     }
     
     func fetchNearby() async throws {
-        clearMarkers()
         item = try await  injected.interactors.collection.fetchNearbyCollections(
             lat: position.0,
             lng: position.1,
             rad: 5000,
+            isMineOnly: isMineOnly,
+            isGuest: isGuest
+        )
+        clearMarkers()
+        loadMarkers(item)
+    }
+    
+    func fetchPosition(_ lat: Double, _ lng: Double) async throws {
+        item = try await  injected.interactors.collection.fetchNearbyCollections(
+            lat: lat,
+            lng: lng,
+            rad: 50,
             isMineOnly: isMineOnly,
             isGuest: isGuest
         )
@@ -281,7 +295,11 @@ private extension MapView {
             // Handle error silently or add error state if needed
         }
     }
-    
+}
+
+// MARK: - SearchBar
+
+extension MapView {
     struct SearchInputBar: View {
         let isModeIdle: Bool
         @Binding var text: String
@@ -342,7 +360,7 @@ private extension MapView {
 
 extension MapView {
     struct Routing: Equatable {
-        var navigation: Coordinate? = nil
+        var navigation: Coordinate?
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {

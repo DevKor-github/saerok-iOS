@@ -87,8 +87,8 @@ struct CachedTabContainer: View {
         ZStack {
             ForEach(TabbedItems.allCases, id: \.self) { tab in
                 Group {
-                    if tab == .home {
-                        if selectedTab == .home {
+                    if tab == .map {
+                        if selectedTab == .map {
                             MapView(path: $path)
                         } else {
                             EmptyView()
@@ -115,7 +115,7 @@ struct CachedTabContainer: View {
     @ViewBuilder
     private func viewFor(_ tab: TabbedItems, path: NavigationPath) -> some View {
         switch tab {
-        case .home:
+        case .map:
             EmptyView()
         case .fieldGuide:
             FieldGuideView(path: $path)

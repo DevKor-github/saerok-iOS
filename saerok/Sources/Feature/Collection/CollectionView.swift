@@ -63,6 +63,11 @@ struct CollectionView: Routable {
             .onChange(of: routingState.addCollection, initial: true) { _, isTrue in
                 if isTrue { navigationPath.append(Route.addCollection) }
             }
+            .onChange(of: routingState.scrollToTop) { _, newID in
+                guard let _ = newID else { return }
+                offsetY = 0
+                self.routingState.scrollToTop = nil
+            }
             .onChange(of: navigationPath) { _, path in
                 if !path.isEmpty {
                     routingBinding.wrappedValue.collectionID = nil
@@ -88,7 +93,7 @@ struct CollectionView: Routable {
 private extension CollectionView {
     enum Constants {
         static let navBarSpacerHeight: CGFloat = 64
-        static let scrollableID = "scrollable"
+        static let scrollableID = "CollectionView"
     }
     
     @ViewBuilder
@@ -146,7 +151,10 @@ private extension CollectionView {
                         CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
                         
                         StaggeredGrid(items: collectionSummaries.reversed(), columns: 2) { bird in
-                            birdView(for: bird)
+//                            birdView(for: bird)
+                            CollectionItem(bird: bird, tapped: {
+                                injected.appState[\.routing.collectionView.collectionID] = bird.id
+                            })
                         }
                         .padding(.horizontal)
                         .background(Color.srWhite)
@@ -155,7 +163,9 @@ private extension CollectionView {
                 .refreshable { loadMyCollections() }
                 .onChange(of: offsetY) { _, newValue in
                     if newValue == 0 {
-                        withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
+                        withAnimation {
+                            proxy.scrollTo(Constants.scrollableID, anchor: .top)
+                        }
                     }
                 }
             }
@@ -269,6 +279,7 @@ extension CollectionView {
     struct Routing: Equatable {
         var collectionID: Int?
         var addCollection: Bool = false
+        var scrollToTop: UUID?
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {

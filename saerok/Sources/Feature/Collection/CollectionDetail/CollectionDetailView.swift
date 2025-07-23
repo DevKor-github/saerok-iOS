@@ -8,31 +8,40 @@
 import SwiftUI
 
 struct CollectionDetailView: View {
+    
+    // MARK:  Route
+
     enum Route {
         case edit
     }
     
+    // MARK: - Properties
+
     let collectionID: Int
     let isFromMapView: Bool
     
-    @State var comments: [Local.CollectionComment] = []
-
     @State private var collection: Local.CollectionDetail = .mockData[0]
+    @State private var collectionImage: UIImage?
+    @State private var comments: [Local.CollectionComment] = []
+
+    // MARK:  View State
+
     @State private var isLoading: Bool = true
     @State private var showPopup: Bool = false
-    @State private var showSheet: Bool = false
-    @FocusState private var isFocused
+    @State private var showCommentSheet: Bool = false
+    @State private var showShareSheet: Bool = false
+    
     @State private var error: Error? = nil
     @State private var text: String = ""
-    @State private var showShareSheet: Bool = false
-    @State private var downloadedImage: UIImage?
+    @FocusState private var isFocused
+    
     @StateObject private var keyboard = KeyboardObserver()
     
     // MARK: - Environment
     
     @Environment(\.injected) private var injected: DIContainer
     
-    // MARK: Navigation
+    // MARK: - Navigation
     
     var path: Binding<NavigationPath>?
     
@@ -56,7 +65,7 @@ struct CollectionDetailView: View {
 
             shareSheetSection
 
-            if !showSheet {
+            if !showCommentSheet {
                 shareButton
             }
         }
@@ -93,22 +102,22 @@ private extension CollectionDetailView {
                 navigationBar
             }
             .shimmer(when: $isLoading)
+            Spacer()
         }
         .background(Color.lightGray)
-        .bottomSheet(isShowing: $showSheet, backgroundColor: .lightGray) {
+        .bottomSheet(isShowing: $showCommentSheet, backgroundColor: .lightGray, keyboard: keyboard) {
             CollectionCommentSheet(
                 nickname: collection.userNickname,
                 comments: comments,
                 onDelete: deleteComment,
                 onReport: { showPopup = true },
-                onDismiss: { showSheet.toggle() }
+                onDismiss: { showCommentSheet.toggle() }
             )
-            
         }
         .onTapGesture {
             isFocused = false
         }
-        .commentInputOverlay(isPresented: $showSheet) {
+        .commentInputOverlay(isPresented: $showCommentSheet) {
             CollectionCommentInputBar(
                 text: $text,
                 isFocused: _isFocused,
@@ -121,6 +130,29 @@ private extension CollectionDetailView {
         .ignoresSafeArea(.all)
     }
 
+    var navigationBar: some View {
+        NavigationBar(
+            leading: {
+                leadingButton
+            },
+            backgroundColor: .clear
+        )
+        .padding(.top, 54)
+    }
+    
+    @ViewBuilder
+    var leadingButton: some View {
+        if path != nil {
+            Button(action: {
+                path?.wrappedValue.removeLast()
+            }) {
+                Image.SRIconSet.chevronLeft
+                    .frame(.defaultIconSize)
+            }
+            .srStyled(.iconButton)
+        }
+    }
+    
     var imageSection: some View {
         ReactiveAsyncImage(
             url: collection.imageURL,
@@ -135,143 +167,34 @@ private extension CollectionDetailView {
     }
     
     var descriptionSection: some View {
-        ZStack(alignment: .topLeading) {
-            VStack(alignment: .leading, spacing: 10) {
-                noteView
-                infoView
-            }
-            .padding(.top, 41)
-            
-            nameView
+        CollectionDescriptionSection(
+            collection: collection,
+            isFromMapView: isFromMapView,
+            path: path,
+            onLikeToggle: { toggleLike() },
+            onCommentTap: { showCommentSheet.toggle() },
+            onReportTap: { showPopup.toggle() }
+        )
+    }
+
+    @ViewBuilder
+    var shareSheetSection: some View {
+        if let image = collectionImage, showShareSheet {
+            CollectionShareView(collection: collection, isPresented: $showShareSheet, image: image)
         }
     }
     
-    var nameView: some View {
-        HStack {
-            Text(collection.birdName ?? "이름 모를 새")
-                .font(.SRFontSet.subtitle1)
-                .padding(.vertical, 19)
-                .padding(.horizontal, 17)
-                .background(Color.srWhite)
-                .cornerRadius(20)
-                .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
-            Spacer()
-            ZStack(alignment: .trailing) {
-                Image(.saerokTap)
-                trailingButtons
-                    .padding(11)
+    @ViewBuilder
+    var shareButton: some View {
+        if !isFromMapView {
+            Button(action: { showShareSheet.toggle() }) {
+                Image.SRIconSet.airplane
+                    .frame(.floatingButton)
+                    .padding(.horizontal, SRDesignConstant.defaultPadding)
             }
+        } else {
+            EmptyView()
         }
-    }
-    
-    var noteView: some View {
-        VStack(spacing: 0) {
-            Text(collection.note.allowLineBreaking())
-                .font(.SRFontSet.body3_2)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-                .lineLimit(nil)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 19)
-                .padding(.horizontal, 26)
-                .padding(.top, 19)
-            
-            Divider()
-                .hidden()
-                .frame(height: 1)
-                .background(Color.lightGray)
-            
-            HStack(spacing: 0) {
-                noteButton(
-                    image: (collection.isLiked ? Image.SRIconSet.heartFilled : .heart),
-                    index: collection.likeCount
-                ) {
-                    toggleLike()
-                }
-                
-                Divider()
-                    .hidden()
-                    .frame(width: 1)
-                    .background(Color.lightGray)
-                
-                noteButton(
-                    image: .comment,
-                    index: comments.count
-                ) {
-                    showSheet.toggle()
-                }
-            }
-        }
-        .background(Color.srWhite)
-        .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
-    }
-    
-    func noteButton(image: Image.SRIconSet, index: Int, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
-                image
-                    .frame(.defaultIconSizeLarge)
-                    .padding(8)
-                Spacer()
-                Text("\(index)")
-            }
-            .frame(width: 146, height: 40)
-            .padding(.leading, 5.5)
-            .padding(.trailing, 20)
-            .padding(.vertical, 8)
-        }
-        .buttonStyle(.plain)
-    }
-    
-    var infoView: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 5) {
-                Image.SRIconSet.pin
-                    .frame(.defaultIconSize, tintColor: .pointtext)
-                
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(collection.locationAlias)
-                        .font(.SRFontSet.body4)
-                    Text(collection.address)
-                        .font(.SRFontSet.caption3)
-                        .foregroundStyle(.secondary)
-                }
-                
-                Spacer()
-                
-                Button {
-                    injected.appState[\.routing.contentView.tabSelection] = .home
-                    injected.appState[\.routing.mapView.navigation] = .init(latitude: collection.coordinate.latitude, longitude: collection.coordinate.longitude)
-                    if let path = path {
-                        path.wrappedValue.removeLast()
-                    }
-                } label: {
-                    Image.SRIconSet.chevronRight
-                        .frame(.defaultIconSize, tintColor: .srGray)
-                }
-            }
-            
-            HStack(spacing: 5) {
-                Image.SRIconSet.clock
-                    .frame(.defaultIconSize, tintColor: .pointtext)
-                
-                Text(collection.discoveredDate.korString)
-                    .font(.SRFontSet.body4)
-            }
-            
-            HStack(spacing: 5) {
-                Image.SRIconSet.myFilled
-                    .frame(.defaultIconSize, tintColor: .pointtext)
-                
-                Text(collection.userNickname)
-                    .font(.SRFontSet.body4)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 15)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.srWhite)
-        .cornerRadius(20)
     }
     
     var alertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
@@ -293,113 +216,9 @@ private extension CollectionDetailView {
             center: nil
         )
     }
-    
-    @ViewBuilder
-    var leadingButton: some View {
-        if path != nil {
-            Button(action: {
-                path?.wrappedValue.removeLast()
-            }) {
-                Image.SRIconSet.chevronLeft
-                    .frame(.defaultIconSize)
-            }
-            .srStyled(.iconButton)
-        }
-    }
-    
-    @ViewBuilder
-    var trailingButtons: some View {
-        HStack(spacing: 9) {
-            toDogamButton
-            
-            additionalButton
-                .background(
-                    Circle()
-                        .fill(Color.white)
-                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                )
-        }
-    }
-    
-    var navigationBar: some View {
-        NavigationBar(
-            leading: {
-                leadingButton
-            },
-            backgroundColor: .clear
-        )
-        .padding(.top, 54)
-    }
-    
-    @ViewBuilder
-    var toDogamButton: some View {
-        if let birdID = collection.birdID {
-            if let bindingPath = path {
-                NavigationLink {
-                    BirdDetailView(birdID: birdID, path: bindingPath)
-                } label: {
-                    Image.SRIconSet.toDogam.frame(.defaultIconSizeVeryLarge)
-                }
-            } else {
-                Button {
-                    injected.appState[\.routing.contentView.tabSelection] = .fieldGuide
-                    injected.appState[\.routing.fieldGuideView.birdName] = collection.birdName
-                } label: {
-                    Image.SRIconSet.toDogam.frame(.defaultIconSizeLarge)
-                }
-            }
-        }
-    }
-    
-    @ViewBuilder
-    var additionalButton: some View {
-        if !isFromMapView {
-            Button {
-                if let paths = path {
-                    paths.wrappedValue.append(Route.edit)
-                }
-            } label: {
-                Image.SRIconSet.edit.frame(.defaultIconSizeLarge)
-            }
-            .srStyled(.iconButton)
-        } else {
-            Menu {
-                Button {
-                    showPopup = true
-                } label: {
-                    Label("신고하기", systemImage: "light.beacon.max")
-                }
-            } label: {
-                Image.SRIconSet.option.frame(.defaultIconSizeLarge)
-            }
-            .srStyled(.iconButton)
-        }
-    }
-    
-    @ViewBuilder
-    var shareSheetSection: some View {
-        if let image = downloadedImage, showShareSheet {
-            CollectionShareView(collection: collection, isPresented: $showShareSheet, image: image)
-        }
-    }
-    
-    @ViewBuilder
-    var shareButton: some View {
-        if !isFromMapView {
-            Button {
-                showShareSheet.toggle()
-            } label: {
-                Image.SRIconSet.airplane
-                    .frame(.floatingButton)
-                    .padding(.horizontal, SRDesignConstant.defaultPadding)
-            }
-        } else {
-            EmptyView()
-        }
-    }
 }
 
-// MARK: - Networking & Helpers
+// MARK: - Networking
 
 private extension CollectionDetailView {
     func fetchCollectionDetail() {
@@ -464,7 +283,7 @@ private extension CollectionDetailView {
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data, let image = UIImage(data: data) else { return }
             DispatchQueue.main.async {
-                downloadedImage = image
+                collectionImage = image
             }
         }.resume()
     }

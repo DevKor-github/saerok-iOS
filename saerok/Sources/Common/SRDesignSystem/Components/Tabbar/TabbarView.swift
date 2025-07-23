@@ -30,6 +30,8 @@ struct TabbarView: View {
                     HapticManager.shared.trigger(.light)
                     if item == .fieldGuide {
                         injected.appState[\.routing.fieldGuideView.scrollToTop] = UUID()
+                    } else if item == .collection {
+                        injected.appState[\.routing.collectionView.scrollToTop] = UUID()
                     }
                 } label: {
                     HStack {

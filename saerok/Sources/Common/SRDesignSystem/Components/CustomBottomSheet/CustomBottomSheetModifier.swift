@@ -14,6 +14,7 @@ extension View {
         isShowing: Binding<Bool>,
         topOffset: CGFloat = 100,
         backgroundColor: Color = .srWhite,
+        keyboard: KeyboardObserver,
         @ViewBuilder sheetContent: @escaping () -> SheetContent
     ) -> some View {
         self.modifier(
@@ -21,7 +22,8 @@ extension View {
                 isShowing: isShowing,
                 topOffset: topOffset,
                 backgroundColor: backgroundColor,
-                sheetContent: sheetContent
+                sheetContent: sheetContent,
+                keyboard: keyboard
             )
         )
     }
@@ -54,7 +56,8 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     @State private var dragOffset: CGFloat = 0
     @State private var currentDetent: BottomSheetDetent = .medium
     @State private var bottomSheetSize: CGSize = .zero
-
+    @ObservedObject var keyboard: KeyboardObserver
+    
     private var actualOffset: CGFloat {
         if isShowing {
             let base = UIScreen.main.bounds.height - currentDetent.height
@@ -69,9 +72,18 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             content
 
             backgroundView
-                .opacity(isShowing ? 1 : 0)
-
+                
             foregroundView
+        }
+        .onChange(of: keyboard.keyboardHeight) { _, new in
+            if new > 0 {
+                currentDetent = .large
+            }
+        }
+        .onChange(of: isShowing) { _, new in
+            if new == false {
+                currentDetent = .medium
+            }
         }
     }
 
@@ -87,7 +99,8 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                         .frame(width: UIScreen.main.bounds.width)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top)
-
+                    Color.clear
+                        .frame(width: 1)
                     PanGestureView(
                         onChanged: { translation in
                             switch currentDetent {
@@ -105,14 +118,14 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                                     } else {
                                         currentDetent = .medium
                                     }
-                                } else if translation < -100 {
+                                } else if translation < -40 {
                                     currentDetent = .large
                                 }
                             }
                             dragOffset = 0
                         }
                     )
-                    .frame(width: 100)
+                    .frame(width: 340, height: 60, alignment: .leading)
                     .allowsHitTesting(isShowing)
                 }
             }
@@ -121,8 +134,8 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             .cornerRadius(20)
             .offset(y: actualOffset - dragOffset * 0.7)
             .shadow(color: .black.opacity(0.1), radius: 6)
-            .animation(.smooth, value: isShowing)
-            .animation(.smooth, value: currentDetent)
+            .animation(.smooth(duration: 0.2), value: isShowing)
+            .animation(.smooth(duration: 0.2), value: currentDetent)
         }
         .ignoresSafeArea(edges: .bottom)
     }
@@ -136,6 +149,8 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                 }
             }
             .transition(.opacity)
+            .opacity(isShowing ? 1 : 0)
+            .animation(.default, value: isShowing)
     }
 
     private let indicator: some View = {
