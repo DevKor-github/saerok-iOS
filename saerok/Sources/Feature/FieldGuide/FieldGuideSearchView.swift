@@ -71,18 +71,18 @@ struct FieldGuideSearchView: View {
 private extension FieldGuideSearchView {
     
     enum Layout {
-        static let iconSize: CGFloat = 24
+        static let iconSize: CGFloat = 22
         static let horizontalPadding: CGFloat = 18
         static let verticalPadding: CGFloat = 14
         static let textFieldHeight: CGFloat = 44
         static let filterTopPadding: CGFloat = 15
         static let filterBottomPadding: CGFloat = 18
-        static let searchItemPadding: CGFloat = 16
+        static let searchItemPadding: CGFloat = 17
         static let recentItemHeight: CGFloat = 55
-        static let clearColorHeight: CGFloat = 4
-        static let searchSpacing: CGFloat = 2
+        static let clearColorHeight: CGFloat = 2
+        static let searchSpacing: CGFloat = 1
         static let recentSpacing: CGFloat = 1
-        static let hStackSpacing: CGFloat = 19
+        static let hStackSpacing: CGFloat = 18
     }
     
     var searchBarSection: some View {
@@ -149,7 +149,7 @@ private extension FieldGuideSearchView {
             
             Button(action: { searchItemTapped(bird) }) {
                 HStack {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 1) {
                         Text(bird.name)
                             .font(.SRFontSet.body3)
                         Text(bird.scientificName)
@@ -159,14 +159,15 @@ private extension FieldGuideSearchView {
                     Spacer()
                     Image.SRIconSet.chevronRight
                         .frame(.defaultIconSize)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.black)
                 }
                 .contentShape(Rectangle())
             }
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
-        .padding(Layout.searchItemPadding)
+        .padding(.vertical, 17)
+        .padding(.horizontal, 26)
         .background(Color.srWhite)
     }
     

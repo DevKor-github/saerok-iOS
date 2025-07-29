@@ -13,7 +13,8 @@ struct FilterButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 15)
+            .padding(.leading, 12)
+            .padding(.trailing, 15)
             .padding(.vertical, 9)
             .background(isActive ? .main : Color.srWhite)
             .foregroundStyle(isActive ? .srWhite : .primary)

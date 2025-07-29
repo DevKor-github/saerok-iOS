@@ -54,19 +54,23 @@ struct BirdDetailView: View {
     private func contentView(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.mainSpacing) {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: Constants.scrollContentSpacing) {
-                    Color.clear.frame(height: 3)
-                    birdImageWithTag(bird: bird)
+                VStack(alignment: .leading, spacing: 0) {
+                    topBar(bird: bird)
+                        .padding(.bottom, 20)
+                    
                     Group {
+                        birdImageWithTag(bird: bird)
                         title(bird: bird)
                         classification(bird: bird)
+                            .padding(.bottom, 7)
                         description(bird: bird)
                     }
-                    .padding(.horizontal, SRDesignConstant.defaultPadding)
+                    .padding(.horizontal, 9)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
+        .background(Color.lightGray)
     }
     
     var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
@@ -111,10 +115,6 @@ private extension BirdDetailView {
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: .infinity)
                         .cornerRadius(Constants.imageCornerRadius)
-                        .padding(.horizontal, SRDesignConstant.defaultPadding)
-                    
-                    topLeadingButton()
-                    bottomTrailingButtons(bird: bird)
                 }
             }
             
@@ -130,24 +130,15 @@ private extension BirdDetailView {
         }
     }
     
-    func topLeadingButton() -> some View {
-        VStack {
-            HStack {
-                Button(action: backButtonTapped) {
-                    Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
-                }
-                .srStyled(.iconButton)
-                Spacer()
-            }
-            Spacer()
-        }
-        .padding(8)
-        .padding(.leading, SRDesignConstant.defaultPadding)
-    }
-    
-    func bottomTrailingButtons(bird: Local.Bird) -> some View {
+    func topBar(bird: Local.Bird) -> some View {
         HStack(spacing: 7) {
+            Button(action: backButtonTapped) {
+                Image.SRIconSet.chevronLeft
+                    .frame(.defaultIconSize)
+            }
+            
+            Spacer()
+            
             Button(action: {
                 bookmarkButtonTapped(bird: bird)
             }) {
@@ -165,11 +156,10 @@ private extension BirdDetailView {
                     .frame(.defaultIconSizeLarge)
                     .padding(.top, Constants.penIconTopPadding)
             }
-            .frame(alignment: .bottomTrailing)
         }
         .srStyled(.iconButton)
-        .padding(8)
-        .padding(.trailing, SRDesignConstant.defaultPadding)
+        .padding(.leading, SRDesignConstant.defaultPadding)
+        .padding(.trailing, 16)
     }
     
     func title(bird: Local.Bird) -> some View {
@@ -181,34 +171,36 @@ private extension BirdDetailView {
                 .foregroundStyle(.srGray)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 15)
-        .padding(.top, 20)
+        .padding(.vertical, 40)
     }
     
     func classification(bird: Local.Bird) -> some View {
-        VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
+        VStack(alignment: .leading, spacing: 5) {
             Text("분류")
-                .font(.SRFontSet.subtitle2)
-                .bold()
+                .font(.SRFontSet.caption3)
+                .foregroundStyle(.srGray)
             Text(bird.classification)
-                .font(.SRFontSet.caption1)
-                .foregroundStyle(.secondary)
+                .font(.SRFontSet.body2)
                 .lineSpacing(Constants.lineSpacing)
         }
+        .modifier(CardStyleModifier())
     }
     
+    
+    @ViewBuilder
     func description(bird: Local.Bird) -> some View {
-        VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
+        VStack(alignment: .leading, spacing: 5) {
             Text("상세 설명")
-                .font(.SRFontSet.subtitle2)
-                .bold()
+                .font(.SRFontSet.caption3)
+                .foregroundStyle(.srGray)
             Text(bird.detail)
                 .allowsTightening(true)
                 .font(.SRFontSet.body2)
                 .lineSpacing(Constants.lineSpacing)
-            
-            Color.clear.frame(height: Constants.bottomSpacerHeight)
         }
+        .modifier(CardStyleModifier())
+        
+        Color.clear.frame(height: Constants.bottomSpacerHeight)
     }
     
     struct ChipList<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
@@ -217,7 +209,7 @@ private extension BirdDetailView {
         
         var body: some View {
             HStack {
-                icon.frame(.defaultIconSizeSmall)
+                icon.frame(.defaultIconSizeLarge)
                 
                 if list.isEmpty {
                     Text("미등록")
@@ -225,13 +217,24 @@ private extension BirdDetailView {
                     Text(list.map(\.rawValue).joined(separator: " • "))
                 }
             }
-            .font(.SRFontSet.body1)
-            .bold()
-            .padding(.horizontal, Constants.chipHorizontalPadding)
-            .padding(.vertical, Constants.chipVerticalPadding)
+            .font(.SRFontSet.button2)
+            .padding(.leading, 12)
+            .padding(.trailing, 15)
+            .padding(.vertical, 9)
             .foregroundStyle(.srWhite)
             .background(Color.main)
             .cornerRadius(.infinity)
+        }
+    }
+    
+    struct CardStyleModifier: ViewModifier {
+        func body(content: Content) -> some View {
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 20)
+                .background(Color.srWhite)
+                .cornerRadius(20)
         }
     }
 }
@@ -282,10 +285,9 @@ private extension BirdDetailView {
 private extension BirdDetailView {
     enum Constants {
         static let mainSpacing: CGFloat = 11
-        static let scrollContentSpacing: CGFloat = 30
         static let birdImageSpacing: CGFloat = 13
         static let chipSpacing: CGFloat = 5
-        static let chipSidePadding: CGFloat = 20
+        static let chipSidePadding: CGFloat = 11
         static let imageCornerRadius: CGFloat = 20
         static let sectionSpacing: CGFloat = 13
         static let lineSpacing: CGFloat = 5

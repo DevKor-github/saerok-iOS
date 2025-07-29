@@ -34,13 +34,13 @@ struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T
         } label: {
             HStack(spacing: 4) {
                 (isActive ? iconSelected : icon)
-                    .frame(.defaultIconSize, tintColor: isActive ? .srWhite : .splash)
+                    .frame(.defaultIconSizeLarge, tintColor: isActive ? .srWhite : .splash)
                 Text(
                     isActive
                     ? selection.map(\.rawValue).joined(separator: " • ")
                     : placeholder
                 )
-                .font(.SRFontSet.body1)
+                .font(.SRFontSet.button2)
             }
         }
         .srStyled(.filterButton(isActive: isActive))
