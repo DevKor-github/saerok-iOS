@@ -89,20 +89,24 @@ struct CollectionDetailView: View {
 
 private extension CollectionDetailView {
     var content: some View {
-        ScrollView {
-            ZStack(alignment: .top) {
+        ZStack(alignment: .top) {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .center, spacing: 0) {
+                    Color.clear
+                        .frame(height: 57)
                     imageSection
+                    
                     descriptionSection
                         .padding(.horizontal, SRDesignConstant.defaultPadding)
-                        .offset(y: -30)
+                        .offset(y: -20)
+                    
                     Color.clear
                         .frame(height: 40)
                 }
-                navigationBar
+                .shimmer(when: $isLoading)
+                Spacer()
             }
-            .shimmer(when: $isLoading)
-            Spacer()
+            navigationBar
         }
         .background(Color.lightGray)
         .bottomSheet(isShowing: $showCommentSheet, backgroundColor: .lightGray, keyboard: keyboard) {
@@ -135,9 +139,33 @@ private extension CollectionDetailView {
             leading: {
                 leadingButton
             },
+            trailing: {
+                Button {
+                    
+                } label: {
+                    HStack {
+                        Image(.defaultProfile)
+                            .resizable()
+                            .frame(width: 25, height: 25)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .inset(by: 1)
+                                    .stroke(Color.lightGray, lineWidth: 2)
+                            )
+                        Text(collection.userNickname)
+                            .font(.SRFontSet.body4)
+                    }
+                    .padding(.vertical, 7)
+                    .padding(.leading, 10)
+                    .padding(.trailing, 12)
+                    .background(Color.glassWhite)
+                    .clipShape(RoundedRectangle(cornerRadius: .infinity))
+                }
+            },
             backgroundColor: .clear
         )
-        .padding(.top, 54)
+        .padding(.top, 60)
     }
     
     @ViewBuilder
@@ -161,9 +189,10 @@ private extension CollectionDetailView {
             downsampling: true
         )
         .scaledToFill()
+        .cornerRadius(35)
+        .padding(.horizontal, 9)
         .frame(width: UIScreen.main.bounds.width)
         .clipped()
-        .cornerRadius(20)
     }
     
     var descriptionSection: some View {

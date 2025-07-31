@@ -5,6 +5,7 @@
 //  Created by HanSeung on 4/12/25.
 //
 
+
 import Combine
 import SwiftUI
 
@@ -17,6 +18,7 @@ struct BirdDetailView: View {
     @State private var showPopup: Bool = false
     @Binding var path: NavigationPath
     private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
+
     
     // MARK: - 초기화: birdID로 받는 경우
     
@@ -52,12 +54,11 @@ struct BirdDetailView: View {
     
     @ViewBuilder
     private func contentView(bird: Local.Bird) -> some View {
-        VStack(alignment: .leading, spacing: Constants.mainSpacing) {
+        ZStack(alignment: .top) {
             ScrollView(showsIndicators: false) {
+                Color.clear
+                    .frame(height: 20)
                 VStack(alignment: .leading, spacing: 0) {
-                    topBar(bird: bird)
-                        .padding(.bottom, 20)
-                    
                     Group {
                         birdImageWithTag(bird: bird)
                         title(bird: bird)
@@ -69,6 +70,9 @@ struct BirdDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
+            
+            topBar(bird: bird)
+                .padding(.top, 40)
         }
         .background(Color.lightGray)
     }

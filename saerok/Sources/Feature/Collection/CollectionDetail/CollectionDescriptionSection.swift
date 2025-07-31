@@ -149,14 +149,6 @@ private extension CollectionDescriptionSection {
                 Text(collection.discoveredDate.korString)
                     .font(.SRFontSet.body4)
             }
-            
-            HStack(spacing: 5) {
-                Image.SRIconSet.myFilled
-                    .frame(.defaultIconSize, tintColor: .pointtext)
-                
-                Text(collection.userNickname)
-                    .font(.SRFontSet.body4)
-            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 15)
@@ -186,15 +178,27 @@ private extension CollectionDescriptionSection {
                 NavigationLink {
                     BirdDetailView(birdID: birdID, path: bindingPath)
                 } label: {
-                    Image.SRIconSet.toDogam.frame(.defaultIconSizeVeryLarge)
+                    Image.SRIconSet.toDogam
+                        .frame(.defaultIconSizeVeryLarge)
                 }
             } else {
                 Button {
                     injected.appState[\.routing.contentView.tabSelection] = .fieldGuide
                     injected.appState[\.routing.fieldGuideView.birdName] = collection.birdName
                 } label: {
-                    Image.SRIconSet.toDogam.frame(.defaultIconSizeLarge)
+                    Image.SRIconSet.toDogam
+                        .frame(.defaultIconSizeVeryLarge)
                 }
+            }
+        } else {
+            Button {
+                
+            } label: {
+                Image(.unknown)
+                    .padding(.horizontal, 3)
+                    .padding(8)
+                    .background(Color.pointtext)
+                    .clipShape(Circle())
             }
         }
     }

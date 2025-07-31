@@ -5,9 +5,9 @@
 //  Created by HanSeung on 3/18/25.
 //
 
+import Combine
 import SwiftUI
 import SwiftData
-import Combine
 
 import KakaoSDKCommon
 import KakaoSDKAuth

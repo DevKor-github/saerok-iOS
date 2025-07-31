@@ -29,6 +29,13 @@ enum SREndpoint: Endpoint {
     case likeCollection(collectionId: Int)
     case deleteCollectionComment(collectionID: Int, commentID: Int)
     
+    // MARK: Bird ID Suggestions API
+    
+    case birdIdSuggestions(collectionId: Int)
+    case suggestBirdId(collectionId: Int, birdId: Int)
+    case adoptBirdSuggestion(collectionId: Int, birdId: Int)
+    case cancelBirdSuggestion(collectionId: Int, birdId: Int)
+
     // MARK: Bookmark API
     
     case myBookmarks
@@ -77,15 +84,19 @@ extension SREndpoint {
         case .createComment(let collectionID, _): "collections/\(collectionID)/comments"
         case .likeCollection(collectionId: let collectionID): "collections/\(collectionID)/like"
         case .deleteCollectionComment(let collectionID, let commentID): "collections/\(collectionID)/comments/\(commentID)"
+        case .birdIdSuggestions(let collectionId): "collections/\(collectionId)/bird-id-suggestions"
+        case .suggestBirdId(let collectionId, _): "collections/\(collectionId)/bird-id-suggestions"
+        case .adoptBirdSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/adopt"
+        case .cancelBirdSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/agree"
         }
     }
     
     var method: String {
         switch self {
-        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments: "GET"
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection: "POST"
+        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .birdIdSuggestions: "GET"
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBirdId, .adoptBirdSuggestion: "POST"
         case .updateMe, .editCollection: "PATCH"
-        case .deleteCollection, .deleteCollectionComment: "DELETE"
+        case .deleteCollection, .deleteCollectionComment, .cancelBirdSuggestion: "DELETE"
         }
     }
     
@@ -94,8 +105,10 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBirdId, .adoptBirdSuggestion, .cancelBirdSuggestion:
             return true
+        case .birdIdSuggestions:
+            return (try? KeyChain.read(key: .accessToken)) != nil
         default:
             return false
         }
@@ -111,7 +124,7 @@ extension SREndpoint {
         }
         
         switch self {
-        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment:
+        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBirdId:
             headers["Content-Type"] = "application/json"
         default:
             break
@@ -145,6 +158,9 @@ extension SREndpoint {
             return try? JSONSerialization.data(withJSONObject: body)
         case .createComment(_, let body):
             return try? JSONEncoder().encode(body)
+        case .suggestBirdId(_, let birdId):
+            let body = ["birdId": birdId]
+            return try? JSONSerialization.data(withJSONObject: body)
         default:
             return nil
         }
@@ -204,6 +220,12 @@ extension SREndpoint {
             return DTO.CreateCommentResponse.self
         case .likeCollection:
             return DTO.CollectionLikeToggleResponse.self
+        case .birdIdSuggestions:
+            return DTO.BirdIdSuggestionsResponse.self
+        case .suggestBirdId:
+            return DTO.SuggestBirdIdResponse.self
+        case .adoptBirdSuggestion:
+            return DTO.AdoptBirdSuggestionResponse.self
         default:
             return EmptyResponse.self
         }

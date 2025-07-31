@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		213D6B792DCA55CE00B17243 /* NMapsMap in Frameworks */ = {isa = PBXBuildFile; productRef = 213D6B782DCA55CE00B17243 /* NMapsMap */; };
+		217130892E38ED7300115EFD /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 217130882E38ED7300115EFD /* AmplitudeSwift */; };
 		219841772DDC18CD00919B81 /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 219841762DDC18CD00919B81 /* KakaoSDKAuth */; };
 		219841792DDC18CD00919B81 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 219841782DDC18CD00919B81 /* KakaoSDKCommon */; };
 		2198417B2DDC18CD00919B81 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = 2198417A2DDC18CD00919B81 /* KakaoSDKUser */; };
@@ -47,6 +48,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				217130892E38ED7300115EFD /* AmplitudeSwift in Frameworks */,
 				219841792DDC18CD00919B81 /* KakaoSDKCommon in Frameworks */,
 				21F0CAE22DBE427E004F03F4 /* Lottie in Frameworks */,
 				213D6B792DCA55CE00B17243 /* NMapsMap in Frameworks */,
@@ -100,6 +102,7 @@
 				219841762DDC18CD00919B81 /* KakaoSDKAuth */,
 				219841782DDC18CD00919B81 /* KakaoSDKCommon */,
 				2198417A2DDC18CD00919B81 /* KakaoSDKUser */,
+				217130882E38ED7300115EFD /* AmplitudeSwift */,
 			);
 			productName = saerok;
 			productReference = 219F722D2D89ABEB00C04738 /* saerok.app */;
@@ -132,6 +135,7 @@
 				21F0CAE02DBE427E004F03F4 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 				213D6B772DCA55CE00B17243 /* XCRemoteSwiftPackageReference "SPM-NMapsMap" */,
 				219841752DDC18CD00919B81 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
+				217130872E38ED7300115EFD /* XCRemoteSwiftPackageReference "Amplitude-Swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 219F722E2D89ABEB00C04738 /* Products */;
@@ -421,6 +425,14 @@
 				minimumVersion = 3.21.0;
 			};
 		};
+		217130872E38ED7300115EFD /* XCRemoteSwiftPackageReference "Amplitude-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/amplitude/Amplitude-Swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		219841752DDC18CD00919B81 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kakao/kakao-ios-sdk";
@@ -444,6 +456,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 213D6B772DCA55CE00B17243 /* XCRemoteSwiftPackageReference "SPM-NMapsMap" */;
 			productName = NMapsMap;
+		};
+		217130882E38ED7300115EFD /* AmplitudeSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 217130872E38ED7300115EFD /* XCRemoteSwiftPackageReference "Amplitude-Swift" */;
+			productName = AmplitudeSwift;
 		};
 		219841762DDC18CD00919B81 /* KakaoSDKAuth */ = {
 			isa = XCSwiftPackageProductDependency;
