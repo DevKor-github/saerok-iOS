@@ -32,10 +32,13 @@ struct CollectionSearchView: View {
     
     // MARK:  Init
     
-    init(path: Binding<NavigationPath>) {
+    let onSelect: (Local.Bird) -> Void
+
+    init(path: Binding<NavigationPath>, onSelect: @escaping (Local.Bird) -> Void) {
         self._path = path
         self.fieldGuide = []
-        hangulFinder = .init(items: [], keySelector: { $0.name })
+        self.hangulFinder = .init(items: [], keySelector: { $0.name })
+        self.onSelect = onSelect
     }
     
     var body: some View {
@@ -125,7 +128,7 @@ private extension CollectionSearchView {
                 }
             }
         }
-        .background(Color.lightGray)
+        .background(.srLightGray)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
@@ -139,8 +142,9 @@ private extension CollectionSearchView {
             .frame(width: 24)
             
             Button {
-                injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
-                path.removeLast()
+//                injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
+//                path.removeLast()
+                onSelect(bird)
             } label: {
                 HStack {
                     VStack(alignment: .leading) {

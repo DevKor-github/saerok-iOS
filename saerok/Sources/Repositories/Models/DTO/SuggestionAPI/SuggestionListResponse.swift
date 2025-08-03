@@ -7,7 +7,7 @@
 
 
 extension DTO {
-    struct BirdIdSuggestionsResponse: Decodable {
+    struct SuggestionListResponse: Decodable {
         let items: [BirdIdSuggestion]
         
         struct BirdIdSuggestion: Decodable {
@@ -16,21 +16,28 @@ extension DTO {
             let birdScientificName: String
             let birdImageUrl: String
             let agreeCount: Int
+            let disagreeCount: Int
             let isAgreedByMe: Bool
+            let isDisagreedByMe: Bool
         }
     }
 }
 
 extension DTO {
-    struct SuggestBirdIdResponse: Decodable {
+    struct SuggestResponse: Decodable {
         let suggestionId: Int
     }
-}
-
-extension DTO {
-    struct AdoptBirdSuggestionResponse: Decodable {
+    
+    struct AdoptSuggestionResponse: Decodable {
         let collectionId: Int
         let birdId: Int
         let birdKoreanName: String
+    }
+    
+    struct ToggleSuggestionResponse: Decodable {
+        let agreeCount: Int
+        let disagreeCount: Int
+        let isAgreedByMe: Bool
+        let isDisagreedByMe: Bool
     }
 }

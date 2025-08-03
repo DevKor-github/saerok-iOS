@@ -97,7 +97,7 @@ private extension LoginView {
         VStack {
             Spacer()
             AppleLoginView(user: $user)
-//            KakaoLoginView(user: $user)
+            KakaoLoginView(user: $user)
             continueWithoutLoginButton
         }
         .padding(.horizontal, SRDesignConstant.defaultPadding)

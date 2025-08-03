@@ -75,7 +75,7 @@ struct AccountView: View {
             }
             .padding(.vertical, 9)
             .padding(.horizontal, 15)
-            .background(Color.lightGray)
+            .background(Color.srLightGray)
             .cornerRadius(.infinity)
         }
         .buttonStyle(.plain)

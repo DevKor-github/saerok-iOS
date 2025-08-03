@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-struct EditNicknameView: View {
+struct EditProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.injected) var injected
@@ -22,15 +22,35 @@ struct EditNicknameView: View {
     @FocusState private var isFocused: Bool
     @State private var nickname: String = ""
     
+    @State private var profileImage: UIImage?
+    @State private var isShowingImagePicker = false
+    @State private var remoteProfileImage: UIImage?
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
             navigationBar
             Group {
+                profileImageSection
                 nicknameSection
                 Spacer()
                 saveButton
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
+        }
+        .sheet(isPresented: $isShowingImagePicker) {
+            ImagePicker(image: $profileImage)
+                .onDisappear {
+                    if let image = profileImage {
+                        Task {
+                            do {
+                                let response = try await injected.interactors.user.updateProfileImage(image)
+                                userManager.syncUser(from: response)
+                            } catch {
+                                print("이미지 업데이트 실패: \(error)")
+                            }
+                        }
+                    }
+                }
         }
         .regainSwipeBack()
         .onChange(of: nickname) { _, newValue in
@@ -51,6 +71,36 @@ struct EditNicknameView: View {
                         .frame(.defaultIconSize)
                 }
             })
+    }
+    
+    private var profileImageSection: some View {
+        VStack(alignment: .center, spacing: 12) {
+            ReactiveAsyncImage(url: user?.imageURL ?? "", scale: .large, quality: 1.0, downsampling: true)
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 100, height: 100)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .inset(by: 1.4)
+                        .stroke(.srLightGray, lineWidth: 3)
+                )
+                .overlay {
+                    Button {
+                        isShowingImagePicker = true
+                    } label: {
+                        Image.SRIconSet.edit
+                            .frame(.defaultIconSizeLarge)
+                    }
+                    .buttonStyle(.icon)
+                    .overlay(
+                        Circle()
+                            .inset(by: 0.5)
+                            .stroke(.srLightGray, lineWidth: 1)
+                    )
+                    .offset(x: 35, y: 35)
+                }
+        }
+        .frame(maxWidth: .infinity)
     }
     
     private var nicknameSection: some View {
@@ -168,5 +218,5 @@ struct EditNicknameView: View {
 
 #Preview {
     @Previewable @State var path = NavigationPath()
-    EditNicknameView(path: $path)
+    EditProfileView(path: $path)
 }

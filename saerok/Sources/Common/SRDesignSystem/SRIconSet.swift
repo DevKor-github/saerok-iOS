@@ -70,6 +70,10 @@ extension Image {
         case heartFilled
         case comment
         case upperArrow
+        case o
+        case x
+        case plus
+        case adopt
         
         // MARK: Tabbar
         case doongzi
@@ -201,6 +205,10 @@ extension Image.SRIconSet {
         case .heartFilled: return Image(.heartFilled)
         case .comment: return Image(.comment)
         case .upperArrow: return Image(.upperArrow)
+        case .o: return Image(.o)
+        case .x: return Image(.x)
+        case .plus: return Image(.plus)
+        case .adopt: return Image(.adopt)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)

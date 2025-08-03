@@ -31,10 +31,12 @@ enum SREndpoint: Endpoint {
     
     // MARK: Bird ID Suggestions API
     
-    case birdIdSuggestions(collectionId: Int)
-    case suggestBirdId(collectionId: Int, birdId: Int)
-    case adoptBirdSuggestion(collectionId: Int, birdId: Int)
-    case cancelBirdSuggestion(collectionId: Int, birdId: Int)
+    case getSuggestions(collectionId: Int)
+    case suggestBird(collectionId: Int, birdId: Int)
+    case adoptSuggestion(collectionId: Int, birdId: Int)
+    case toggleSuggestionAgree(collectionId: Int, birdId: Int)
+    case toggleSuggestionDisagree(collectionId: Int, birdId: Int)
+    case resetSuggestion(collectionId: Int)
 
     // MARK: Bookmark API
     
@@ -58,7 +60,7 @@ extension SREndpoint {
     var baseURL: String {
         return "http://dev-api.saerok.app/api/v1/"
     }
-//    
+    
 //    var baseURL: String {
 //        return "https://api.saerok.app/api/v1/"
 //    }
@@ -84,19 +86,21 @@ extension SREndpoint {
         case .createComment(let collectionID, _): "collections/\(collectionID)/comments"
         case .likeCollection(collectionId: let collectionID): "collections/\(collectionID)/like"
         case .deleteCollectionComment(let collectionID, let commentID): "collections/\(collectionID)/comments/\(commentID)"
-        case .birdIdSuggestions(let collectionId): "collections/\(collectionId)/bird-id-suggestions"
-        case .suggestBirdId(let collectionId, _): "collections/\(collectionId)/bird-id-suggestions"
-        case .adoptBirdSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/adopt"
-        case .cancelBirdSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/agree"
+        case .getSuggestions(let collectionId): "collections/\(collectionId)/bird-id-suggestions"
+        case .suggestBird(let collectionId, _): "collections/\(collectionId)/bird-id-suggestions"
+        case .toggleSuggestionAgree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/agree"
+        case .toggleSuggestionDisagree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/disagree"
+        case .adoptSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/adopt"
+        case .resetSuggestion(collectionId: let collectionId): "/collections/\(collectionId)/bird-id-suggestions/all"
         }
     }
     
     var method: String {
         switch self {
-        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .birdIdSuggestions: "GET"
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBirdId, .adoptBirdSuggestion: "POST"
+        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions: "GET"
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree: "POST"
         case .updateMe, .editCollection: "PATCH"
-        case .deleteCollection, .deleteCollectionComment, .cancelBirdSuggestion: "DELETE"
+        case .deleteCollection, .deleteCollectionComment, .resetSuggestion: "DELETE"
         }
     }
     
@@ -105,9 +109,9 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBirdId, .adoptBirdSuggestion, .cancelBirdSuggestion:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion:
             return true
-        case .birdIdSuggestions:
+        case .getSuggestions:
             return (try? KeyChain.read(key: .accessToken)) != nil
         default:
             return false
@@ -124,7 +128,7 @@ extension SREndpoint {
         }
         
         switch self {
-        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBirdId:
+        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBird:
             headers["Content-Type"] = "application/json"
         default:
             break
@@ -158,7 +162,7 @@ extension SREndpoint {
             return try? JSONSerialization.data(withJSONObject: body)
         case .createComment(_, let body):
             return try? JSONEncoder().encode(body)
-        case .suggestBirdId(_, let birdId):
+        case .suggestBird(_, let birdId):
             let body = ["birdId": birdId]
             return try? JSONSerialization.data(withJSONObject: body)
         default:
@@ -220,12 +224,14 @@ extension SREndpoint {
             return DTO.CreateCommentResponse.self
         case .likeCollection:
             return DTO.CollectionLikeToggleResponse.self
-        case .birdIdSuggestions:
-            return DTO.BirdIdSuggestionsResponse.self
-        case .suggestBirdId:
-            return DTO.SuggestBirdIdResponse.self
-        case .adoptBirdSuggestion:
-            return DTO.AdoptBirdSuggestionResponse.self
+        case .getSuggestions:
+            return DTO.SuggestionListResponse.self
+        case .suggestBird:
+            return DTO.SuggestResponse.self
+        case .adoptSuggestion:
+            return DTO.AdoptSuggestionResponse.self
+        case .toggleSuggestionAgree, .toggleSuggestionDisagree:
+            return DTO.ToggleSuggestionResponse.self
         default:
             return EmptyResponse.self
         }

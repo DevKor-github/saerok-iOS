@@ -21,7 +21,7 @@ struct CollectionCommentCell: View {
                 .overlay(
                     Circle()
                         .inset(by: 1)
-                        .stroke(Color.lightGray, lineWidth: 2)
+                        .stroke(.srLightGray, lineWidth: 2)
                 )
 
             VStack(alignment: .leading, spacing: 5) {

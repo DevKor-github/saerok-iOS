@@ -16,6 +16,7 @@ struct CollectionDescriptionSection: View {
     var onLikeToggle: () -> Void
     var onCommentTap: () -> Void
     var onReportTap: () -> Void
+    var onSuggestTap: (() -> Void)?
     
     // MARK: - Environment
     
@@ -69,7 +70,7 @@ private extension CollectionDescriptionSection {
             Divider()
                 .hidden()
                 .frame(height: 1)
-                .background(Color.lightGray)
+                .background(.srLightGray)
             
             HStack(spacing: 0) {
                 noteButton(
@@ -81,7 +82,7 @@ private extension CollectionDescriptionSection {
                 Divider()
                     .hidden()
                     .frame(width: 1)
-                    .background(Color.lightGray)
+                    .background(.srLightGray)
                 
                 noteButton(
                     image: .comment,
@@ -191,9 +192,7 @@ private extension CollectionDescriptionSection {
                 }
             }
         } else {
-            Button {
-                
-            } label: {
+            Button(action: onSuggestTap ?? {}) {
                 Image(.unknown)
                     .padding(.horizontal, 3)
                     .padding(8)
@@ -207,8 +206,8 @@ private extension CollectionDescriptionSection {
     var additionalButton: some View {
         if !isFromMapView {
             Button {
-                if let paths = path {
-                    paths.wrappedValue.append(CollectionDetailView.Route.edit)
+                if let path = path {
+                    path.wrappedValue.append(CollectionDetailView.Route.edit)
                 }
             } label: {
                 Image.SRIconSet.edit.frame(.defaultIconSizeLarge)

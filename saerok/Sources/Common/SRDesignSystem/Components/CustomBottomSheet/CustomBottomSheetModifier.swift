@@ -13,8 +13,9 @@ extension View {
     func bottomSheet<SheetContent: View>(
         isShowing: Binding<Bool>,
         topOffset: CGFloat = 100,
-        backgroundColor: Color = .srWhite,
+        backgroundColor: Color = .srLightGray,
         keyboard: KeyboardObserver,
+        isExtendable: Bool = true,
         @ViewBuilder sheetContent: @escaping () -> SheetContent
     ) -> some View {
         self.modifier(
@@ -23,7 +24,8 @@ extension View {
                 topOffset: topOffset,
                 backgroundColor: backgroundColor,
                 sheetContent: sheetContent,
-                keyboard: keyboard
+                keyboard: keyboard,
+                isExtendable: isExtendable,
             )
         )
     }
@@ -40,7 +42,7 @@ enum BottomSheetDetent {
         case .medium:
             UIScreen.main.bounds.height * 0.65
         case .large:
-            UIScreen.main.bounds.height * 0.95
+            UIScreen.main.bounds.height * 0.9
         }
     }
 }
@@ -52,12 +54,13 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     let topOffset: CGFloat
     let backgroundColor: Color
     let sheetContent: () -> SheetContent
-
+    
     @State private var dragOffset: CGFloat = 0
     @State private var currentDetent: BottomSheetDetent = .medium
     @State private var bottomSheetSize: CGSize = .zero
     @ObservedObject var keyboard: KeyboardObserver
-    
+    let isExtendable: Bool
+
     private var actualOffset: CGFloat {
         if isShowing {
             let base = UIScreen.main.bounds.height - currentDetent.height
@@ -76,7 +79,7 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             foregroundView
         }
         .onChange(of: keyboard.keyboardHeight) { _, new in
-            if new > 0 {
+            if new > 0 && isExtendable {
                 currentDetent = .large
             }
         }
@@ -91,8 +94,14 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
         VStack {
             Spacer()
             VStack(spacing: 0) {
-                indicator
-
+                if isExtendable {
+                    indicator
+                } else {
+                    Color.clear
+                        .frame(height: 3)
+                        .padding(.top, 5)
+                }
+                
                 ZStack(alignment: .top) {
                     sheetContent()
                         .frame(maxHeight: UIScreen.main.bounds.height - topOffset)
@@ -126,7 +135,7 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                         }
                     )
                     .frame(width: 340, height: 60, alignment: .leading)
-                    .allowsHitTesting(isShowing)
+                    .allowsHitTesting(isShowing && isExtendable)
                 }
             }
             .sizeState(size: $bottomSheetSize)

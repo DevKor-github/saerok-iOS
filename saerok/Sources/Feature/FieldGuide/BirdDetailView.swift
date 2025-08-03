@@ -59,8 +59,8 @@ struct BirdDetailView: View {
                 Color.clear
                     .frame(height: 20)
                 VStack(alignment: .leading, spacing: 0) {
+                    birdImageWithTag(bird: bird)
                     Group {
-                        birdImageWithTag(bird: bird)
                         title(bird: bird)
                         classification(bird: bird)
                             .padding(.bottom, 7)
@@ -74,7 +74,7 @@ struct BirdDetailView: View {
             topBar(bird: bird)
                 .padding(.top, 40)
         }
-        .background(Color.lightGray)
+        .background(Color.srLightGray)
     }
     
     var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
@@ -114,12 +114,11 @@ private extension BirdDetailView {
     func birdImageWithTag(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.birdImageSpacing) {
             if let url = bird.imageURL {
-                ZStack(alignment: .bottomTrailing) {
-                    ReactiveAsyncImage(url: url, scale: .large, quality: 1, downsampling: false)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity)
-                        .cornerRadius(Constants.imageCornerRadius)
-                }
+                ReactiveAsyncImage(url: url, scale: .large, quality: 1, downsampling: false)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .cornerRadius(Constants.imageCornerRadius)
+                    .padding(.horizontal, 9)
             }
             
             ScrollView(.horizontal, showsIndicators: false) {

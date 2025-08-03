@@ -139,7 +139,7 @@ private extension FieldGuideSearchView {
                 }
             }
         }
-        .background(Color.lightGray)
+        .background(Color.srLightGray)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {

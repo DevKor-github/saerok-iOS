@@ -195,7 +195,7 @@ private extension FieldGuideView {
                         filterKey: $filterKey
                     )
                     .padding(.top, Constants.headerTopPadding)
-                    .background(.lightGray)
+                    .background(.srLightGray)
                     BirdGridView(
                         birds: fieldGuide,
                         onTap: { bird in

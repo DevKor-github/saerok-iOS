@@ -33,9 +33,13 @@ struct CollectionFormView: Routable {
     
     // MARK: View State
     
+    private var isBirdChangedToNil: Bool { hadInitialBird && collectionDraft.bird == nil }
+    @State private var hadInitialBird: Bool = false
     @State var activePopup: CollectionPopup = .none
     @State private var isPositionInitialized: Bool = false
+    @State private var isSubmitting: Bool = false
     @StateObject var collectionDraft: Local.CollectionDraft
+    
     private var locationManager: LocationManager { LocationManager.shared }
 
     init(mode: CollectionFormMode, path: Binding<NavigationPath>) {
@@ -55,7 +59,12 @@ struct CollectionFormView: Routable {
             .navigationDestination(for: Route.self, destination: { route in
                 switch route {
                 case .findBird:
-                    CollectionSearchView(path: $path)
+                    CollectionSearchView(
+                        path: $path,
+                        onSelect: { selectedBird in
+                            injected.appState[\.routing.addCollectionItemView.selectedBird] = selectedBird
+                            path.removeLast()
+                        })
                 case .findLocation:
                     FindPlaceView(collectionDraft: collectionDraft, path: $path)
                 }
@@ -140,18 +149,14 @@ private extension CollectionFormView {
     
     var submitButton: some View {
         Button {
-            switch mode {
-            case .add:
-                submitForm()
-            case .edit:
-                editCollection()
-            }
+            submitButtonTapped(self.mode)
         } label: {
             Text(mode.submitButtonTitle)
                 .font(.SRFontSet.button)
                 .frame(maxWidth: .infinity)
         }
         .disabled(!collectionDraft.submittable && mode.isAddMode)
+        .disabled(isSubmitting)
         .buttonStyle(.primary)
     }
     
@@ -195,15 +200,34 @@ private extension CollectionFormView {
     }
 }
 
-// MARK: - Action Method
+// MARK: - Networking & Button Action
 
 extension CollectionFormView {
+    func submitButtonTapped(_ mode: CollectionFormMode) {
+        isSubmitting = true
+        
+        switch mode {
+        case .add:
+            submitForm()
+        case .edit:
+            if isBirdChangedToNil {
+                activePopup = .editModeSaveConfirm
+            } else {
+                editCollection()
+            }
+        }
+    }
+    
     func loadBirdIfNeededOnEditMode() {
         if case .edit(let detail) = mode,
            let birdID = detail.birdID,
-           collectionDraft.bird == nil {
+           collectionDraft.bird == nil
+        {
             Task {
-                collectionDraft.bird = try? await injected.interactors.fieldGuide.loadBirdDetails(birdID: birdID)
+                collectionDraft.bird = try? await injected.interactors.fieldGuide.loadBirdDetails(
+                    birdID: birdID
+                )
+                hadInitialBird = true
             }
         }
     }
@@ -211,6 +235,7 @@ extension CollectionFormView {
     func submitForm() {
         Task {
             try? await injected.interactors.collection.createCollection(collectionDraft)
+            isSubmitting = false
             path.removeLast()
         }
     }
@@ -231,11 +256,18 @@ extension CollectionFormView {
             
             do {
                 try await injected.interactors.collection.editCollection(collectionDraft)
+                isSubmitting = false
                 path.removeLast()
             } catch {
                 print("[EditCollection] ❌ 에러 발생: \(error.localizedDescription)")
                 dump(error)
             }
+        }
+    }
+    
+    func resetSuggestion() {
+        Task {
+            try await injected.interactors.collection.resetSuggestion(collectionDraft.collectionID ?? 0)
         }
     }
 }

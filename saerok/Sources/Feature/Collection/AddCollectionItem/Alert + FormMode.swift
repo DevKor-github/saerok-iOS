@@ -70,18 +70,19 @@ extension CollectionFormView {
     
     var editModeSaveConfirmPopup: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
-            title: "내용을 저장할까요?",
-            message: "이대로 나가면 변경사항이 저장되지 않아요.\n취소할까요?",
+            title: "이전 동정 돕기 내역을 불러올까요?",
+            message: "불러오지 않으면 동정 돕기가 처음부터 시작돼요.",
             leading: .init(
-                title: "저장 안할래요",
+                title: "불러오지 않기",
                 action: {
                     activePopup = .none
-                    path.removeLast()
+                    resetSuggestion()
+                    editCollection()
                 },
                 style: .bordered
             ),
             trailing: .init(
-                title: "저장할게요",
+                title: "불러오기",
                 action: {
                     activePopup = .none
                     editCollection()

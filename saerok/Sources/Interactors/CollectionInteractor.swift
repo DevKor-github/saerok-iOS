@@ -17,6 +17,13 @@ protocol CollectionInteractor {
     func createComments(id: Int, _ content: String) async throws
     func deleteComment(collectionId: Int, commentId: Int) async throws
     func toggleLike(_ id: Int) async throws -> Bool
+    
+    func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion]
+    func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion
+    func toggleAgree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion
+    func toggleDisagree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion
+    func adoptSuggestion(_ id: Int, birdId: Int) async throws
+    func resetSuggestion(_ id: Int) async throws
 }
 
 enum CollectionInteractorError: Error {
@@ -28,6 +35,7 @@ enum CollectionInteractorError: Error {
 }
 
 struct CollectionInteractorImpl: CollectionInteractor {
+
     let repository: CollectionRepository
     
     func fetchMyCollections() async throws -> [Local.CollectionSummary] {
@@ -92,9 +100,44 @@ struct CollectionInteractorImpl: CollectionInteractor {
     func toggleLike(_ id: Int) async throws -> Bool {
         return try await repository.toggleCollectionLike(id)
     }
+    
+    func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] {
+        return try await repository.fetchBirdSuggestions(collectionId: id)
+    }
+    
+    func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion {
+        try await repository.suggestBird(collectionId: id, birdId: birdId)
+        
+        return Local.BirdSuggestion(
+            bird: .mockData[0],
+            agreeCount: 1,
+            disagreeCount: 0,
+            isAgreed: true,
+            isDisagreed: false
+        )
+    }
+    
+    func toggleAgree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion {
+        let result = try await repository.toggleSuggestionAgree(collectionId: id, birdId: suggestion.bird.id)
+        return suggestion.update(from: result)
+    }
+    
+    func toggleDisagree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion {
+        let result = try await repository.toggleSuggestionDisagree(collectionId: id, birdId: suggestion.bird.id)
+        return suggestion.update(from: result)
+    }
+    
+    func adoptSuggestion(_ id: Int, birdId: Int) async throws {
+        try await repository.adoptSuggestion(collectionId: id, birdId: birdId)
+    }
+    
+    func resetSuggestion(_ id: Int) async throws {
+        try await repository.resetSuggestion(collectionId: id)
+    }
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
+    
     func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] { [] }
     
     func editCollection(_ draft: Local.CollectionDraft) async throws { }
@@ -122,6 +165,22 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     func deleteComment(collectionId: Int, commentId: Int) async throws { }
     
     func toggleLike(_ id: Int) async throws -> Bool { true }
+    
+    func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] { [] }
+    
+    func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion { Local.BirdSuggestion.mockData[0] }
+    
+    func adoptSuggestion(_ id: Int, birdId: Int) async throws { }
+    
+    func toggleAgree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion {
+        Local.BirdSuggestion.mockData[0]
+    }
+    
+    func toggleDisagree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion {
+        Local.BirdSuggestion.mockData[0]
+    }
+    
+    func resetSuggestion(_ id: Int) async throws { }
 }
 
 
