@@ -1,12 +1,21 @@
+//
+//  NotificationCell.swift
+//  saerok
+//
+//  Created by HanSeung on 8/14/25.
+//
+
+
 import SwiftUI
 
 struct NotificationCell: View {
-    let item: NotificationItem
-
+    let item: Local.NotificationItem
+    let onTap: () -> Void
+    
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             ReactiveAsyncImage(
-                url: item.imageUrl,
+                url: item.actorImageUrl,
                 scale: .medium,
                 quality: 0.8,
                 downsampling: true
@@ -33,7 +42,7 @@ struct NotificationCell: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             ReactiveAsyncImage(
-                url: item.imageUrl,
+                url: item.collectionImageUrl ?? "",
                 scale: .medium,
                 quality: 0.8,
                 downsampling: true
@@ -59,19 +68,21 @@ struct NotificationCell: View {
                     .offset(x: 9, y: 19)
             }
         )
+        .onTapGesture {
+            onTap()
+        }
     }
-
+    
     @ViewBuilder
     private var notificationText: some View {
         switch item.type {
         case .like:
-            Text(item.nickname).bold() + Text("님이 나의 새록을 좋아해요.")
+            Text(item.actorNickname).font(.SRFontSet.body2_3) + Text("님이 나의 새록을 좋아해요.").font(.SRFontSet.body4)
         case .comment:
-            Text(item.nickname).bold() + Text("님이 나의 새록에 댓글을 남겼어요. ") + Text("“\(item.content)”").italic()
+            Text(item.actorNickname).font(.SRFontSet.body2_3) + Text("님이 나의 새록에 댓글을 남겼어요. ").font(.SRFontSet.body4) + Text("“\(item.content ?? "")”").font(.SRFontSet.body4)
         case .birdIdSuggestion:
             Text("두근두근! 새로운 의견이 공유됐어요. 확인해볼까요?")
-        case .system:
-            Text(item.content)
+                .font(.SRFontSet.body4)
         }
     }
 }

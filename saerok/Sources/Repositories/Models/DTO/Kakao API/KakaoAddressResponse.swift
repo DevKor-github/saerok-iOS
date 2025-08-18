@@ -64,6 +64,9 @@ extension DTO {
         let mountainYN: String
         let mainAddressNo: String
         let subAddressNo: String
+        var adrs: String {
+            [region1DepthName, region2DepthName, region3DepthName].joined(separator: " ")
+        }
         
         enum CodingKeys: String, CodingKey {
             case addressName = "address_name"

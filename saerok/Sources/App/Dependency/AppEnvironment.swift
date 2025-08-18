@@ -42,9 +42,12 @@ private extension AppEnvironment {
     
     /// 앱의 주요 저장소(Repository)들을 생성하고 반환합니다.
     /// - Parameter modelContainer: 로컬 데이터를 저장하는 데 사용할 `ModelContainer`
-    static func configuredRepositories(modelContainer: ModelContainer, networkService: SRNetworkService) -> DIContainer.Repositories {
+    static func configuredRepositories(
+        modelContainer: ModelContainer,
+        networkService: SRNetworkService
+    ) -> DIContainer.Repositories {
         let mainRepository: MainRepository = .init(modelContainer: modelContainer)
-        return .init(birds: mainRepository, collections: mainRepository)
+        return .init(birds: mainRepository, collections: mainRepository, user: mainRepository)
     }
     
     /// 저장소를 기반으로 앱에서 사용할 인터랙터들을 생성합니다.
@@ -52,7 +55,8 @@ private extension AppEnvironment {
     static func configuredInteractors(repositories: DIContainer.Repositories)-> DIContainer.Interactors {
         return .init(
             fieldGuide: FieldGuideInteractorImpl(repository: repositories.birds),
-            collection: CollectionInteractorImpl(repository: repositories.collections)
+            collection: CollectionInteractorImpl(repository: repositories.collections),
+            user: UserInteractorImpl(repository: repositories.user)
         )
     }
 }

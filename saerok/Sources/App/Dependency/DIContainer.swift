@@ -29,15 +29,18 @@ extension DIContainer {
     struct Repositories {
         let birds: BirdsRepository
         let collections: CollectionRepository
+        let user: UserRepository
     }
     
     struct Interactors {
         let fieldGuide: FieldGuideInteractor
         let collection: CollectionInteractor
+        let user: UserInteractor
         
         nonisolated(unsafe) static let stub: Interactors = .init(
             fieldGuide: MockFieldGuideInteractorImpl(),
-            collection: MockCollectionInteractorImpl()
+            collection: MockCollectionInteractorImpl(),
+            user: MockUserInteractorImpl()
         )
     }
 }

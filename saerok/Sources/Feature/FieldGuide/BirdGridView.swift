@@ -30,10 +30,10 @@ struct BirdGridView: View {
     var body: some View {
         LazyVGrid(
             columns: [
-                GridItem(.flexible(), spacing: 15),
-                GridItem(.flexible(), spacing: 15)
+                GridItem(.flexible(), spacing: 7),
+                GridItem(.flexible(), spacing: 7)
             ],
-            spacing: 15
+            spacing: 7
         ) {
             ForEach(birds) { bird in
                 Button {
@@ -53,7 +53,7 @@ struct BirdGridView: View {
             .foregroundStyle(.clear)
             .frame(height: 198)
         }
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(9)
         .background(Color.srLightGray)
     }
 }

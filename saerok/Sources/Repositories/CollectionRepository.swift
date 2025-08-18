@@ -22,6 +22,7 @@ protocol CollectionRepository {
     func createCollectionComment(id: Int, _ content: String) async throws
     func toggleCollectionLike(_ id: Int) async throws -> Bool
     func deleteCollectionComment(collectionId: Int, commentId: Int) async throws
+    func reportCollection(_ id: Int) async throws
     
     func fetchBirdSuggestions(collectionId: Int) async throws -> [Local.BirdSuggestion]
     func suggestBird(collectionId: Int, birdId: Int) async throws
@@ -142,6 +143,12 @@ extension MainRepository: CollectionRepository {
                 collectionID: collectionId,
                 commentID: commentId
             )
+        )
+    }
+    
+    func reportCollection(_ id: Int) async throws{
+        let _: EmptyResponse = try await networkService.performSRRequest(
+            .reportCollection(collectionId: id)
         )
     }
 

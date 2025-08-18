@@ -5,6 +5,7 @@
 //  Created by HanSeung on 3/18/25.
 //
 
+
 import Combine
 import SwiftUI
 import SwiftData
@@ -16,10 +17,6 @@ import KakaoSDKUser
 @main
 struct saerokApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    init() {
-        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
-    }
     
     var body: some Scene {
         WindowGroup {

@@ -16,13 +16,14 @@ class User {
     var nickname: String
     var email: String
     var joinedDate: Date
-   
+    var imageURL: String?
     
     init() {
         self.id = ""
         self.email = ""
         self.nickname = ""
         self.joinedDate = .now
+        self.imageURL = ""
     }
     
     convenience init(nickname: String, email: String = "") {
@@ -36,6 +37,7 @@ class User {
         self.nickname = dto.nickname
         self.email = dto.email
         self.joinedDate = Date.fromSimpleDateString(dto.joinedDate ?? "2025-06-25") ?? .now
+        self.imageURL = dto.profileImageUrl
     }
 }
 

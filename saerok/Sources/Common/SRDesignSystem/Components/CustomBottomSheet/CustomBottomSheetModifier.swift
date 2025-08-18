@@ -11,7 +11,8 @@ import SwiftUI
 
 extension View {
     func bottomSheet<SheetContent: View>(
-        isShowing: Binding<Bool>,
+        isShowing: Binding<Bool>? = nil,
+        alwaysOnDisplay: Bool = false,
         topOffset: CGFloat = 100,
         backgroundColor: Color = .srLightGray,
         keyboard: KeyboardObserver,
@@ -20,12 +21,14 @@ extension View {
     ) -> some View {
         self.modifier(
             BottomSheetModifier(
-                isShowing: isShowing,
+                isShowing: isShowing ?? .constant(true),
+                alwaysOnDisplay: alwaysOnDisplay,
                 topOffset: topOffset,
                 backgroundColor: backgroundColor,
                 sheetContent: sheetContent,
+                currentDetent: alwaysOnDisplay ? .minimum : .medium,
                 keyboard: keyboard,
-                isExtendable: isExtendable,
+                isExtendable: isExtendable
             )
         )
     }
@@ -34,15 +37,18 @@ extension View {
 // MARK: - Detent
 
 enum BottomSheetDetent {
+    case minimum
     case medium
     case large
 
     var height: CGFloat {
         switch self {
+        case .minimum:
+            170
         case .medium:
             UIScreen.main.bounds.height * 0.65
         case .large:
-            UIScreen.main.bounds.height * 0.9
+            UIScreen.main.bounds.height * 0.85
         }
     }
 }
@@ -51,35 +57,46 @@ enum BottomSheetDetent {
 
 struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     @Binding var isShowing: Bool
+    let alwaysOnDisplay: Bool
     let topOffset: CGFloat
     let backgroundColor: Color
     let sheetContent: () -> SheetContent
     
     @State private var dragOffset: CGFloat = 0
-    @State private var currentDetent: BottomSheetDetent = .medium
+    @State var currentDetent: BottomSheetDetent
     @State private var bottomSheetSize: CGSize = .zero
     @ObservedObject var keyboard: KeyboardObserver
     let isExtendable: Bool
 
-    private var actualOffset: CGFloat {
-        if isShowing {
-            let base = UIScreen.main.bounds.height - currentDetent.height
-            return base + dragOffset
-        } else {
-            return UIScreen.main.bounds.height + 100
-        }
-    }
+//    private var actualOffset: CGFloat {
+//        if isShowing {
+//            let base = UIScreen.main.bounds.height - currentDetent.height
+//            return base + dragOffset
+//        } else {
+//            return UIScreen.main.bounds.height + 100
+//        }
+//    }
 
+    private var actualOffset: CGFloat {
+        guard isShowing else {
+            return UIScreen.main.bounds.height + 100 // 항상 완전 숨김
+        }
+        
+        let base = UIScreen.main.bounds.height - currentDetent.height
+        return base + dragOffset
+    }
+    
     func body(content: Content) -> some View {
         ZStack {
             content
-
+            
             backgroundView
+                .opacity(alwaysOnDisplay ? 0 : 1)
                 
             foregroundView
         }
         .onChange(of: keyboard.keyboardHeight) { _, new in
-            if new > 0 && isExtendable {
+            if (new > 0 && isExtendable && isShowing) && !alwaysOnDisplay {
                 currentDetent = .large
             }
         }
@@ -117,13 +134,19 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                                 dragOffset = translation
                             case .large:
                                 dragOffset = max(translation, 0)
+                            case .minimum:
+                                dragOffset = translation
                             }
                         },
                         onEnded: { translation in
                             withAnimation(.smooth) {
                                 if translation > 40 {
                                     if currentDetent == .medium {
-                                        isShowing = false
+                                        if alwaysOnDisplay {
+                                            currentDetent = .minimum
+                                        } else {
+                                            isShowing = false
+                                        }
                                     } else {
                                         currentDetent = .medium
                                     }

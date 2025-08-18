@@ -22,7 +22,7 @@ struct ConfirmButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
             .foregroundColor(.srWhite)
-            .cornerRadius(10)
+            .cornerRadius(15)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .contentShape(Rectangle())
     }
@@ -42,11 +42,11 @@ struct DeleteButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .foregroundColor(.red)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 15)
                     .inset(by: 0.75)
                     .stroke(.red, lineWidth: 1.5)
             )
-            .cornerRadius(10)
+            .cornerRadius(15)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .contentShape(Rectangle())
     }
@@ -66,11 +66,11 @@ struct BorderedButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .foregroundColor(defaultColor)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 15)
                     .inset(by: 0.75)
                     .stroke(defaultColor, lineWidth: 1.5)
             )
-            .cornerRadius(10)
+            .cornerRadius(15)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .contentShape(Rectangle())
     }

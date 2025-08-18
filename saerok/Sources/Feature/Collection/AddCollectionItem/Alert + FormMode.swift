@@ -45,24 +45,24 @@ enum CollectionFormMode {
 }
 
 extension CollectionFormView {
-    var addModeExitConfirmPopup: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+    var addModeExitConfirmPopup: CustomPopup<ConfirmButtonStyle, BorderedButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "작성 중인 내용이 있어요",
             message: "이대로 나가면 변경사항이 저장되지 않아요.\n취소할까요?",
             leading: .init(
+                title: "계속하기",
+                action: {
+                    activePopup = .none
+                },
+                style: .confirm
+            ),
+            trailing: .init(
                 title: "나가기",
                 action: {
                     activePopup = .addModeExitConfirm
                     path.removeLast()
                 },
                 style: .bordered
-            ),
-            trailing: .init(
-                title: "계속하기",
-                action: {
-                    activePopup = .none
-                },
-                style: .confirm
             ),
             center: nil
         )
@@ -93,24 +93,24 @@ extension CollectionFormView {
         )
     }
     
-    var editModeDeleteConfirmPopup: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+    var editModeDeleteConfirmPopup: CustomPopup<ConfirmButtonStyle, DeleteButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "삭제하시겠어요?",
             message: "'\(self.collectionDraft.bird?.name ?? "이름 모를 새")' 새록이 삭제돼요.",
             leading: .init(
+                title: "취소",
+                action: {
+                    activePopup = .none
+                },
+                style: .confirm
+            ),
+            trailing: .init(
                 title: "삭제하기",
                 action: {
                     activePopup = .editModeDeleteConfirm
                     deleteCollection()
                 },
                 style: .delete
-            ),
-            trailing: .init(
-                title: "취소",
-                action: {
-                    activePopup = .none
-                },
-                style: .confirm
             ),
             center: nil
         )

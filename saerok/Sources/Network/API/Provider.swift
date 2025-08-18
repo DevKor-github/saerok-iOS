@@ -20,6 +20,12 @@ final class Provider {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }
+        
+//        if let jsonString = String(data: data, encoding: .utf8) {
+//            print("📦 Response JSON: \(jsonString)")
+//        } else {
+//            print("⚠️ Response 데이터를 문자열로 변환할 수 없음")
+//        }
 
         guard 200..<300 ~= httpResponse.statusCode else {
             throw self.validateStatusCode(httpResponse.statusCode)
@@ -35,7 +41,7 @@ final class Provider {
             throw NetworkError.decodingError(error.localizedDescription)
         }
     }
-    
+
     func validateStatusCode(_ statusCode: Int) -> NetworkError {
         switch statusCode {
         case 400..<500:

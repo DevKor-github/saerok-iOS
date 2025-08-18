@@ -14,6 +14,7 @@ extension DTO {
             let commentId: Int
             let userId: Int
             let nickname: String
+            let profileImageUrl: String
             let content: String
             let likeCount: Int
             let isLiked: Bool

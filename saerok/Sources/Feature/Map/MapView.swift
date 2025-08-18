@@ -16,7 +16,7 @@ struct MapView: Routable {
         case detail(_ collectionID: Int)
     }
     
-    enum Mode {
+    enum Mode: Equatable {
         case idle, searching, resultShown
     }
     
@@ -36,13 +36,14 @@ struct MapView: Routable {
     
     @State private var mapViewState: Loadable<Void>
     @State private var position: (Double, Double) = (37.59080, 127.0278)
+    @State private var address: String = ""
     @State private var text: String = ""
     @State private var response: [Local.KakaoPlace] = []
     @State private var mode: Mode = .idle
     @FocusState private var isFocused: Bool
     @State private var isMineOnly: Bool = false
     @State private var item: [Local.NearbyCollectionSummary] = []
-    @State private var searchDebounceTask: Task<Void, Never>? = nil
+    @State private var searchDebounceTask: Task<Void, Error>? = nil
     
     @Binding private var path: NavigationPath
     
@@ -61,6 +62,7 @@ struct MapView: Routable {
             .ignoresSafeArea(.all)
             .onAppear {
                 mapController.selectedBird = nil
+                reloadAddress()
             }
             .onReceive(routingUpdate) { self.routingState = $0 }
             .navigationDestination(for: MapView.Route.self) { route in
@@ -100,12 +102,9 @@ struct MapView: Routable {
                 }
             }
         case .loaded:
-            ZStack(alignment: .top) {
-                resultSection
-                searchBarSection
-                buttonSection
-            }
-        default: Text("")
+            loadedContent
+        default:
+            Text("")
         }
     }
 }
@@ -113,6 +112,24 @@ struct MapView: Routable {
 // MARK: - Subviews
 
 private extension MapView {
+    var loadedContent: some View {
+        ZStack(alignment: .top) {
+            resultSection
+            searchBarSection
+            buttonSection
+            
+            if isModeIdle {
+                Text("")
+                    .bottomSheet(alwaysOnDisplay: true, keyboard: KeyboardObserver()) {
+                        NearbySheet(address: address, item: item) { item in
+                            path.append(Route.detail(item.collectionId))
+                        }
+                    }
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
+            }
+        }
+    }
+    
     var searchBarSection: some View {
         VStack(spacing: 14) {
             Color.clear.frame(height: 60)
@@ -125,12 +142,8 @@ private extension MapView {
                     mode = .searching
                 },
                 onTextChange: { new in
-                    searchDebounceTask?.cancel()
-                    searchDebounceTask = Task {
-                        try? await Task.sleep(nanoseconds: 800_000_000)
-                        if !Task.isCancelled && !new.isEmpty {
-                            await performSearch()
-                        }
+                    debounceTask {
+                        await performSearch()
                     }
                     mode = (new.isEmpty ? .searching : (mode == .idle ? .idle : mode))
                 }
@@ -138,9 +151,20 @@ private extension MapView {
             
             SearchRefreshButton {
                 refreshButtonTapped()
+                reloadAddress()
             }
             .opacity(mode == .idle ? 1 : 0)
             .allowsHitTesting(mode == .idle)
+        }
+        .onChange(of: isFocused) { _, new in
+            if new {
+                mode = .searching
+            }
+        }
+        .onChange(of: mode) { _, new in
+            if new == .idle {
+                isFocused = false
+            }
         }
     }
     
@@ -178,7 +202,7 @@ private extension MapView {
             }
         }
         .padding(SRDesignConstant.defaultPadding)
-        .padding(.bottom, 90)
+        .padding(.bottom, 152)
         .opacity(isModeIdle ? 1 : 0)
     }
     
@@ -226,7 +250,7 @@ private extension MapView {
 
 // MARK: - Networking & Helpers
 
-extension MapView {
+private extension MapView {
     func searchCellTapped(_ item: Local.KakaoPlace) {
         position = (item.latitude, item.longtitude)
         mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
@@ -237,11 +261,12 @@ extension MapView {
         Task {
             do {
                 HapticManager.shared.trigger(.light)
-                isMineOnly.toggle()
                 try await fetchNearby()
+                withAnimation(.bouncy(duration: 0.4)) {
+                    isMineOnly.toggle()
+                }
                 HapticManager.shared.trigger(.success)
             } catch {
-                isMineOnly.toggle()
                 HapticManager.shared.trigger(.error)
             }
         }
@@ -259,7 +284,7 @@ extension MapView {
         item = try await  injected.interactors.collection.fetchNearbyCollections(
             lat: position.0,
             lng: position.1,
-            rad: 5000,
+            rad: 1000,
             isMineOnly: isMineOnly,
             isGuest: isGuest
         )
@@ -286,13 +311,37 @@ extension MapView {
         mapController.refreshBirdMarkers(items)
     }
     
-    private func performSearch() async {
+    func debounceTask(delay: UInt64 = 800_000_000, action: @escaping @Sendable () async throws -> Void) {
+        searchDebounceTask?.cancel()
+        searchDebounceTask = Task {
+            do {
+                try? await Task.sleep(nanoseconds: delay)
+                if !Task.isCancelled {
+                    try await action()
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func performSearch() async {
         do {
             let searchResponse: DTO.KakaoSearchResponse = try await networkService.performKakaoRequest(.keyword(text))
             response = searchResponse.documents.toLocal()
             mode = .resultShown
-        } catch {
-            // Handle error silently or add error state if needed
+        } catch { }
+    }
+    
+    func reloadAddress() {
+        debounceTask {
+            let result: DTO.KakaoAddressResponse = try await networkService.performKakaoRequest(
+                .address(
+                    lng: position.0,
+                    lat: position.1
+                )
+            )
+            self.address = result.documents.first?.address?.adrs ?? ""
         }
     }
 }
@@ -311,19 +360,26 @@ extension MapView {
         var body: some View {
             HStack {
                 Button {
-                    mode = .idle
+                    if mode == .idle {
+                        mode = .searching
+                    } else {
+                        mode = .idle
+                    }
                 } label: {
-                    isModeIdle ? Image.SRIconSet.searchSecondary.frame(.defaultIconSize) :
-                    Image.SRIconSet.chevronLeft.frame(.defaultIconSize)
+                    (isModeIdle
+                     ? Image.SRIconSet.searchSecondary
+                     : Image.SRIconSet.chevronLeft)
+                    .frame(.defaultIconSize)
                 }
                 TextField("원하는 장소를 입력하세요", text: $text)
-                // Removed the '검색' button as per instructions
+                    .onTapGesture { onTap() }
             }
             .frame(height: 44)
             .padding(.leading, 14)
             .textFieldDeletable(text: $text)
             .srStyled(.textField(isFocused: $isFocused, alwaysFocused: true))
             .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .contentShape(Rectangle())
             .onTapGesture { onTap() }
             .onChange(of: text) { _, new in
                 onTextChange(new)
@@ -387,9 +443,7 @@ private struct GlobalToggleButton: View {
     
     var body: some View {
         Button(action: {
-            withAnimation(.bouncy(duration: 0.4)) {
-                buttonAction()
-            }
+            buttonAction()
         }) {
             ZStack(alignment: isOff ? .leading : .trailing) {
                 RoundedRectangle(cornerRadius: .infinity)
@@ -409,9 +463,4 @@ private struct GlobalToggleButton: View {
         }
         .buttonStyle(.plain)
     }
-}
-
-#Preview {
-    @Previewable @State var path = NavigationPath()
-    MapView(path: $path)
 }

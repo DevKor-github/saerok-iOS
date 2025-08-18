@@ -9,5 +9,7 @@
 extension DTO {
     struct UpdateMeRequest: Encodable {
         let nickname: String
+        let profileImageObjectKey: String
+        let profileImageContentType: String
     }
 }

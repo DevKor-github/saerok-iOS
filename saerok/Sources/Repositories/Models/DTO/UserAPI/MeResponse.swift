@@ -11,5 +11,6 @@ extension DTO {
         let nickname: String
         let email: String
         let joinedDate: String?
+        let profileImageUrl: String
     }
 }

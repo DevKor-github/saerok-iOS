@@ -58,8 +58,11 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                 Button {
                     isPresented.toggle()
                 } label: {
-                    Image.SRIconSet.xmarkCircle.frame(.defaultIconSize)
+                    Image(systemName: "xmark")
+                        .frame(width: 10)
+                        .foregroundStyle(.srGray)
                 }
+                .buttonStyle(.plain)
             }
         }
         .padding(12)

@@ -14,6 +14,7 @@ struct CollectionView: Routable {
     enum Route: Hashable {
         case collectionDetail(Int)
         case addCollection
+        case notification
     }
     
     // MARK: - Dependencies
@@ -24,7 +25,7 @@ struct CollectionView: Routable {
     // MARK: - Routing
     
     @State var routingState: Routing = .init()
-    @Binding var navigationPath: NavigationPath
+    @Binding var path: NavigationPath
     
     // MARK: - View State
     
@@ -40,7 +41,7 @@ struct CollectionView: Routable {
     
     init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
         self._collectionState = .init(initialValue: state)
-        self._navigationPath = path
+        self._path = path
     }
     
     // MARK: - Body
@@ -51,30 +52,31 @@ struct CollectionView: Routable {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .collectionDetail(let id):
-                    CollectionDetailView(collectionID: id, path: $navigationPath)
+                    CollectionDetailView(collectionID: id, path: $path)
                 case .addCollection:
-                    CollectionFormView(mode: .add, path: $navigationPath)
+                    CollectionFormView(mode: .add, path: $path)
+                case .notification:
+                    NotificationView(path: $path)
                 }
             }
             .onChange(of: routingState.collectionID, initial: true) { _, id in
                 guard let id else { return }
-                navigationPath.append(Route.collectionDetail(id))
+                path.append(Route.collectionDetail(id))
             }
             .onChange(of: routingState.addCollection, initial: true) { _, isTrue in
-                if isTrue { navigationPath.append(Route.addCollection) }
+                if isTrue { path.append(Route.addCollection) }
             }
             .onChange(of: routingState.scrollToTop) { _, newID in
                 guard let _ = newID else { return }
                 offsetY = 0
                 self.routingState.scrollToTop = nil
             }
-            .onChange(of: navigationPath) { _, path in
+            .onChange(of: path) { _, path in
                 if !path.isEmpty {
                     routingBinding.wrappedValue.collectionID = nil
                 }
             }
             .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
-            .onAppear { loadMyCollections() }
     }
     
     @ViewBuilder
@@ -100,6 +102,7 @@ private extension CollectionView {
     func loadedView() -> some View {
         ZStack(alignment: .topLeading) {
             headerBackgroundColor
+        
             VStack(spacing: 0) {
                 scrollableSection
             }
@@ -119,9 +122,10 @@ private extension CollectionView {
             NavigationBar(
                 trailing: {
                     Button {
-                        // TODO: 검색 기능
+                        path.append(Route.notification)
                     } label: {
-                        EmptyView()
+                        Image.SRIconSet.bell
+                            .frame(.defaultIconSizeLarge)
                     }
                     .buttonStyle(.icon)
                 },
@@ -149,15 +153,19 @@ private extension CollectionView {
                     navigationBar
                     VStack(spacing: 0) {
                         CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
-                        
                         StaggeredGrid(items: collectionSummaries.reversed(), columns: 2) { bird in
-//                            birdView(for: bird)
                             CollectionItem(bird: bird, tapped: {
                                 injected.appState[\.routing.collectionView.collectionID] = bird.id
                             })
                         }
                         .padding(.horizontal)
-                        .background(Color.srWhite)
+                        .background(
+                            Rectangle()
+                                .foregroundColor(.clear)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 451)
+                                .background(LinearGradient.collectionBackground)
+                        )
                     }
                 }
                 .refreshable { loadMyCollections() }

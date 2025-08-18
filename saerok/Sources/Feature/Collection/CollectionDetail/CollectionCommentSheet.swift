@@ -50,7 +50,10 @@ struct CollectionCommentSheet: View {
             Button(action: onDismiss) {
                 Image.SRIconSet.delete
                     .frame(.defaultIconSizeSmall, tintColor: .srGray)
+                    .padding(.leading, 20)
+                    .padding(.vertical, 5)
             }
+            .contentShape(Rectangle())
         }
         .font(.SRFontSet.subtitle2)
         .padding(.horizontal, SRDesignConstant.defaultPadding)

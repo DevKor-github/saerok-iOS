@@ -44,8 +44,8 @@ struct BirdCardView: View {
         }
         .frame(height: Constants.cardHeight)
         .frame(maxWidth: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: SRDesignConstant.cardCornerRadius))
-        .shadow(radius: Constants.shadowRadius)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 0)
         .contentShape(Rectangle())
     }
 }
@@ -66,11 +66,10 @@ private extension BirdCardView {
         }
         .padding(.horizontal, Constants.nameSectionPaddingH)
         .padding(.vertical, Constants.nameSectionPaddingV)
-        .padding(.bottom, 3)
+        .padding(.bottom, 8)
         .frame(height: Constants.nameSectionHeight)
         .frame(maxWidth: .infinity, alignment: .bottomLeading)
         .background(nameGradientBackground)
-        .cornerRadius(10)
     }
 
     var nameGradientBackground: some View {
@@ -107,7 +106,7 @@ private extension BirdCardView {
             }
         } label: {
             (bird.isBookmarked ? Image.SRIconSet.scrapFilled : Image.SRIconSet.scrap)
-                .frame(.defaultIconSizeLarge)
+                .frame(.custom(width: 28, height: 28))
                 .padding(.top, Constants.bookmarkPaddingTop)
                 .padding(.trailing, Constants.bookmarkPaddingTrailing)
         }
@@ -118,15 +117,14 @@ private extension BirdCardView {
 
 private extension BirdCardView {
     enum Constants {
-        static let imageSize = CGSize(width: 120, height: 170)
-        static let gradientHeight: CGFloat = 23
-        static let cardHeight: CGFloat = 198
-        static let nameSectionHeight: CGFloat = 52
+        static let imageSize = CGSize(width: 184, height: 189)
+        static let gradientHeight: CGFloat = 18
+        static let cardHeight: CGFloat = 221
+        static let nameSectionHeight: CGFloat = 50
         static let nameSectionPaddingH: CGFloat = 13
         static let nameSectionPaddingV: CGFloat = 10
-        static let bookmarkPaddingTop: CGFloat = 7
-        static let bookmarkPaddingTrailing: CGFloat = 6
-        static let shadowRadius: CGFloat = 3
+        static let bookmarkPaddingTop: CGFloat = 8
+        static let bookmarkPaddingTrailing: CGFloat = 8
     }
 }
 

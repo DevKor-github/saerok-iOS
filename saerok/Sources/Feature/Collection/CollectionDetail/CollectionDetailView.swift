@@ -44,19 +44,7 @@ struct CollectionDetailView: View {
     // MARK:  View State
 
     @State private var uiState = CollectionUIState()
-
-    
-//    @State private var isLoading: Bool = true
-//    @State private var showPopup: Bool = false
-//    @State private var showSuggestPopup: Bool = false
-//    @State private var showAdoptPopup: Bool = false
-    
-//    @State private var showCommentSheet: Bool = false
-//    @State private var showSuggestionSheet: Bool = false
-//    @State private var showShareSheet: Bool = false
-    
     @State private var error: Error? = nil
-//    @State private var text: String = ""
     @FocusState private var isFocused
     
     @StateObject private var keyboard = KeyboardObserver()
@@ -332,6 +320,9 @@ private extension CollectionDetailView {
             leading: .init(
                 title: "신고하기",
                 action: {
+                    Task {
+                        try await injected.interactors.collection.reportCollection(collectionID)
+                    }
                     uiState.showPopup = false
                 },
                 style: .delete
@@ -517,7 +508,6 @@ private extension CollectionDetailView {
 //}
 
 
-
 extension View {
     func topOverlay<Overlay: View, T: Hashable>(
         observed value: T,
@@ -531,7 +521,6 @@ extension View {
         .id(value)
     }
 }
-
 
 struct CollectionPopupLayer: View {
     @Binding var showPopup: Bool

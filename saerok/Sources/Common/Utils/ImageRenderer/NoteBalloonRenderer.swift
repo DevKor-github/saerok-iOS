@@ -51,9 +51,9 @@ enum NoteBalloonRenderer {
             context: nil
         ).integral
         
-        // 노트 UILabel 구성 (numberOfLines = 2)
+        // 노트 UILabel 구성 
         let noteLabel = UILabel()
-        noteLabel.numberOfLines = 2
+        noteLabel.numberOfLines = 1
         noteLabel.font = noteFont
         noteLabel.text = note
         noteLabel.textColor = .black

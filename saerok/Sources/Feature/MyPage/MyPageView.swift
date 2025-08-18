@@ -13,7 +13,8 @@ import KakaoSDKUser
 struct MyPageView: View {
     enum Route {
         case account
-        case editName
+        case editProfile
+        case notification
     }
     
     @Environment(\.injected) var injected
@@ -36,8 +37,10 @@ struct MyPageView: View {
                 switch route {
                 case .account:
                     AccountView(path: $path)
-                case .editName:
-                    EditNicknameView(path: $path)
+                case .notification:
+                    NotificationSettingView(path: $path)
+                case .editProfile:
+                    EditProfileView(path: $path)
                 }
             }
             .onAppear {
@@ -75,13 +78,22 @@ private extension MyPageView {
     
     var settingsSection: some View {
         VStack(spacing: 16) {
-            SettingItemView(title: "내 계정 관리", icon: .my, trailing: nil, onTap: {
-                path.append(Route.account)
-            }, isDisabled: isGuest)
+            SettingItemView(
+                title: "내 계정 관리",
+                icon: .my,
+                onTap: { path.append(Route.account) },
+                isDisabled: isGuest
+            )
             .disabled(user == nil)
-            SettingItemView(title: "새록 소식 및 이용 가이드", icon: .bell, onTap: { openInstagramPage() })
-            SettingItemView(title: "개인정보 처리 방침", icon: .locker, onTap: { open개인정보처리방침() })
-            SettingItemView(title: "의견 보내기", icon: .board, onTap: { openFeedbackForm() })
+            
+            SettingItemView(title: "알림 설정", icon: .bell, onTap: { path.append(Route.notification) })
+            
+            SettingItemView(title: "새록 소식 및 이용 가이드", icon: .board, onTap: { openURL(.instagram) })
+            
+            SettingItemView(title: "개인정보 처리 방침", icon: .locker, onTap: { openURL(.개인정보) })
+            
+            SettingItemView(title: "의견 보내기", icon: .plane, onTap: { openURL(.feedback) })
+            
             SettingItemView(
                 title: "버전 정보",
                 icon: .info,
@@ -125,10 +137,18 @@ private extension MyPageView {
     }
     
     func nicknameView(_ user: User) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button {
-                path.append(Route.editName)
-            } label: {
+        HStack(alignment: .top, spacing: 8) {
+            ReactiveAsyncImage(url: user.imageURL ?? "", scale: .large, quality: 1.0, downsampling: true)
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .inset(by: 1)
+                        .stroke(.srLightGray, lineWidth: 2)
+                )
+            
+            VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("안녕하세요,")
                         .font(.SRFontSet.subtitle2)
@@ -137,38 +157,27 @@ private extension MyPageView {
                             .font(.SRFontSet.headline2)
                         Text("님!")
                             .font(.SRFontSet.subtitle2)
-                        Image.SRIconSet.edit
-                            .frame(.defaultIconSizeLarge, tintColor: .splash)
                     }
                 }
+                
+                Text("새록과 함께한 지 +\(user.joinedDate.daysSince)일")
+                    .font(.SRFontSet.caption1)
+                    .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Text("새록과 함께한 지 +\(user.joinedDate.daysSince)일")
-                .font(.SRFontSet.caption1)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .buttonStyle(.plain)
-    }
-    
-    func openInstagramPage() {
-        if let url = URL(string: "https://www.instagram.com/saerok.app/?utm_source=ig_web_button_share_sheet") {
-            UIApplication.shared.open(url)
+            Spacer()
+            
+            Button {
+                path.append(Route.editProfile)
+            } label: {
+                Image.SRIconSet.edit
+                    .frame(.defaultIconSizeLarge)
+            }
+            .buttonStyle(.icon)
         }
     }
     
-    func open개인정보처리방침() {
-        if let url = URL(string: "https://shine-guppy-3de.notion.site/2127cea87e0581af9a9acd2f36f28e3b") {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    func openFeedbackForm() {
-        if let url = URL(string: "https://shine-guppy-3de.notion.site/2127cea87e0581af9a9acd2f36f28e3b") {
-            UIApplication.shared.open(url)
-        }
-    }
-
     private func syncUser() {
         Task {
             do {
@@ -176,6 +185,19 @@ private extension MyPageView {
                 userManager.syncUser(from: me)
             }
         }
+    }
+}
+
+private extension MyPageView {
+    enum SRURL: String {
+        case feedback = "https://docs.google.com/forms/d/e/1FAIpQLSeUMFVcG0L1OYU5_fBl8SWHQQOExdonQAU1cLtbyp7Z5Rp_ew/viewform?usp=dialog"
+        case instagram = "https://www.instagram.com/saerok.app/?utm_source=ig_web_button_share_sheet"
+        case 개인정보 = "https://shine-guppy-3de.notion.site/2127cea87e0581af9a9acd2f36f28e3b"
+    }
+    
+    func openURL(_ type: SRURL) {
+        guard let url = URL(string: type.rawValue) else { return }
+        UIApplication.shared.open(url)
     }
 }
 

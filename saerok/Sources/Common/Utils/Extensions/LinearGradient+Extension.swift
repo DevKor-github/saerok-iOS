@@ -27,4 +27,14 @@ extension LinearGradient {
         startPoint: .leading,
         endPoint: .trailing
     )
+    
+    static let collectionBackground: LinearGradient = .init(
+        stops: [
+            Gradient.Stop(color: Color(red: 0.97, green: 0.97, blue: 0.97), location: 0.00),
+            Gradient.Stop(color: Color(red: 0.97, green: 0.97, blue: 0.97), location: 0.95),
+            Gradient.Stop(color: Color(red: 0.97, green: 0.97, blue: 0.97).opacity(0), location: 1.00),
+        ],
+        startPoint: UnitPoint(x: 0.5, y: 1),
+        endPoint: UnitPoint(x: 0.5, y: 0)
+    )
 }

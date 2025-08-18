@@ -24,7 +24,6 @@ extension Local {
 
 extension Local.CollectionComment {
     static func from(dto: DTO.CollectionCommentsResponse) -> [Local.CollectionComment] {
-        print(dto.items.first?.createdAt)
         return dto.items.map { Local.CollectionComment(
             id: $0.commentId,
             imageURL: $0.profileImageUrl,

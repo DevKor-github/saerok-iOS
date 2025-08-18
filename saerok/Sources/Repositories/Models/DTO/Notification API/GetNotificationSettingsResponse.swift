@@ -1,9 +1,19 @@
+//
+//  GetNotificationSettingsResponse.swift
+//  saerok
+//
+//  Created by HanSeung on 8/12/25.
+//
+
+
 extension DTO {
     struct GetNotificationSettingsResponse: Decodable {
         let deviceId: String
-        let LIKE: Bool
-        let COMMENT: Bool
-        let BIRD_ID_SUGGESTION: Bool
-        let SYSTEM: Bool
+        let items: [Item]
+
+        struct Item: Decodable {
+            let type: NotificationType
+            let enabled: Bool
+        }
     }
 }

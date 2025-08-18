@@ -10,6 +10,7 @@ import SwiftUI
 extension CollectionFormView {
     struct ImageFormView: View {
         @Binding var selectedImage: UIImage?
+        @Binding var isImageLoading: Bool
         @State private var isShowingImagePicker: Bool = false
 
         var body: some View {
@@ -28,7 +29,7 @@ extension CollectionFormView {
                 .padding(.vertical, 10)
             }
             .sheet(isPresented: $isShowingImagePicker) {
-                ImagePicker(image: $selectedImage)
+                ImagePicker(image: $selectedImage, isLoading: $isImageLoading)
                     .presentationDetents([.medium, .large])
             }
         }

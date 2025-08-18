@@ -42,7 +42,7 @@ struct SuggestionSheet: View {
             showSuggestPopup = true
         }
         .onChange(of: suggestions) { _, _ in
-            sortSuggestions()
+//            sortSuggestions()
         }
     }
 }
@@ -100,6 +100,7 @@ private extension SuggestionSheet {
             }
         }
         .scrollDismissesKeyboard(.interactively)
+        .refreshable { sortSuggestions() }
     }
     
     private var emptyView: some View {

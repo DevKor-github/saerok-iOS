@@ -17,6 +17,7 @@ protocol CollectionInteractor {
     func createComments(id: Int, _ content: String) async throws
     func deleteComment(collectionId: Int, commentId: Int) async throws
     func toggleLike(_ id: Int) async throws -> Bool
+    func reportCollection(_ id: Int) async throws
     
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion]
     func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion
@@ -101,6 +102,11 @@ struct CollectionInteractorImpl: CollectionInteractor {
         return try await repository.toggleCollectionLike(id)
     }
     
+    func reportCollection(_ id: Int) async throws {
+        try await repository.reportCollection(id)
+    }
+
+    
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] {
         return try await repository.fetchBirdSuggestions(collectionId: id)
     }
@@ -166,6 +172,8 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     
     func toggleLike(_ id: Int) async throws -> Bool { true }
     
+    func reportCollection(_ id: Int) async throws { }
+
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] { [] }
     
     func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion { Local.BirdSuggestion.mockData[0] }
@@ -194,7 +202,6 @@ extension UIImage {
         let maxSide = max(size.width, size.height)
         
         guard maxSide > maxLength else {
-            // 사이즈가 이미 충분히 작으면 압축만
             return jpegData(compressionQuality: quality)
         }
 

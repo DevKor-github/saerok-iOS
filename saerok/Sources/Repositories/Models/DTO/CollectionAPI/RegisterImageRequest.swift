@@ -16,4 +16,9 @@ extension DTO {
         let imageId: Int
         let url: String
     }
+    
+    struct ProfileRegisterImageRequest: Codable {
+        let profileImageObjectKey: String
+        let profileImageContentType: String
+    }
 }

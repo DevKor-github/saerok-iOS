@@ -6,85 +6,45 @@
 //
 
 
-import SwiftData
 import SwiftUI
-import KakaoSDKUser
 
 struct NotificationSettingView: View {
     @Environment(\.injected) private var injected
-    @Environment(\.modelContext) private var modelContext
     
     @Binding var path: NavigationPath
     
-    @ObservedObject var userManager = UserManager.shared
-    private var user: User? { userManager.user }
-    
-    @State var showPopup: Bool = false
+    @State private var settings: Local.NotificationSettings = .init()
     
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
             navigationBar
             
-            Group {
-                userInfoSection
-                
-                logoutRow
-            }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            toggleSection
             
             Spacer()
         }
         .regainSwipeBack()
-        .customPopup(isPresented: $showPopup) { alertView }
+        .onAppear {
+            Task { @MainActor in
+                settings = try await injected.interactors.user.fetchNotificationSetting()
+            }
+        }
     }
     
     @ViewBuilder
-    private var userInfoSection: some View {
-        if let user = user {
-            VStack(spacing: 28) {
-                HStack {
-                    Text("연결된 소셜로그인 계정")
-                    Spacer()
-                    Text(user.email)
-                        .lineLimit(1)
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("가입일자")
-                    Spacer()
-                    Text(user.joinedDate.toFullString)
-                        .foregroundStyle(.secondary)
-                }
+    private var toggleSection: some View {
+        VStack(spacing: 0) {
+            ForEach(Local.NotificationType.allCases, id: \.self) { type in
+                notificationSettingItem(type)
             }
-            .font(.SRFontSet.body2)
         }
-    }
-    
-    private var logoutRow: some View {
-        Button {
-            showPopup = true
-
-        } label: {
-            HStack(spacing: 8) {
-                Image.SRIconSet.logout
-                    .frame(.custom(width: 19, height: 20))
-                    .foregroundStyle(.black)
-                    .padding(2)
-                Text("로그아웃")
-                    .font(.SRFontSet.body2)
-            }
-            .padding(.vertical, 9)
-            .padding(.horizontal, 15)
-            .background(Color.srLightGray)
-            .cornerRadius(.infinity)
-        }
-        .buttonStyle(.plain)
+        .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
     
     var navigationBar: some View {
         NavigationBar(
             center: {
-                Text("내 계정 관리")
+                Text("알림 설정")
                     .font(.SRFontSet.subtitle2)
             }, leading: {
                 Button {
@@ -96,33 +56,36 @@ struct NotificationSettingView: View {
             })
     }
     
-    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
-            title: "정말 로그아웃 하시겠어요?",
-            message: "",
-            leading: .init(
-                title: "취소",
-                action: { showPopup = false },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "로그아웃",
-                action: {
-                    showPopup = false
-                    logout()
-                },
-                style: .confirm
-            ),
-            center: nil
-        )
-    }
-    
-    func logout() {        
-        Task { @MainActor in
-            TokenManager.shared.clearTokens()
-            userManager.deleteUser()
-            injected.appState[\.authStatus] = .notDetermined
+    private func notificationSettingItem(_ type: Local.NotificationType) -> some View {
+        HStack(alignment: .center) {
+            Text(type.title)
+                .font(.SRFontSet.body2)
+            
+            Spacer()
+            
+            ToggleButton(isOff: Binding(
+                get: { !settings[type] },
+                set: { _ in }
+            )) {
+                Task {
+                    do {
+                        let newValue = try await injected.interactors.user.toggleNotificationSetting(type)
+                        
+                        withAnimation(.bouncy(duration: 0.4)) {
+                            settings[type] = newValue
+                        }
+                    } catch {
+                        print("알림 설정 업데이트 실패: \(error.localizedDescription)")
+                        withAnimation(.bouncy(duration: 0.4)) {
+                            settings[type].toggle()
+                        }
+                    }
+                }
+            }
+            
         }
+        .padding(.horizontal, 0)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 }
-

@@ -118,16 +118,6 @@ private extension CollectionDescriptionSection {
                 Image.SRIconSet.pin
                     .frame(.defaultIconSize, tintColor: .pointtext)
                 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(collection.locationAlias)
-                        .font(.SRFontSet.body4)
-                    Text(collection.address)
-                        .font(.SRFontSet.caption3)
-                        .foregroundStyle(.secondary)
-                }
-                
-                Spacer()
-                
                 Button(action: {
                     if let path = path {
                         path.wrappedValue = .init()
@@ -138,9 +128,22 @@ private extension CollectionDescriptionSection {
                         longitude: collection.coordinate.longitude
                     )
                 }) {
-                    Image.SRIconSet.chevronRight
-                        .frame(.defaultIconSize, tintColor: .srGray)
+                    HStack(alignment: .top, spacing: 0) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(collection.locationAlias)
+                                .font(.SRFontSet.body4)
+                            Text(collection.address)
+                                .font(.SRFontSet.caption3)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Image.SRIconSet.chevronRight
+                            .frame(.defaultIconSize, tintColor: .srGray)
+                    }
                 }
+                .buttonStyle(.plain)
             }
             
             HStack(spacing: 5) {
@@ -162,6 +165,11 @@ private extension CollectionDescriptionSection {
     var trailingButtons: some View {
         HStack(spacing: 9) {
             toDogamButton
+                .background(
+                    Circle()
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                )
             
             additionalButton
                 .background(

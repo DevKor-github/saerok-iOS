@@ -99,7 +99,7 @@ private extension FieldGuideSearchView {
         }
         .padding(.vertical, Layout.verticalPadding)
         .padding(.leading, Layout.horizontalPadding)
-        .frame(height: Layout.textFieldHeight)
+        .frame(height: 44)
         .srStyled(.textField(isFocused: $isSearchBarFocused, alwaysFocused: true))
         .padding(.horizontal, SRDesignConstant.defaultPadding)
         .padding(.top, 7)

@@ -38,10 +38,11 @@ struct CollectionFormView: Routable {
     @State var activePopup: CollectionPopup = .none
     @State private var isPositionInitialized: Bool = false
     @State private var isSubmitting: Bool = false
+    @State private var isImageLoading: Bool = false
     @StateObject var collectionDraft: Local.CollectionDraft
     
     private var locationManager: LocationManager { LocationManager.shared }
-
+    
     init(mode: CollectionFormMode, path: Binding<NavigationPath>) {
         self.mode = mode
         self._path = path
@@ -98,7 +99,7 @@ private extension CollectionFormView {
             navigationBar
             VStack(alignment: .leading, spacing: 20) {
                 if mode.isAddMode {
-                    ImageFormView(selectedImage: $collectionDraft.image)
+                    ImageFormView(selectedImage: $collectionDraft.image, isImageLoading: $isImageLoading)
                 }
                 BirdNameFormView(draft: collectionDraft, path: $path)
                 LocationFormView(selectedCoord: $collectionDraft.coordinate, path: $path, address: collectionDraft.locationAlias)
@@ -184,16 +185,16 @@ private extension CollectionFormView {
             NavigationBar(
                 leading: {
                     Button("취소") {
-                        activePopup = .editModeSaveConfirm
+                        path.removeLast()
                     }
                 },
                 trailing: {
                     Button("삭제") {
                         activePopup = .editModeDeleteConfirm
                     }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(.red)
-                        .bold()
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.red)
+                    .bold()
                 }
             )
         }

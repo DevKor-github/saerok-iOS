@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import KakaoSDKCommon
 import KakaoSDKUser
 import KakaoSDKAuth
 
@@ -37,24 +38,33 @@ struct KakaoLoginView: View {
 // MARK: - Login Flow
 
 private extension KakaoLoginView {
-    
     func startLoginWithKakaoTalk() {
         if UserApi.isKakaoTalkLoginAvailable() {
+            // 카카오톡 앱 로그인
             UserApi.shared.loginWithKakaoTalk { oauthToken, error in
-                if let error = error {
-                    print("❌ Kakao login failed:", error)
-                    return
-                }
-                
-                guard let token = oauthToken else {
-                    print("❌ Failed to get idToken from Kakao")
-                    return
-                }
-                
-                Task {
-                    await handleKakaoLogin(token: token)
-                }
+                handleLoginResult(oauthToken, error: error)
             }
+        } else {
+            // 앱이 없거나 시뮬레이터일 경우 웹 로그인
+            UserApi.shared.loginWithKakaoAccount { oauthToken, error in
+                handleLoginResult(oauthToken, error: error)
+            }
+        }
+    }
+
+    private func handleLoginResult(_ oauthToken: OAuthToken?, error: Error?) {
+        if let error = error {
+            print("❌ Kakao login failed:", error)
+            return
+        }
+        
+        guard let token = oauthToken else {
+            print("❌ Failed to get idToken from Kakao")
+            return
+        }
+        
+        Task {
+            await handleKakaoLogin(token: token)
         }
     }
     
@@ -75,7 +85,7 @@ private extension KakaoLoginView {
                 injected.appState[\.authStatus] = .signedIn(isRegistered: response.signupStatus == .completed)
             }
         } catch {
-            print("❌ Kakao login failed:", error)
+            print("❌ Kakao login failed2:", error)
         }
     }
     

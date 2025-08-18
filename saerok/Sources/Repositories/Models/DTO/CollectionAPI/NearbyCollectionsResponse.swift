@@ -20,5 +20,15 @@ extension DTO {
         let longitude: Double
         let locationAlias: String
         let address: String
+        let likeCount: Int
+        let commentCount: Int
+        let isLiked: Bool
+        let user: User
+    }
+    
+    struct User: Codable {
+        let userId: Int
+        let nickname: String
+        let profileImageUrl: String
     }
 }

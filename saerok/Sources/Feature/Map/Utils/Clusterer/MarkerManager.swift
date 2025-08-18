@@ -16,32 +16,32 @@ final class MarkerUpdater: NMCClusterMarkerUpdater, NMCLeafMarkerUpdater {
         let size = info.size
         
         switch info.size {
-        case ..<5:
-            marker.width = 55
-            marker.height = 55
-            marker.iconImage = NMFOverlayImage(image: .cls1)
-        case 5..<10:
+        case ..<15:
             marker.width = 63
             marker.height = 63
-            marker.iconImage = NMFOverlayImage(image: .cls2)
-        case 10..<15:
+            marker.iconImage = NMFOverlayImage(image: .cls1)
+        case 15..<30:
             marker.width = 78
             marker.height = 78
+            marker.iconImage = NMFOverlayImage(image: .cls2)
+        case 30..<50:
+            marker.width = 86
+            marker.height = 86
             marker.iconImage = NMFOverlayImage(image: .cls3)
-        case 15..<20:
-            marker.width = 86
-            marker.height = 86
+        case 50..<99:
+            marker.width = 100
+            marker.height = 100
             marker.iconImage = NMFOverlayImage(image: .cls4)
-        case 20...:
-            marker.width = 86
-            marker.height = 86
+        case 99...:
+            marker.width = 100
+            marker.height = 100
             marker.iconImage = NMFOverlayImage(image: .cls5)
         default:
             marker.iconImage = NMFOverlayImage(image: .cls1)
         }
 
         marker.anchor = NMF_CLUSTER_ANCHOR_DEFAULT
-        marker.captionText = String(size)
+        marker.captionText = size > 99 ? "99+" : String(size)
         marker.captionAligns = [NMFAlignType.center]
         marker.captionColor = UIColor.white
         marker.captionHaloColor = UIColor.clear

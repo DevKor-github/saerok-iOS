@@ -14,14 +14,18 @@ struct CollectionCommentCell: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 6) {
-            Image(.defaultProfile)
-                .resizable()
-                .frame(width: 25, height: 25)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .inset(by: 1)
-                        .stroke(.srLightGray, lineWidth: 2)
+            ReactiveAsyncImage(
+                url: item.imageURL,
+                scale: .medium,
+                quality: 0.8,
+                downsampling: true
+            )
+            .frame(width: 25, height: 25)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .inset(by: 0.8)
+                    .stroke(.srLightGray, lineWidth: 2)
                 )
 
             VStack(alignment: .leading, spacing: 5) {

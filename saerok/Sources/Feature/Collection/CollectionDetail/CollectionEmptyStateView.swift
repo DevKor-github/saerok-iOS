@@ -6,13 +6,6 @@
 //
 
 
-//
-//  CollectionEmptyStateView.swift
-//  saerok
-//
-//  Created by HanSeung on 6/6/25.
-//
-
 import SwiftUI
 
 struct CollectionEmptyStateView: View {

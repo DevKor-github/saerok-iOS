@@ -109,7 +109,7 @@ private extension FindPlaceView {
                 Button {
                     selectButtonTapped()
                 } label: {
-                    Text("이 위치로 입력할게요")
+                    Text("선택하기")
                         .font(.SRFontSet.button1)
                         .frame(maxWidth: .infinity)
                 }

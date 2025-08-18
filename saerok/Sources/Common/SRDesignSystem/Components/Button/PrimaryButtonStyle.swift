@@ -22,7 +22,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
             .foregroundColor(.srWhite)
-            .cornerRadius(10)
+            .cornerRadius(20)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .contentShape(Rectangle())
     }

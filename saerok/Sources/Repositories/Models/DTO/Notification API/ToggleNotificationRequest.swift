@@ -9,12 +9,12 @@
 extension DTO {
     struct ToggleNotificationRequest: Codable {
         let deviceId: String
-        let notificationType: String
+        let type: String
     }
     
     struct ToggleNotificationResponse: Decodable {
         let deviceId: String
-        let notificationType: String
+        let type: String
         let enabled: Bool
     }
 }
