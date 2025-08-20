@@ -67,6 +67,7 @@ enum SREndpoint: Endpoint {
     case readNotification(notificationId: Int)
     case deleteAllNotifications
     case deleteNotification(_ notificationId: Int)
+    case notificationsUnreadCount
 }
 
 extension SREndpoint {
@@ -115,12 +116,13 @@ extension SREndpoint {
         case .readNotification(let notificationId): "notifications/\(notificationId)/read"
         case .deleteAllNotifications: "notifications/all"
         case .deleteNotification(let notificationId): "notifications/\(notificationId)"
+        case .notificationsUnreadCount: "notifications/unread-count"
         }
     }
     
     var method: String {
         switch self {
-        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications: "GET"
+        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount: "GET"
         case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification: "DELETE"
@@ -132,7 +134,7 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount:
             return true
         case .getSuggestions:
             return (try? KeyChain.read(key: .accessToken)) != nil
@@ -281,6 +283,8 @@ extension SREndpoint {
             return DTO.ToggleNotificationResponse.self
         case .notifications:
             return DTO.NotificationResponse.self
+        case .notificationsUnreadCount:
+            return DTO.GetUnreadCount.self
         default:
             return EmptyResponse.self
         }

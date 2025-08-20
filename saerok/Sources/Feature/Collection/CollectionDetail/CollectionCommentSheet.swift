@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct CollectionCommentSheet: View {
+    let isMyCollection: Bool
     let nickname: String
     let comments: [Local.CollectionComment]
     let onDelete: (Int) -> Void
@@ -26,6 +27,7 @@ struct CollectionCommentSheet: View {
                     VStack(spacing: 7) {
                         ForEach(comments) { item in
                             CollectionCommentCell(
+                                isMyCollection: isMyCollection,
                                 item: item,
                                 onDelete: onDelete,
                                 onReport: onReport

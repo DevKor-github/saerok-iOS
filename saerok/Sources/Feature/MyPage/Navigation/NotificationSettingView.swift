@@ -26,7 +26,8 @@ struct NotificationSettingView: View {
         .regainSwipeBack()
         .onAppear {
             Task { @MainActor in
-                settings = try await injected.interactors.user.fetchNotificationSetting()
+                let fetched = try await injected.interactors.user.fetchNotificationSetting()
+                self.settings = fetched
             }
         }
     }
@@ -76,9 +77,7 @@ struct NotificationSettingView: View {
                         }
                     } catch {
                         print("알림 설정 업데이트 실패: \(error.localizedDescription)")
-                        withAnimation(.bouncy(duration: 0.4)) {
-                            settings[type].toggle()
-                        }
+                    
                     }
                 }
             }

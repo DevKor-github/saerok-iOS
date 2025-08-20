@@ -53,7 +53,7 @@ struct BirdGridView: View {
             .foregroundStyle(.clear)
             .frame(height: 198)
         }
-        .padding(9)
+        .padding(.horizontal ,9)
         .background(Color.srLightGray)
     }
 }

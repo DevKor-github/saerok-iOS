@@ -61,7 +61,7 @@ struct FilterBar: View {
                         Image.SRIconSet.reset
                             .frame(.defaultIconSize)
                     }
-                    .srStyled(.filterButton(isActive: false))
+                    .srStyled(.filterButton(isActive: false, isResetButton: true))
                 }
             
                 Spacer(minLength: 0)

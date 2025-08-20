@@ -123,13 +123,12 @@ struct EditProfileView: View {
                 .font(.SRFontSet.caption1)
                 .padding(.horizontal, 10)
             Spacer()
-            
         }
         .frame(maxWidth: .infinity)
     }
     
     private var nicknameTextField: some View {
-        TextField("사용할 닉네임을 입력해주세요.", text: $nickname)
+        TextField("\(self.user?.nickname ?? "사용할 닉네임을 입력해주세요.")", text: $nickname)
             .padding(.horizontal, 18)
             .padding(.vertical, 13)
             .srStyled(.textField(isFocused: $isFocused))
@@ -166,10 +165,11 @@ struct EditProfileView: View {
     
     private var saveButton: some View {
         Button(action: saveButtonTapped) {
-            Text("닉네임 변경하기")
+            Text("수정하기")
         }
         .buttonStyle(.primary)
         .disabled(nicknameStatus != .available)
+        .padding(.bottom, 16)
     }
     
     private func nicknameCheckButtonTapped() {

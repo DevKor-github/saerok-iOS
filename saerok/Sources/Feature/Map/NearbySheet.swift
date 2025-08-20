@@ -67,7 +67,7 @@ struct NearbySheet: View {
                 .foregroundStyle(.srWhite)
                 .frame(width: 116, height: 128)
         }
-        .padding(.top, 78)
+        .padding(.top, 178)
     }
 }
 

@@ -215,7 +215,7 @@ private extension BirdDetailView {
                 icon.frame(.defaultIconSizeLarge)
                 
                 if list.isEmpty {
-                    Text("미등록")
+                    Text("정보 없음")
                 } else {
                     Text(list.map(\.rawValue).joined(separator: " • "))
                 }

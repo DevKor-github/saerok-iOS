@@ -67,14 +67,12 @@ private extension FindPlaceView {
     }
     
     var searchBarSection: some View {
-            TextField("장소를 입력해주세요", text: $searchText)
-                .padding(.leading, 18)
-                .padding(.vertical, 14)
-                .frame(height: 44)
-                .srStyled(.textField(isFocused: $isFocused))
-                .textFieldDeletable(text: $searchText)
-        
-
+        TextField("장소를 입력해주세요", text: $searchText)
+            .padding(.leading, 18)
+            .padding(.vertical, 14)
+            .frame(height: 44)
+            .srStyled(.textField(isFocused: $isFocused))
+            .textFieldDeletable(text: $searchText)
             .padding(.horizontal, SRDesignConstant.defaultPadding)
             .padding(.bottom, 20)
             .frame(maxWidth: .infinity)
@@ -83,19 +81,19 @@ private extension FindPlaceView {
                 mode = .searching
             }
             .onChange(of: searchText) { _, new in
-            searchDebounceTask?.cancel()
-            searchDebounceTask = Task {
-                try? await Task.sleep(nanoseconds: 800_000_000)
-                if !Task.isCancelled && !new.isEmpty {
-                    await performSearch()
-                } else if new.isEmpty {
-                    await MainActor.run {
-                        mode = .idle
-                        response = []
+                searchDebounceTask?.cancel()
+                searchDebounceTask = Task {
+                    try? await Task.sleep(nanoseconds: 800_000_000)
+                    if !Task.isCancelled && !new.isEmpty {
+                        await performSearch()
+                    } else if new.isEmpty {
+                        await MainActor.run {
+                            mode = .idle
+                            response = []
+                        }
                     }
                 }
             }
-        }
     }
     
     var resultSection: some View {
@@ -103,7 +101,7 @@ private extension FindPlaceView {
             searchResultSection()
                 .opacity(mode != .idle ? 1 : 0)
                 .allowsHitTesting(mode != .idle)
-
+            
             ZStack(alignment: .bottom) {
                 NaverMapView(coord: $collectionDraft.coordinate, controller: mapController)
                 Button {
@@ -145,10 +143,10 @@ private extension FindPlaceView {
                 VStack(spacing: 2) {
                     ForEach(response, id: \.id) { item in
                         searchCell(item)
-                        .listRowInsets(.init())
-                        .onTapGesture {
-                            searchItemTapped(item)
-                        }
+                            .listRowInsets(.init())
+                            .onTapGesture {
+                                searchItemTapped(item)
+                            }
                     }
                 }
             }
@@ -229,44 +227,47 @@ private extension FindPlaceView {
         @Binding var text: String
         let placeAddress: String
         let buttonAction: () -> Void
-
+        
         init(address: String, text: Binding<String>, _ buttonAction: @escaping () -> Void) {
             self.placeAddress = address
             self._text = text
             self.buttonAction = buttonAction
         }
-
+        
         var body: some View {
             VStack(alignment: .leading, spacing: 7) {
-                    Text("어디서 봤냐면요...")
-                        .font(.SRFontSet.subtitle1)
-                    Text("이 장소가 어디인지 소개해주세요!")
-                        .font(.SRFontSet.body2)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 27)
-                    TextField("ex. 난지한강공원, 푸르른 산속 ...", text: $text)
-                        .padding(.vertical, 13)
-                        .padding(.horizontal, 20)
-                        .srStyled(.textField(isFocused: $isFocused))
-                    Text(placeAddress)
-                        .font(.SRFontSet.caption1)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading, SRDesignConstant.defaultPadding / 2)
+                Text("어디서 봤냐면요...")
+                    .font(.SRFontSet.subtitle1)
+                Text("이 장소가 어디인지 소개해주세요!")
+                    .font(.SRFontSet.body2)
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 27)
+                TextField("ex. 난지한강공원, 푸르른 산속 ...", text: $text)
+                    .padding(.vertical, 13)
+                    .padding(.horizontal, 20)
+                    .srStyled(.textField(isFocused: $isFocused))
+                    .onChange(of: text) { _, newValue in
+                        if newValue.count > 20 {
+                            text = String(newValue.prefix(20))
+                        }
+                    }
+                Text(placeAddress)
+                    .font(.SRFontSet.caption1)
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, SRDesignConstant.defaultPadding / 2)
                 
                 Spacer()
                 
-                Button("발견 장소 등록", action: buttonAction)
-                    .font(.SRFontSet.button1)
-                    .buttonStyle(.primary)
-                    .frame(height: 53)
+                Button("발견 장소 등록", action: {
+                    text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    buttonAction()
+                })
+                .font(.SRFontSet.button1)
+                .buttonStyle(.primary)
+                .frame(height: 53)
+                .disabled(text.isEmpty)
             }
             .padding(SRDesignConstant.defaultPadding)
         }
     }
-}
-
-#Preview {
-    @Previewable @State var draft = Local.CollectionDraft(collectionID: 1)
-    @Previewable @State var path: NavigationPath = .init()
-    FindPlaceView(collectionDraft: draft, path: $path)
 }

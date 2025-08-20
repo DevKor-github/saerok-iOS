@@ -17,8 +17,14 @@ struct CollectionDetailView: View {
         case preview
     }
     
+    enum LoadState {
+        case loading
+        case loaded
+        case invalid
+    }
+    
     struct CollectionUIState: Equatable {
-        var isLoading: Bool = true
+        var isLoading: LoadState = .loading
         var showPopup: Bool = false
         var showSuggestPopup: Bool = false
         var showAdoptPopup: Bool = false
@@ -46,7 +52,6 @@ struct CollectionDetailView: View {
     @State private var uiState = CollectionUIState()
     @State private var error: Error? = nil
     @FocusState private var isFocused
-    
     @StateObject private var keyboard = KeyboardObserver()
     
     // MARK: - Environment
@@ -88,6 +93,11 @@ struct CollectionDetailView: View {
 
             if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
                 shareButton
+            }
+            
+            if uiState.isLoading == .invalid {
+                InvalidAlertView(action: { path?.wrappedValue.removeLast() })
+                    .ignoresSafeArea(.all)
             }
         }
         .regainSwipeBack()
@@ -140,7 +150,12 @@ private extension CollectionDetailView {
                     Color.clear
                         .frame(height: 40)
                 }
-                .shimmer(when: $uiState.isLoading)
+                .shimmer(
+                    when: Binding(
+                        get: { uiState.isLoading != .loaded },
+                        set: { _ in }
+                    )
+                )
                 Spacer()
             }
             navigationBar
@@ -148,6 +163,7 @@ private extension CollectionDetailView {
         .background(Color.srLightGray)
         .bottomSheet(isShowing: $uiState.showCommentSheet, keyboard: keyboard) {
             CollectionCommentSheet(
+                isMyCollection: !isFromMapView,
                 nickname: collection.userNickname,
                 comments: comments,
                 onDelete: deleteComment,
@@ -192,28 +208,7 @@ private extension CollectionDetailView {
                 leadingButton
             },
             trailing: {
-                Button {
-                    
-                } label: {
-                    HStack {
-                        Image(.defaultProfile)
-                            .resizable()
-                            .frame(width: 25, height: 25)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .inset(by: 1)
-                                    .stroke(Color.srLightGray, lineWidth: 2)
-                            )
-                        Text(collection.userNickname)
-                            .font(.SRFontSet.body4)
-                    }
-                    .padding(.vertical, 7)
-                    .padding(.leading, 10)
-                    .padding(.trailing, 12)
-                    .background(Color.glassWhite)
-                    .clipShape(RoundedRectangle(cornerRadius: .infinity))
-                }
+                trailingProfileImage
             },
             backgroundColor: .clear
         )
@@ -231,6 +226,33 @@ private extension CollectionDetailView {
             }
             .srStyled(.iconButton)
         }
+    }
+    
+    var trailingProfileImage: some View {
+        HStack {
+            ReactiveAsyncImage(
+                url: collection.profileImageUrl,
+                scale: .small,
+                quality: 0.5,
+                downsampling: true
+            )
+            .frame(width: 25, height: 25)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .inset(by: 0.8)
+                    .stroke(.srLightGray, lineWidth: 2)
+            )
+            .id(collection.id)
+            
+            Text(collection.userNickname)
+                .font(.SRFontSet.body4)
+        }
+        .padding(.vertical, 7)
+        .padding(.leading, 10)
+        .padding(.trailing, 12)
+        .background(Color.glassWhite)
+        .clipShape(RoundedRectangle(cornerRadius: .infinity))
     }
     
     var imageSection: some View {
@@ -390,10 +412,13 @@ private extension CollectionDetailView {
 private extension CollectionDetailView {
     func fetchCollectionDetail() {
         Task {
-            if let collectionBird = try? await injected.interactors.collection.fetchCollectionDetail(id: collectionID) {
+            do {
+                let collectionBird = try await injected.interactors.collection.fetchCollectionDetail(id: collectionID)
                 self.collection = collectionBird
                 downloadImage(from: collectionBird.imageURL)
-                uiState.isLoading = false
+                uiState.isLoading = .loaded
+            } catch {
+                uiState.isLoading = .invalid
             }
         }
     }
@@ -535,5 +560,30 @@ struct CollectionPopupLayer: View {
             .customPopup(isPresented: $showPopup) { alertView }
             .customPopup(isPresented: $showSuggestPopup) { suggestAlertView }
             .customPopup(isPresented: $showAdoptPopup) { adoptView }
+    }
+}
+
+private struct InvalidAlertView: View {
+    let action: () -> Void
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .transition(.opacity)
+                .zIndex(1)
+            CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, ConfirmButtonStyle>(
+                title: "존재하지 않는 새록이에요",
+                message: "새록이 삭제되었거나\n데이터를 불러올 수 없어요.",
+                leading: nil,
+                trailing: nil,
+                center: .init(
+                    title: "확인",
+                    action: action,
+                    style: .confirm
+                )
+            )
+            .zIndex(10)
+            .transition(.scale)
+        }
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CollectionCommentCell: View {
+    let isMyCollection: Bool
     let item: Local.CollectionComment
     let onDelete: (Int) -> Void
     let onReport: () -> Void
@@ -33,20 +34,19 @@ struct CollectionCommentCell: View {
                     Text(item.nickname)
                         .font(.SRFontSet.body3_2)
 
-                    Text(item.createdAt.korString)
+                    Text(item.createdAt.timeAgoText)
                         .font(.SRFontSet.caption3)
                         .foregroundStyle(.secondary)
                     
                     Spacer()
                     
                     Menu {
-                        if item.isMine {
+                        if item.isMine || isMyCollection {
                             Button {
                                 onDelete(item.id)
                             } label: {
                                 Label("삭제하기", systemImage: "trash")
                             }
-                            .disabled(!item.isMine)
                         }
                         
                         Button {

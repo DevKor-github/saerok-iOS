@@ -76,5 +76,14 @@ extension CollectionFormView {
                 .buttonStyle(.plain)
             }
         }
+        
+        private var imageCountOverlay: some View {
+            Text("\(selectedImage != nil ? 1 : 0)/1")
+                .font(.caption)
+                .foregroundColor(.srGray)
+                .padding(6)
+                .padding(4)
+                .offset(x: 10)
+        }
     }
 }

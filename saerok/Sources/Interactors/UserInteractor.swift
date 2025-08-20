@@ -17,6 +17,7 @@ protocol UserInteractor {
     func readAllNotification() async throws
     func deleteNotification(_ id: Int) async throws
     func deleteAllNotification() async throws
+    func hasUnreadNotifications() async throws -> Bool
 }
 
 enum UserInteractorError: Error {
@@ -27,7 +28,7 @@ struct UserInteractorImpl: UserInteractor {
     
     let repository: UserRepository
     
-    private var deviceID: String { UserDefaults.standard.string(forKey: "deviceID") ?? "" }
+    private var deviceID: String { TokenManager.shared.getDeviceId() }
     
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
         guard let jpegData = image.resizedAndCompressed() else {
@@ -75,9 +76,15 @@ struct UserInteractorImpl: UserInteractor {
     func deleteAllNotification() async throws {
         try await repository.deleteAllNotification()
     }
+    
+    func hasUnreadNotifications() async throws -> Bool {
+        return try await repository.getUnreadCount() == 0 ? false : true
+    }
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func hasUnreadNotifications() async throws -> Bool { true }
+    
     func deleteNotification(_ id: Int) async throws { }
     
     func fetchNotifications() async throws -> [Local.NotificationItem] { [] }

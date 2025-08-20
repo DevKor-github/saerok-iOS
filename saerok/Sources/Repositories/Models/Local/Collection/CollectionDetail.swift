@@ -26,6 +26,7 @@ extension Local {
         let birdID: Int?
         let scientificName: String?
         let userNickname: String
+        let profileImageUrl: String
         
         mutating func likeToggle(_ isOn: Bool) {
             likeCount += isOn ? 1 : -1
@@ -34,7 +35,6 @@ extension Local {
         
         static func == (lhs: Local.CollectionDetail, rhs: Local.CollectionDetail) -> Bool {
             lhs.id == rhs.id &&
-            lhs.imageURL == rhs.imageURL &&
             lhs.discoveredDate == rhs.discoveredDate &&
             lhs.coordinate.latitude == rhs.coordinate.latitude &&
             lhs.coordinate.longitude == rhs.coordinate.longitude &&
@@ -48,7 +48,8 @@ extension Local {
             lhs.birdName == rhs.birdName &&
             lhs.birdID == rhs.birdID &&
             lhs.scientificName == rhs.scientificName &&
-            lhs.userNickname == rhs.userNickname
+            lhs.userNickname == rhs.userNickname &&
+            lhs.profileImageUrl == rhs.profileImageUrl
         }
     }
     
@@ -79,7 +80,8 @@ extension Local.CollectionDetail {
             birdName: dto.bird.koreanName,
             birdID: dto.bird.birdId,
             scientificName: dto.bird.scientificName,
-            userNickname: dto.user.nickname
+            userNickname: dto.user.nickname,
+            profileImageUrl: dto.user.profileImageUrl
         )
     }
 }
@@ -88,7 +90,7 @@ extension Local.CollectionDetail {
     static let mockData: [Local.CollectionDetail] = [
         .init(
             id: 1,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
+            imageURL: "",
             discoveredDate: Date(timeIntervalSince1970: 1_710_000_000),
             coordinate: (latitude: 37.5665, longitude: 126.9780),
             address: "서울 중구 세종대로 110 서울특별시청",
@@ -99,7 +101,8 @@ extension Local.CollectionDetail {
             birdName: "가짜청딱따구리",
             birdID: 901,
             scientificName: "Cham Sae",
-            userNickname: "bird_lover"
+            userNickname: "",
+            profileImageUrl: ""
         ),
     ]
 }

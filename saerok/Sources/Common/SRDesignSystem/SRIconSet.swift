@@ -52,6 +52,7 @@ extension Image {
         case edit
         case reset
         case bell
+        case bellOn
         case locker
         case info
         case login
@@ -199,6 +200,7 @@ extension Image.SRIconSet {
         case .textFormat: return Image(systemName: "textformat")
         case .down: return Image(systemName: "chevron.down")
         case .bell: return Image(.bell)
+        case .bellOn: return Image(.bellOn)
         case .info: return Image(.info)
         case .locker: return Image(.locke)
         case .jongchuMini: return Image(.jongchuMini)

@@ -35,7 +35,6 @@ extension View {
 }
 
 private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>: View where T.RawValue == String {
-        
     @Binding var isPresented: Bool
     @Binding var selection: Set<T>
     
@@ -52,7 +51,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
     private var header: some View {
         ZStack {
             Text(title)
-                .font(.SRFontSet.headline2)
+                .font(.SRFontSet.subtitle2)
             HStack {
                 Spacer()
                 Button {
@@ -102,7 +101,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                 AdaptiveLeftAlignedGrid(
                     items: allOptions,
                     minCellWidth: 84,
-                    spacing: 15
+                    spacing: 10
                 ) { item in
                     gridItemView(for: item, fixed: false)
                 }
@@ -157,7 +156,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                 .frame(.defaultIconSize)
         }
         .padding()
-        .background(isSelected ? Color.main : Color(.systemGray6))
+        .background(isSelected ? Color.main : Color(.srLightGray))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture {
             selection.toggle(item)

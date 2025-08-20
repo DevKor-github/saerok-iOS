@@ -50,20 +50,5 @@ extension Local.BirdSuggestion: Equatable {
 }
 
 extension Local.BirdSuggestion {
-    static let mockData: [Local.BirdSuggestion] = [
-        .init(
-            bird: .mockData[0],
-            agreeCount: 3,
-            disagreeCount: 2,
-            isAgreed: true,
-            isDisagreed: false
-        ),
-        .init(
-            bird: .mockData[1],
-            agreeCount: 1,
-            disagreeCount: 0,
-            isAgreed: false,
-            isDisagreed: false
-        )
-    ]
+    static let mockData: [Local.BirdSuggestion] = []
 }

@@ -51,22 +51,12 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
 }
 
 struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
-    func refreshBookmarks() async throws {
-        
-    }
+    func refreshBookmarks() async throws { }
     
-//    let repository: BirdsRepository
-
-    func refreshFieldGuide() async throws {
-//        await repository.storeMockData()
-    }
+    func refreshFieldGuide() async throws { }
     
-    func loadBirdDetails(birdID: Int) throws -> Local.Bird {
-        return Local.Bird.mockData[0]
-    }
+    func loadBirdDetails(birdID: Int) throws -> Local.Bird { Local.Bird.mockData[0] }
     
-    func toggleBookmark(birdID: Int) async throws -> Bool {
-        true
-    }
+    func toggleBookmark(birdID: Int) async throws -> Bool { true }
 }
 

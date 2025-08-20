@@ -16,17 +16,7 @@ final class PushNotificationManager: NSObject {
     
     var injected: DIContainer?
     
-    private let deviceIDKey = "deviceID"
-    
-    private var deviceID: String {
-        if let id = UserDefaults.standard.string(forKey: deviceIDKey) {
-            return id
-        } else {
-            let newID = UUID().uuidString
-            UserDefaults.standard.set(newID, forKey: deviceIDKey)
-            return newID
-        }
-    }
+    private var deviceID: String { TokenManager.shared.getDeviceId() }
     
     private override init() {
         super.init()
@@ -52,7 +42,6 @@ final class PushNotificationManager: NSObject {
     private func requestAuthorization() {
         let options: UNAuthorizationOptions = [.alert, .badge, .sound]
         UNUserNotificationCenter.current().requestAuthorization(options: options) { granted, error in
-            print("🟢 알림 권한: \(granted), 에러: \(String(describing: error))")
         }
     }
     
@@ -127,6 +116,9 @@ extension PushNotificationManager: MessagingDelegate {
                 let _: DTO.RegisterDeviceTokenResponse = try await networkService.performSRRequest(
                     .registerDeviceToken(body: .init(deviceId: deviceID, token: fcmToken))
                 )
+                try await self.injected?.interactors.user.toggleNotificationSetting(.comment)
+                try await self.injected?.interactors.user.toggleNotificationSetting(.birdIdSuggestion)
+                try await self.injected?.interactors.user.toggleNotificationSetting(.like)
             } catch {
                 print(error.localizedDescription)
             }

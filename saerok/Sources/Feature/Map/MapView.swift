@@ -44,7 +44,8 @@ struct MapView: Routable {
     @State private var isMineOnly: Bool = false
     @State private var item: [Local.NearbyCollectionSummary] = []
     @State private var searchDebounceTask: Task<Void, Error>? = nil
-    
+    @State private var isNavigating = false
+
     @Binding private var path: NavigationPath
     
     private var isModeIdle: Bool { mode == .idle }
@@ -77,10 +78,16 @@ struct MapView: Routable {
                 }
             }
             .onChange(of: routingState.navigation) { _, update in
-                guard let update = update else { return }
+                guard let update = update, !isNavigating else { return }
+
+                isNavigating = true
+                injected.appState[\.routing.mapView.navigation] = nil
                 Task { @MainActor in
                     mapController.moveCamera(lat: update.latitude, lng: update.longitude)
+                    try? await Task.sleep(for: .seconds(0.3))
                     try? await fetchPosition(update.latitude, update.longitude)
+
+                    isNavigating = false
                 }
             }
     }
@@ -92,9 +99,9 @@ struct MapView: Routable {
             Text("")
             .task {
                 if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
-                    Task {
+                    Task { @MainActor in
                         position = (location.latitude, location.longitude)
-                        try? await fetchNearby()
+                        try? await fetchNearby(mineOnly: isMineOnly)
                         mapViewState = .loaded(())
                     }
                 } else {
@@ -190,7 +197,7 @@ private extension MapView {
                 } label: {
                     Image(.mylocation)
                         .resizable()
-                        .frame(width: 42, height: 42)
+                        .frame(width: 48, height: 48)
                 }
                 Spacer()
                 
@@ -261,7 +268,7 @@ private extension MapView {
         Task {
             do {
                 HapticManager.shared.trigger(.light)
-                try await fetchNearby()
+                try await fetchNearby(mineOnly: !isMineOnly)
                 withAnimation(.bouncy(duration: 0.4)) {
                     isMineOnly.toggle()
                 }
@@ -275,17 +282,17 @@ private extension MapView {
     func refreshButtonTapped() {
         Task {
             HapticManager.shared.trigger(.light)
-            try? await fetchNearby()
+            try? await fetchNearby(mineOnly: self.isMineOnly)
             HapticManager.shared.trigger(.success)
         }
     }
     
-    func fetchNearby() async throws {
+    func fetchNearby(mineOnly: Bool) async throws {
         item = try await  injected.interactors.collection.fetchNearbyCollections(
             lat: position.0,
             lng: position.1,
             rad: 1000,
-            isMineOnly: isMineOnly,
+            isMineOnly: mineOnly,
             isGuest: isGuest
         )
         clearMarkers()
@@ -293,10 +300,10 @@ private extension MapView {
     }
     
     func fetchPosition(_ lat: Double, _ lng: Double) async throws {
-        item = try await  injected.interactors.collection.fetchNearbyCollections(
+        item = try await injected.interactors.collection.fetchNearbyCollections(
             lat: lat,
             lng: lng,
-            rad: 50,
+            rad: 500,
             isMineOnly: isMineOnly,
             isGuest: isGuest
         )

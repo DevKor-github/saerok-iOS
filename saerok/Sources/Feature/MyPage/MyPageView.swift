@@ -87,6 +87,7 @@ private extension MyPageView {
             .disabled(user == nil)
             
             SettingItemView(title: "알림 설정", icon: .bell, onTap: { path.append(Route.notification) })
+                .disabled(user == nil)
             
             SettingItemView(title: "새록 소식 및 이용 가이드", icon: .board, onTap: { openURL(.instagram) })
             

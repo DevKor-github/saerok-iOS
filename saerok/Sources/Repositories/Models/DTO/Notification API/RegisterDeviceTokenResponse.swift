@@ -17,4 +17,3 @@ extension DTO {
         let success: Bool
     }
 }
-

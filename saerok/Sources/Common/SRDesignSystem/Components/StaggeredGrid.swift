@@ -47,7 +47,7 @@ struct StaggeredGrid<Content: View, T: Hashable>: View {
                         Rectangle()
                     }
                     .foregroundStyle(.clear)
-                    .frame(height: 200)
+                    .frame(height: 150)
                 }
             }
         }

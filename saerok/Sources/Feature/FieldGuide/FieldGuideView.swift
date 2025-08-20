@@ -106,7 +106,7 @@ private extension FieldGuideView {
     
     private enum Constants {
         static let headerHeight: CGFloat = 100
-        static let headerTopPadding: CGFloat = 20
+        static let headerTopPadding: CGFloat = 16
         static let iconBackgroundSize: CGFloat = 40
         static let navBarSpacerHeight: CGFloat = 64
         static let scrollableID: String = "scrollable"
@@ -173,7 +173,7 @@ private extension FieldGuideView {
                 .font(.SRFontSet.heavy)
                 .fontWeight(.semibold)
                 .foregroundStyle(.splash)
-            Text("종의 새가 도감에 준비되어있어요.")
+            Text("종의 새가 도감에 등록되어 있어요.")
                 .font(.SRFontSet.caption1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -194,7 +194,7 @@ private extension FieldGuideView {
                         showSizeSheet: $showSizeSheet,
                         filterKey: $filterKey
                     )
-                    .padding(.top, Constants.headerTopPadding)
+                    .padding(.vertical, Constants.headerTopPadding)
                     .background(.srLightGray)
                     BirdGridView(
                         birds: fieldGuide,

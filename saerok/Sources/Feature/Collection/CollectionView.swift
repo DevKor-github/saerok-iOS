@@ -33,6 +33,7 @@ struct CollectionView: Routable {
     @State private var collectionState: Loadable<Void> = .notRequested
     @State private var offsetY: CGFloat = 0
     @State private var showPopup: Bool = false
+    @State private var hasUnread: Bool = false
 
     private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
     private let birdQuote: String = BirdQuote.random()
@@ -76,6 +77,10 @@ struct CollectionView: Routable {
                     routingBinding.wrappedValue.collectionID = nil
                 }
             }
+            .onAppear {
+                loadMyCollections()
+                loadUnreadNotification()
+            }
             .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
     }
     
@@ -96,6 +101,7 @@ private extension CollectionView {
     enum Constants {
         static let navBarSpacerHeight: CGFloat = 64
         static let scrollableID = "CollectionView"
+        static let backgroundColor: Color = .red
     }
     
     @ViewBuilder
@@ -124,7 +130,7 @@ private extension CollectionView {
                     Button {
                         path.append(Route.notification)
                     } label: {
-                        Image.SRIconSet.bell
+                        (hasUnread ? Image.SRIconSet.bellOn : Image.SRIconSet.bell)
                             .frame(.defaultIconSizeLarge)
                     }
                     .buttonStyle(.icon)
@@ -162,8 +168,7 @@ private extension CollectionView {
                         .background(
                             Rectangle()
                                 .foregroundColor(.clear)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 451)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .background(LinearGradient.collectionBackground)
                         )
                     }
@@ -249,7 +254,6 @@ private extension CollectionView {
         .onAppear {
             if !isGuestMode {
                 collectionState = .loaded(())
-                loadMyCollections()
             }
         }
     }
@@ -270,11 +274,21 @@ private extension CollectionView {
 private extension CollectionView {
     func loadMyCollections() {
         if !isGuestMode {
-            $collectionState.load {
+            Task {
                 do {
                     collectionSummaries = try await injected.interactors.collection.fetchMyCollections()
                 } catch {
                     print("콜렉션에러: \(error)")
+                }
+            }
+        }
+    }
+    
+    func loadUnreadNotification() {
+        if !isGuestMode {
+            Task {
+                if let unread = try? await injected.interactors.user.hasUnreadNotifications() {
+                    self.hasUnread = unread
                 }
             }
         }

@@ -45,10 +45,25 @@ enum BirdMarkerImageRenderer {
             ctx.fillEllipse(in: backgroundRect)
             
             ctx.setShadow(offset: .zero, blur: 0, color: nil)
-            
+                        
+            let squared = original.croppedSquare()
             let path = UIBezierPath(ovalIn: imageRect)
             path.addClip()
-            original.draw(in: imageRect)
+            squared.draw(in: imageRect)
         }
+    }
+}
+
+extension UIImage {
+    func croppedSquare() -> UIImage {
+        let size = min(self.size.width, self.size.height)
+        let originX = (self.size.width - size) / 2.0
+        let originY = (self.size.height - size) / 2.0
+        let cropRect = CGRect(x: originX, y: originY, width: size, height: size)
+
+        guard let cgImage = self.cgImage?.cropping(to: cropRect) else {
+            return self
+        }
+        return UIImage(cgImage: cgImage, scale: self.scale, orientation: self.imageOrientation)
     }
 }

@@ -13,6 +13,7 @@ final class KeyChain {
     enum KeyInfo: String {
         case accessToken
         case refresehToken
+        case deviceId
     }
     
     static func create(key: KeyInfo, token: String) throws {

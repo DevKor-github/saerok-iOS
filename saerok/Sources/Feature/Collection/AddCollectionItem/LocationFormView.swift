@@ -13,7 +13,6 @@ extension CollectionFormView {
         @Binding var selectedCoord: (Double, Double)
         @Binding var path: NavigationPath
         @FocusState var isFocused: Bool
-
         var address: String
 
         var body: some View {

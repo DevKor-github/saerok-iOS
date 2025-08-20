@@ -36,6 +36,20 @@ final class TokenManager {
     func getRefreshToken() -> String? {
         return try? KeyChain.read(key: .refresehToken)
     }
+    
+    func getDeviceId() -> String {
+        if let existing = try? KeyChain.read(key: .deviceId) {
+            return existing
+        } else {
+            let newID = UUID().uuidString
+            do {
+                try KeyChain.create(key: .deviceId, token: newID)
+            } catch {
+                print("🔒 고유번호 생성 실패: \(error)")
+            }
+            return newID
+        }
+    }
 
     // MARK: - 삭제
 
