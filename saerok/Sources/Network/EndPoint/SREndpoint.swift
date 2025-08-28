@@ -78,7 +78,7 @@ extension SREndpoint {
 //    var baseURL: String {
 //        return "https://api.saerok.app/api/v1/"
 //    }
-//    
+    
     var path: String {
         switch self {
         case .fullSync: "birds/full-sync"
