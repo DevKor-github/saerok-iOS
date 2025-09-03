@@ -8,34 +8,34 @@
 import SwiftUI
 
 struct TabItemView: View {
-    let imageName: String
+    let icon: Image.SRIconSet
+    let iconFilled: Image.SRIconSet
     let title: String
     let isActive: Bool
     
-    init(imageName: String, title: String, isActive: Bool) {
-        self.imageName = imageName
-        self.title = title
-        self.isActive = isActive
+    var body: some View {
+        VStack(spacing: 4) {
+            tabIcon
+            titleText
+        }
+        .frame(width: 51)
+        .background(.clear)
+    }
+}
+
+// MARK: - UI Components
+
+private extension TabItemView {
+    var tabIcon: some View {
+        (isActive ? iconFilled : icon)
+            .frame(.defaultIconSizeLarge)
+            .bold(isActive)
+            .foregroundColor(isActive ? .main : .srGray)
     }
     
-    var body: some View {
-        HStack(spacing: 10) {
-            Spacer()
-            Image(systemName: imageName)
-                .resizable()
-                .renderingMode(.template)
-                .foregroundColor(isActive ? .white : .gray)
-                .frame(width: 20, height: 20)
-            if isActive {
-                Text(title)
-                    .font(.system(size: 14))
-                    .foregroundColor(isActive ? .white : .gray)
-            }
-            Spacer()
-        }
-        .frame(height: 60)
-        .frame(width: isActive ? 140 : 60)
-        .background(isActive ? .orange : .clear)
-        .cornerRadius(30)
+    var titleText: some View {
+        Text(title)
+            .font(isActive ? .SRFontSet.tabbarSelected : .SRFontSet.tabbar)
+            .foregroundColor(isActive ? .main : .srGray)
     }
 }

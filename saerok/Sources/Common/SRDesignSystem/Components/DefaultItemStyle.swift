@@ -11,7 +11,7 @@ struct DefaultItemStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
-            .background(Color.blue)
-            .cornerRadius(SRDesignConstant.cornerRadius)
+            .background(.main)
+            .cornerRadius(10)
     }
 }

@@ -5,27 +5,34 @@
 //  Created by HanSeung on 3/20/25.
 //
 
+
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
-    var defaultColor: Color = .blue.opacity(0.6)
-    var pressedColor: Color = .blue
-    var disabledColor: Color = .gray
+    var defaultColor: Color = .main
+    var pressedColor: Color = .main.opacity(0.7)
+    var disabledColor: Color = .border
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding()
+            .font(.SRFontSet.button1)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity)
             .background(isEnabled ? (configuration.isPressed ? pressedColor : defaultColor) : disabledColor)
-            .foregroundColor(isEnabled ? .black : .gray)
-            .cornerRadius(SRDesignConstant.cornerRadius)
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
-            .opacity(isEnabled ? 1.0 : 0.5)
+            .foregroundColor(.srWhite)
+            .cornerRadius(20)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .contentShape(Rectangle())
     }
 }
 
 extension ButtonStyle where Self == PrimaryButtonStyle {
     static var primary: Self { Self() }
 }
+
+
+
+
+
