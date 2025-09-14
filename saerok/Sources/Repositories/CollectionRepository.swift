@@ -21,6 +21,7 @@ protocol CollectionRepository {
     func fetchCollectionComments(_ id: Int) async throws -> [Local.CollectionComment]
     func createCollectionComment(id: Int, _ content: String) async throws
     func toggleCollectionLike(_ id: Int) async throws -> Bool
+    func fetchLikeUsers(_ id: Int) async throws -> DTO.CollectionLikeUsersResponse
     func deleteCollectionComment(collectionId: Int, commentId: Int) async throws
     func reportCollection(_ id: Int) async throws
     
@@ -132,6 +133,13 @@ extension MainRepository: CollectionRepository {
             .likeCollection(collectionId: id)
         )
         return result.isLiked
+    }
+    
+    func fetchLikeUsers(_ id: Int) async throws -> DTO.CollectionLikeUsersResponse {
+        let result: DTO.CollectionLikeUsersResponse = try await networkService.performSRRequest(
+            .collectionLikeUsers(collectionId: id)
+        )
+        return result
     }
 
     func deleteCollectionComment(

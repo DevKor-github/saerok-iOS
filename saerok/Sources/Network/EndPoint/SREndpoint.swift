@@ -30,6 +30,7 @@ enum SREndpoint: Endpoint {
     case likeCollection(collectionId: Int)
     case deleteCollectionComment(collectionID: Int, commentID: Int)
     case reportCollection(collectionId: Int)
+    case collectionLikeUsers(collectionId: Int)
     
     // MARK: Bird ID Suggestions API
     
@@ -104,6 +105,7 @@ extension SREndpoint {
         case .likeCollection(collectionId: let collectionID): "collections/\(collectionID)/like"
         case .deleteCollectionComment(let collectionID, let commentID): "collections/\(collectionID)/comments/\(commentID)"
         case .reportCollection(let collectionId): "collections/\(collectionId)/report"
+        case .collectionLikeUsers(let collectionId): "collections/\(collectionId)/like/users"
         case .getSuggestions(let collectionId): "collections/\(collectionId)/bird-id-suggestions"
         case .suggestBird(let collectionId, _): "collections/\(collectionId)/bird-id-suggestions"
         case .toggleSuggestionAgree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/agree"
@@ -124,7 +126,7 @@ extension SREndpoint {
     
     var method: String {
         switch self {
-        case .fullSync, .birdChanges, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount: "GET"
+        case .fullSync, .birdChanges, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers: "GET"
         case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification: "DELETE"
@@ -257,6 +259,8 @@ extension SREndpoint {
             return EmptyResponse.self
         case .editCollection:
             return DTO.CollectionEditResponse.self
+        case .collectionLikeUsers:
+            return DTO.CollectionLikeUsersResponse.self
         case .appleLogin, .kakaoLogin, .refreshToken:
             return DTO.AuthResponse.self
         case .checkNickname:

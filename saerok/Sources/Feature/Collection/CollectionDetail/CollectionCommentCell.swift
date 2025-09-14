@@ -16,7 +16,7 @@ struct CollectionCommentCell: View {
     var body: some View {
         HStack(alignment: .top, spacing: 6) {
             ReactiveAsyncImage(
-                url: item.imageURL,
+                url: item.user.profileImageUrl,
                 scale: .medium,
                 quality: 0.8,
                 downsampling: true
@@ -31,7 +31,7 @@ struct CollectionCommentCell: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 5) {
-                    Text(item.nickname)
+                    Text(item.user.nickname)
                         .font(.SRFontSet.body3_2)
 
                     Text(item.createdAt.timeAgoText)

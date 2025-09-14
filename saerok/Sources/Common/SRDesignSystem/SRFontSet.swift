@@ -31,6 +31,7 @@ extension Font {
         static let body3: Font = .custom(Moneygraphy.regular.rawValue, size: 15)
         static let body3_2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 15)
         static let body4: Font = .custom(Pretendard.regular.rawValue, size: 14)
+        static let body4_3: Font = .custom(Pretendard.semiBold.rawValue, size: 15)
 
         static let caption1: Font = .custom(Pretendard.regular.rawValue, size: 13)
         static let caption1_2: Font = .custom(Pretendard.regular.rawValue, size: 13)

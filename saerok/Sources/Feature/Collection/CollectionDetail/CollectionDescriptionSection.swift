@@ -13,6 +13,7 @@ struct CollectionDescriptionSection: View {
     var path: Binding<NavigationPath>?
 
     var onLikeToggle: () -> Void
+    var onLikeCountTap: () -> Void
     var onCommentTap: () -> Void
     var onReportTap: () -> Void
     var onSuggestTap: (() -> Void)?
@@ -76,6 +77,7 @@ private extension CollectionDescriptionSection {
                     image: (collection.isLiked ? Image.SRIconSet.heartFilled : .heart),
                     index: collection.likeCount,
                     onTap: onLikeToggle,
+                    additionalTap: onLikeCountTap
                 )
                 
                 Divider()
@@ -94,21 +96,37 @@ private extension CollectionDescriptionSection {
         .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
     }
     
-    func noteButton(image: Image.SRIconSet, index: Int, onTap: @escaping () -> Void) -> some View {
-        Button(action: onTap) {
-            HStack {
-                image
-                    .frame(.defaultIconSizeLarge)
-                    .padding(8)
-                Spacer()
-                Text("\(index)")
-            }
-            .frame(width: 146, height: 40)
-            .padding(.leading, 5.5)
-            .padding(.trailing, 20)
-            .padding(.vertical, 8)
+    func noteButton(
+        image: Image.SRIconSet,
+        index: Int,
+        onTap: @escaping () -> Void,
+        additionalTap: (() -> Void)? = nil
+    ) -> some View {
+        HStack {
+            image
+                .frame(.defaultIconSizeLarge)
+                .padding(8)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onTap()
+                }
+
+            Spacer()
+
+            Text("\(index)")
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if let additionalTap = additionalTap {
+                        additionalTap()
+                    } else {
+                        onTap()
+                    }
+                }
         }
-        .buttonStyle(.plain)
+        .frame(width: 146, height: 40)
+        .padding(.leading, 5.5)
+        .padding(.trailing, 20)
+        .padding(.vertical, 8)
     }
     
     var infoView: some View {

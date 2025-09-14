@@ -26,8 +26,7 @@ extension Local {
         let birdName: String?
         let birdID: Int?
         let scientificName: String?
-        let userNickname: String
-        let profileImageUrl: String
+        let user: UserSummary
         
         mutating func likeToggle(_ isOn: Bool) {
             likeCount += isOn ? 1 : -1
@@ -48,9 +47,7 @@ extension Local {
             lhs.commentCount == rhs.commentCount &&
             lhs.birdName == rhs.birdName &&
             lhs.birdID == rhs.birdID &&
-            lhs.scientificName == rhs.scientificName &&
-            lhs.userNickname == rhs.userNickname &&
-            lhs.profileImageUrl == rhs.profileImageUrl
+            lhs.scientificName == rhs.scientificName
         }
     }
     
@@ -82,8 +79,11 @@ extension Local.CollectionDetail {
             birdName: dto.bird.koreanName,
             birdID: dto.bird.birdId,
             scientificName: dto.bird.scientificName,
-            userNickname: dto.user.nickname,
-            profileImageUrl: dto.user.profileImageUrl
+            user: Local.UserSummary(
+                id: dto.user.userId,
+                nickname: dto.user.nickname,
+                profileImageUrl: dto.user.profileImageUrl
+            )
         )
     }
 }
@@ -103,8 +103,7 @@ extension Local.CollectionDetail {
             birdName: "가짜청딱따구리",
             birdID: 901,
             scientificName: "Cham Sae",
-            userNickname: "",
-            profileImageUrl: ""
+            user: .init(id: 0, nickname: "새록이", profileImageUrl: "nn")
         ),
     ]
 }

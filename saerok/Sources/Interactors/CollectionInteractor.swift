@@ -17,6 +17,7 @@ protocol CollectionInteractor {
     func createComments(id: Int, _ content: String) async throws
     func deleteComment(collectionId: Int, commentId: Int) async throws
     func toggleLike(_ id: Int) async throws -> Bool
+    func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary]
     func reportCollection(_ id: Int) async throws
     
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion]
@@ -102,6 +103,13 @@ struct CollectionInteractorImpl: CollectionInteractor {
         return try await repository.toggleCollectionLike(id)
     }
     
+    func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary] {
+        let users = try await repository.fetchLikeUsers(id)
+        return users.items.map {
+            .init(id: $0.userId, nickname: $0.nickname, profileImageUrl: $0.profileImageUrl)
+        }
+    }
+    
     func reportCollection(_ id: Int) async throws {
         try await repository.reportCollection(id)
     }
@@ -143,6 +151,7 @@ struct CollectionInteractorImpl: CollectionInteractor {
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
+    func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary] { [] }
     
     func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] { [] }
     

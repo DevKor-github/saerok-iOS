@@ -103,7 +103,7 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             Spacer()
             VStack(spacing: 0) {
                 if isExtendable {
-                    indicator
+                    sheetIndicator
                 } else {
                     Color.clear
                         .frame(height: 3)
@@ -175,11 +175,11 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             .opacity(isShowing ? 1 : 0)
             .animation(.default, value: isShowing)
     }
-
-    private let indicator: some View = {
-        Capsule()
-            .frame(width: 110, height: 3)
-            .foregroundColor(.whiteGray)
-            .padding(.top, 5)
-    }()
 }
+
+let sheetIndicator: some View = {
+    Capsule()
+        .frame(width: 110, height: 3)
+        .foregroundColor(.whiteGray)
+        .padding(.top, 5)
+}()

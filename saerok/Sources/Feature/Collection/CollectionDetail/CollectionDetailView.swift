@@ -32,6 +32,7 @@ struct CollectionDetailView: View {
         var showCommentSheet: Bool = false
         var showSuggestionSheet: Bool = false
         var showShareSheet: Bool = false
+        var showLikerSheet: Bool = false
         var text: String = ""
     }
     
@@ -46,7 +47,7 @@ struct CollectionDetailView: View {
     @State private var newSuggesting: Local.Bird? = nil
     @State private var selectedPreview: Local.BirdSuggestion? = nil
     @State private var selectedAdopting: Local.BirdSuggestion? = nil
-    
+
     // MARK:  View State
 
     @State private var uiState = CollectionUIState()
@@ -159,12 +160,15 @@ private extension CollectionDetailView {
         .bottomSheet(isShowing: $uiState.showCommentSheet, keyboard: keyboard) {
             CollectionCommentSheet(
                 isMyCollection: collection.isMine,
-                nickname: collection.userNickname,
+                nickname: collection.user.nickname,
                 comments: comments,
                 onDelete: deleteComment,
                 onReport: { uiState.showPopup = true },
                 onDismiss: { uiState.showCommentSheet.toggle() },
             )
+        }
+        .sheet(isPresented: $uiState.showLikerSheet) {
+            CollectionLikerSheet(collectionID: collectionID, onDismiss: { uiState.showLikerSheet.toggle() })
         }
         .onTapGesture {
             isFocused = false
@@ -173,7 +177,7 @@ private extension CollectionDetailView {
             CollectionCommentInputBar(
                 text: $uiState.text,
                 isFocused: _isFocused,
-                nickname: collection.userNickname,
+                nickname: collection.user.nickname,
                 onSubmit: postComment,
                 keyboard: keyboard
             )
@@ -182,7 +186,7 @@ private extension CollectionDetailView {
             SuggestionSheet(
                 isMine: collection.isMine,
                 collectionID: collection.id,
-                nickname: collection.userNickname,
+                nickname: collection.user.nickname,
                 suggestions: $suggestions,
                 selectedBird: $newSuggesting,
                 selectedPreview: $selectedPreview,
@@ -226,7 +230,7 @@ private extension CollectionDetailView {
     var trailingProfileImage: some View {
         HStack {
             ReactiveAsyncImage(
-                url: collection.profileImageUrl,
+                url: collection.user.profileImageUrl,
                 scale: .small,
                 quality: 0.5,
                 downsampling: true
@@ -240,7 +244,7 @@ private extension CollectionDetailView {
             )
             .id(collection.id)
             
-            Text(collection.userNickname)
+            Text(collection.user.nickname)
                 .font(.SRFontSet.body4)
         }
         .padding(.vertical, 7)
@@ -269,6 +273,7 @@ private extension CollectionDetailView {
             collection: collection,
             path: path,
             onLikeToggle: { toggleLike() },
+            onLikeCountTap: { uiState.showLikerSheet.toggle() },
             onCommentTap: { uiState.showCommentSheet.toggle() },
             onReportTap: { uiState.showPopup.toggle() },
             onSuggestTap: { uiState.showSuggestionSheet.toggle() }
