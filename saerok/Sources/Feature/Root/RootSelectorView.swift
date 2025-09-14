@@ -17,7 +17,8 @@ struct RootSelectorView: View {
     @State private var showSplash = true
     
     @StateObject private var networkMonitor = NetworkMonitor.shared
-    
+    @StateObject private var versionChecker = AppVersionChecker()
+
     private var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
         injected.appState.updates(for: \.authStatus)
     }
@@ -54,11 +55,16 @@ private extension RootSelectorView {
             }
 
             splashView
-                .onAppear {
-                    Task {
-                        injected.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
-                    }
-                }
+        }
+        .task {
+            await versionChecker.checkVersion()
+        }
+        .alert("업데이트 필요", isPresented: $versionChecker.showUpdateAlert) {
+            Button("앱스토어로 이동") {
+                AppStorePresenter.present(appID: "6744866662")
+            }
+        } message: {
+            Text("새로운 버전이 출시되었습니다.\n최신 버전으로 업데이트해주세요.")
         }
     }
 

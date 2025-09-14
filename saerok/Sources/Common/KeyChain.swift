@@ -12,7 +12,7 @@ import Security
 final class KeyChain {
     enum KeyInfo: String {
         case accessToken
-        case refresehToken
+        case refreshToken
         case deviceId
     }
     

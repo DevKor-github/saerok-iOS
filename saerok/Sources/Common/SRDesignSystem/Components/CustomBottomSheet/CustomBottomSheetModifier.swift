@@ -68,15 +68,6 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     @ObservedObject var keyboard: KeyboardObserver
     let isExtendable: Bool
 
-//    private var actualOffset: CGFloat {
-//        if isShowing {
-//            let base = UIScreen.main.bounds.height - currentDetent.height
-//            return base + dragOffset
-//        } else {
-//            return UIScreen.main.bounds.height + 100
-//        }
-//    }
-
     private var actualOffset: CGFloat {
         guard isShowing else {
             return UIScreen.main.bounds.height + 100 // 항상 완전 숨김
@@ -163,7 +154,7 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             }
             .sizeState(size: $bottomSheetSize)
             .background(backgroundColor)
-            .cornerRadius(20)
+            .cornerRadius(30)
             .offset(y: actualOffset - dragOffset * 0.7)
             .shadow(color: .black.opacity(0.1), radius: 6)
             .animation(.smooth(duration: 0.2), value: isShowing)

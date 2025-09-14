@@ -13,6 +13,7 @@ protocol UserInteractor {
     func fetchNotifications() async throws -> [Local.NotificationItem]
     func fetchNotificationSetting() async throws -> Local.NotificationSettings
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool
+    func toggleAllNotificationSetting() async throws
     func readNotification(_ id: Int) async throws
     func readAllNotification() async throws
     func deleteNotification(_ id: Int) async throws
@@ -55,6 +56,12 @@ struct UserInteractorImpl: UserInteractor {
         let response: DTO.GetNotificationSettingsResponse = try await repository.fetchNotificationSetting(deviceID)
         return Local.NotificationSettings(from: response)
     }
+    
+    func toggleAllNotificationSetting() async throws {
+        let _ = try await toggleNotificationSetting(.birdIdSuggestion)
+        let _ = try await toggleNotificationSetting(.comment)
+        let _ = try await toggleNotificationSetting(.like)
+    }
 
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool {
         let request: DTO.ToggleNotificationRequest = .init(deviceId: deviceID, type: type.rawValue)
@@ -91,6 +98,8 @@ struct MockUserInteractorImpl: UserInteractor {
     
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool { true }
     
+    func toggleAllNotificationSetting() async throws { }
+
     func fetchNotificationSetting() async throws -> Local.NotificationSettings { .init() }
     
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {

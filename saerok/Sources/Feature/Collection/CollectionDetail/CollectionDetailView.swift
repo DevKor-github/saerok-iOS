@@ -5,6 +5,7 @@
 //  Created by HanSeung on 4/12/25.
 //
 
+
 import SwiftUI
 
 struct CollectionDetailView: View {
@@ -37,7 +38,6 @@ struct CollectionDetailView: View {
     // MARK: - Properties
 
     let collectionID: Int
-    let isFromMapView: Bool
     
     @State private var collection: Local.CollectionDetail = .mockData[0]
     @State private var collectionImage: UIImage?
@@ -64,14 +64,9 @@ struct CollectionDetailView: View {
     
     // MARK: - Init
     
-    init(
-        collectionID: Int,
-        path: Binding<NavigationPath>? = nil,
-        isFromMap: Bool = false
-    ) {
+    init(collectionID: Int, path: Binding<NavigationPath>? = nil) {
         self.collectionID = collectionID
         self.path = path
-        self.isFromMapView = isFromMap
     }
     
     // MARK: - Body
@@ -163,7 +158,7 @@ private extension CollectionDetailView {
         .background(Color.srLightGray)
         .bottomSheet(isShowing: $uiState.showCommentSheet, keyboard: keyboard) {
             CollectionCommentSheet(
-                isMyCollection: !isFromMapView,
+                isMyCollection: collection.isMine,
                 nickname: collection.userNickname,
                 comments: comments,
                 onDelete: deleteComment,
@@ -185,7 +180,7 @@ private extension CollectionDetailView {
         }
         .bottomSheet(isShowing: $uiState.showSuggestionSheet, keyboard: keyboard, isExtendable: false) {
             SuggestionSheet(
-                isFromMap: isFromMapView,
+                isMine: collection.isMine,
                 collectionID: collection.id,
                 nickname: collection.userNickname,
                 suggestions: $suggestions,
@@ -272,7 +267,6 @@ private extension CollectionDetailView {
     var descriptionSection: some View {
         CollectionDescriptionSection(
             collection: collection,
-            isFromMapView: isFromMapView,
             path: path,
             onLikeToggle: { toggleLike() },
             onCommentTap: { uiState.showCommentSheet.toggle() },
@@ -292,7 +286,7 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var shareButton: some View {
-        if !isFromMapView {
+        if collection.isMine {
             Button(action: { uiState.showShareSheet.toggle() }) {
                 Image.SRIconSet.airplane
                     .frame(.floatingButton)
@@ -524,14 +518,6 @@ private extension CollectionDetailView {
     @Previewable @State var path: NavigationPath = .init()
     CollectionDetailView(collectionID: 1, path: $path)
 }
-
-
-//#Preview {
-//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-//    
-//    appDelegate.rootView
-//}
-
 
 extension View {
     func topOverlay<Overlay: View, T: Hashable>(

@@ -6,6 +6,9 @@
 //
 
 
+import Foundation
+
+// MARK: - Protocols
 protocol FieldGuideInteractor {
     func refreshFieldGuide() async throws
     func refreshBookmarks() async throws
@@ -13,6 +16,7 @@ protocol FieldGuideInteractor {
     func toggleBookmark(birdID: Int) async throws -> Bool
 }
 
+// MARK: - Errors
 enum FieldGuideInteractorError: Error {
     case networkError(NetworkError)
     case repositoryError(Error)
@@ -20,12 +24,19 @@ enum FieldGuideInteractorError: Error {
     case unknownError(Error)
 }
 
+// MARK: - Interactor Implementation
 struct FieldGuideInteractorImpl: FieldGuideInteractor {
     let repository: BirdsRepository
 
     func refreshFieldGuide() async throws {
+        let isEmpty = try repository.checkIsBirdsEmpty()
+        let since = readLastSyncDate()
+        
+        guard try await needsFullSync(isEmpty: isEmpty, since: since) else { return }
+        
         do {
             try await repository.fetchAndStoreBirds()
+            writeLastSyncDate()
         } catch let error as BirdsRepositoryError {
             throw FieldGuideInteractorError.repositoryError(error)
         } catch {
@@ -50,6 +61,25 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
     }
 }
 
+// MARK: - Private Helpers
+private extension FieldGuideInteractorImpl {
+    static let lastSyncKey = "LastBirdsSyncDate"
+    
+    func readLastSyncDate() -> Date {
+        (UserDefaults.standard.object(forKey: Self.lastSyncKey) as? Date) ?? .distantPast
+    }
+    
+    func writeLastSyncDate(_ date: Date = Date()) {
+        UserDefaults.standard.set(date, forKey: Self.lastSyncKey)
+    }
+    
+    func needsFullSync(isEmpty: Bool, since: Date) async throws -> Bool {
+        let isUpToDate = try await repository.checkUpToDate(since)
+        return isEmpty || !isUpToDate
+    }
+}
+
+// MARK: - Mocks
 struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
     func refreshBookmarks() async throws { }
     
@@ -59,4 +89,3 @@ struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
     
     func toggleBookmark(birdID: Int) async throws -> Bool { true }
 }
-

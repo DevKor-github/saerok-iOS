@@ -27,12 +27,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 // MARK: - Lifecycle
 
 extension AppDelegate {
-    func applicationWillEnterForeground(_ application: UIApplication) {
-        Task { @MainActor in
-            environment.diContainer.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
-        }
-    }
-    
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
@@ -40,6 +34,11 @@ extension AppDelegate {
         FirebaseApp.configure()
         PushNotificationManager.shared.configurePush(application: application, diContainer: environment.diContainer)
         KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
+        
+        Task { @MainActor in
+            environment.diContainer.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
+        }
+        
         return true
     }
     

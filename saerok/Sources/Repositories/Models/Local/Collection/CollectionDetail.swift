@@ -21,6 +21,7 @@ extension Local {
         let accessLevel: AccessLevel
         var likeCount: Int
         var isLiked: Bool
+        let isMine: Bool
         var commentCount: Int
         let birdName: String?
         let birdID: Int?
@@ -76,6 +77,7 @@ extension Local.CollectionDetail {
             accessLevel: Local.AccessLevel(rawValue: dto.accessLevel.rawValue) ?? .publicAccess,
             likeCount: dto.likeCount,
             isLiked: dto.isLiked,
+            isMine: dto.isMine,
             commentCount: dto.commentCount,
             birdName: dto.bird.koreanName,
             birdID: dto.bird.birdId,
@@ -97,7 +99,7 @@ extension Local.CollectionDetail {
             locationAlias: "서울 시청",
             note: "도심 한가운데서 발견! 도심 한가운데서 발견! 도심 한가운데서 발견!",
             accessLevel: .publicAccess,
-            likeCount: 5, isLiked: true, commentCount: 1,
+            likeCount: 5, isLiked: true, isMine: true, commentCount: 1,
             birdName: "가짜청딱따구리",
             birdID: 901,
             scientificName: "Cham Sae",

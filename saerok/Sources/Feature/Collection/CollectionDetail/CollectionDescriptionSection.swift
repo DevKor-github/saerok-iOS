@@ -10,7 +10,6 @@ import SwiftUI
 
 struct CollectionDescriptionSection: View {
     let collection: Local.CollectionDetail
-    let isFromMapView: Bool
     var path: Binding<NavigationPath>?
 
     var onLikeToggle: () -> Void
@@ -212,7 +211,7 @@ private extension CollectionDescriptionSection {
     
     @ViewBuilder
     var additionalButton: some View {
-        if !isFromMapView {
+        if collection.isMine {
             Button {
                 if let path = path {
                     path.wrappedValue.append(CollectionDetailView.Route.edit)

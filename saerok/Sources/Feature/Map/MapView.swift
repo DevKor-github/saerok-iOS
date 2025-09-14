@@ -69,7 +69,7 @@ struct MapView: Routable {
             .navigationDestination(for: MapView.Route.self) { route in
                 switch route  {
                 case .detail(let id):
-                    CollectionDetailView(collectionID: id, path: $path, isFromMap: true)
+                    CollectionDetailView(collectionID: id, path: $path)
                 }
             }
             .onChange(of: mapController.selectedBird) { _, newBird in

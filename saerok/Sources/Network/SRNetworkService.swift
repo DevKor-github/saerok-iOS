@@ -7,13 +7,13 @@
 
 protocol SRNetworkService: DefaultNetworkService {
     func performSRRequest<T: Decodable>(_ endpoint: SREndpoint) async throws -> T
+    func performSRRequestWithStatus<T: Decodable>(_ endpoint: SREndpoint) async throws -> (T, Int)
     func performKakaoRequest<T: Decodable>(_ endpoint: KakaoEndpoint) async throws -> T
 }
 
 final class SRNetworkServiceImpl: DefaultNetworkService, SRNetworkService {
     func performSRRequest<T: Decodable>(_ endpoint: SREndpoint) async throws -> T {
         let request = endpoint.createRequest()
-
         guard T.self == endpoint.expectedResponseType else {
             throw NetworkError.typeError
         }
@@ -21,9 +21,17 @@ final class SRNetworkServiceImpl: DefaultNetworkService, SRNetworkService {
         return try await provider.request(request)
     }
     
+    func performSRRequestWithStatus<T: Decodable>(_ endpoint: SREndpoint) async throws -> (T, Int) {
+        let request = endpoint.createRequest()
+        guard T.self == endpoint.expectedResponseType else {
+            throw NetworkError.typeError
+        }
+
+        return try await provider.requestWithStatus(request)
+    }
+
     func performKakaoRequest<T: Decodable>(_ endpoint: KakaoEndpoint) async throws -> T {
         let request = endpoint.createRequest()
-
         guard T.self == endpoint.expectedResponseType else {
             throw NetworkError.unknownError
         }

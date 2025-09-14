@@ -5,7 +5,6 @@
 //  Created by HanSeung on 3/20/25.
 //
 
-
 import Foundation
 
 final class Provider {
@@ -16,7 +15,6 @@ final class Provider {
     
     func request<T: Decodable>(_ request: URLRequest) async throws -> T {
         let (data, response) = try await defaultURLSession.data(for: request)
-
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }
@@ -37,6 +35,28 @@ final class Provider {
         
         do {
             return try decoder.decode(T.self, from: data)
+        } catch {
+            throw NetworkError.decodingError(error.localizedDescription)
+        }
+    }
+    
+    func requestWithStatus<T: Decodable>(_ request: URLRequest) async throws -> (T, Int) {
+        let (data, response) = try await defaultURLSession.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.unknownError
+        }
+
+        if !(200..<300).contains(httpResponse.statusCode) {
+            throw self.validateStatusCode(httpResponse.statusCode)
+        }
+
+        if T.self == EmptyResponse.self {
+            return (EmptyResponse() as! T, httpResponse.statusCode)
+        }
+
+        do {
+            let decoded = try decoder.decode(T.self, from: data)
+            return (decoded, httpResponse.statusCode)
         } catch {
             throw NetworkError.decodingError(error.localizedDescription)
         }

@@ -13,6 +13,8 @@ protocol BirdsRepository {
     @MainActor
     func birdDetail(for id: Int) throws -> Local.Bird?
     func fetchAndStoreBirds() async throws
+    func checkUpToDate(_ date: Date) async throws -> Bool
+    func checkIsBirdsEmpty() throws -> Bool
     func syncBookmarks() async throws
     func toggleBookmark(for id: Int) async throws -> Bool
     func storeMockData() async
@@ -24,7 +26,7 @@ enum BirdsRepositoryError: Error {
     case invalidBirdDTO
 }
 
-extension MainRepository: BirdsRepository {
+extension MainRepository: @preconcurrency BirdsRepository {
     @MainActor
     func birdDetail(for id: Int) throws -> Local.Bird? {
         let fetchDescriptor = FetchDescriptor(predicate: #Predicate<Local.Bird> {
@@ -34,10 +36,21 @@ extension MainRepository: BirdsRepository {
     }
     
     func fetchAndStoreBirds() async throws {
-        if try isBirdsEmpty() {
-            let birdDTOs: DTO.BirdsResponse = try await networkService.performSRRequest(.fullSync)
-            try await store(birdDTOs.birds)
-        }
+        let birdDTOs: DTO.BirdsResponse = try await networkService.performSRRequest(.fullSync)
+        try await store(birdDTOs.birds)
+    }
+    
+    func checkIsBirdsEmpty() throws -> Bool {
+        var descriptor = FetchDescriptor<Local.Bird>()
+        descriptor.fetchLimit = 1
+        return try modelContext.fetch(descriptor).isEmpty
+    }
+    
+    func checkUpToDate(_ date: Date) async throws -> Bool {
+        let status: (EmptyResponse, Int) = try await networkService.performSRRequestWithStatus(
+            .birdChanges(since: date)
+        )
+        return status.1 == 204
     }
     
     func syncBookmarks() async throws {
@@ -69,24 +82,6 @@ extension MainRepository: BirdsRepository {
         return result.bookmarked
     }
     
-    func store(_ birds: [DTO.Bird]) async throws {
-        try modelContext.transaction {
-            try clearExistingBirds()
-            let localBirds = convert(dtoBirds: birds)
-            if localBirds.isEmpty {
-                throw BirdsRepositoryError.invalidBirdDTO
-            }
-            insertBirds(localBirds)
-        }
-        try? save()
-    }
-    
-    private func isBirdsEmpty() throws -> Bool {
-        var descriptor = FetchDescriptor<Local.Bird>()
-        descriptor.fetchLimit = 1
-        return try modelContext.fetch(descriptor).isEmpty
-    }
-    
     func storeMockData() {
         Local.Bird.mockData.forEach {
             modelContext.insert($0)
@@ -100,6 +95,18 @@ private extension MainRepository {
     func clearExistingBirds() throws {
         let existingBirds = try modelContext.fetch(FetchDescriptor<Local.Bird>())
         existingBirds.forEach { modelContext.delete($0) }
+    }
+    
+    func store(_ birds: [DTO.Bird]) async throws {
+        try modelContext.transaction {
+            try clearExistingBirds()
+            let localBirds = convert(dtoBirds: birds)
+            if localBirds.isEmpty {
+                throw BirdsRepositoryError.invalidBirdDTO
+            }
+            insertBirds(localBirds)
+        }
+        try? save()
     }
     
     func convert(dtoBirds: [DTO.Bird]) -> [Local.Bird] {

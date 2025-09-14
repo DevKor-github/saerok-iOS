@@ -22,6 +22,7 @@ extension DTO {
         let likeCount: Int
         let commentCount: Int
         let isLiked: Bool
+        let isMine: Bool
         let bird: BirdInfo
         let user: UserInfo
     }

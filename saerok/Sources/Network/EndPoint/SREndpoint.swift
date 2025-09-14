@@ -13,6 +13,7 @@ enum SREndpoint: Endpoint {
     // MARK: Birds API
     
     case fullSync
+    case birdChanges(since: Date)
     
     // MARK: Collections API
     
@@ -82,6 +83,7 @@ extension SREndpoint {
     var path: String {
         switch self {
         case .fullSync: "birds/full-sync"
+        case .birdChanges: "birds/changes"
         case .myCollections: "collections/me"
         case .collectionDetail(let collectionID), .deleteCollection(let collectionID): "collections/\(collectionID)"
         case .createCollection: "collections/"
@@ -122,7 +124,7 @@ extension SREndpoint {
     
     var method: String {
         switch self {
-        case .fullSync, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount: "GET"
+        case .fullSync, .birdChanges, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount: "GET"
         case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification: "DELETE"
@@ -222,6 +224,10 @@ extension SREndpoint {
             ]
         case .getNotificationSettings(let deviceId):
             return ["deviceId": deviceId]
+        case .birdChanges(let since):
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withColonSeparatorInTimeZone]
+            return ["since": formatter.string(from: since)]
         default:
             return nil
         }
@@ -233,6 +239,8 @@ extension SREndpoint {
         switch self {
         case .fullSync:
             return DTO.BirdsResponse.self
+        case .birdChanges:
+            return EmptyResponse.self
         case .myCollections:
             return DTO.MyCollectionsResponse.self
         case .collectionDetail:

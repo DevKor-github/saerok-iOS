@@ -10,7 +10,7 @@ import SwiftUI
 import SwiftData
 
 struct SuggestionSheet: View {
-    let isFromMap: Bool
+    let isMine: Bool
     let collectionID: Int
     let nickname: String
     @Binding var suggestions: [Local.BirdSuggestion]
@@ -31,7 +31,7 @@ struct SuggestionSheet: View {
         VStack(spacing: 20) {
             header
             
-            if suggestions.isEmpty && !isFromMap {
+            if suggestions.isEmpty && isMine {
                 emptyView
             } else {
                 content
@@ -63,12 +63,12 @@ private extension SuggestionSheet {
             .font(.SRFontSet.subtitle2)
             
             Text(
-                isFromMap
-                 ? "\(nickname)님에게 새의 이름을 알려주세요."
-                 : "다른 사용자들이 이 새의 이름을 알려주고 있어요."
+                isMine
+                ? "다른 사용자들이 이 새의 이름을 알려주고 있어요."
+                : "\(nickname)님에게 새의 이름을 알려주세요."
             )
-                .font(.SRFontSet.body2)
-                .foregroundStyle(.srGray)
+            .font(.SRFontSet.body2)
+            .foregroundStyle(.srGray)
         }
         .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
@@ -80,7 +80,7 @@ private extension SuggestionSheet {
                     SuggestionCell(
                         item: item,
                         selectedId: selectedPreview?.bird.id,
-                        isMine: !isFromMap,
+                        isMine: isMine,
                         onAgree: { toggle(.agree, suggestion: item) },
                         onDisagree: { toggle(.disagree, suggestion: item) },
                         onAdopt: {
@@ -91,7 +91,7 @@ private extension SuggestionSheet {
                     )
                 }
                 
-                if isFromMap {
+                if !isMine {
                     defaultAddCell
                 }
                 

@@ -20,7 +20,7 @@ final class TokenManager {
             try KeyChain.create(key: .accessToken, token: accessToken)
 
             if let refreshToken {
-                try KeyChain.create(key: .refresehToken, token: refreshToken)
+                try KeyChain.create(key: .refreshToken, token: refreshToken)
             }
         } catch {
             print("🔒 Token 저장 실패: \(error)")
@@ -34,7 +34,7 @@ final class TokenManager {
     }
 
     func getRefreshToken() -> String? {
-        return try? KeyChain.read(key: .refresehToken)
+        return try? KeyChain.read(key: .refreshToken)
     }
     
     func getDeviceId() -> String {
@@ -56,7 +56,7 @@ final class TokenManager {
     func clearTokens() {
         do {
             try KeyChain.delete(key: .accessToken)
-            try KeyChain.delete(key: .refresehToken)
+            try KeyChain.delete(key: .refreshToken)
         } catch {
             print("🔒 Token 삭제 실패: \(error)")
         }

@@ -14,6 +14,7 @@ private protocol NetworkService {
     ///   - responseType: 응답 데이터를 디코딩할 타입
     /// - Returns: 요청에 대한 결과를 포함하는 `async`로, 성공 시 디코딩된 데이터를 반환하고, 실패 시 오류를 반환
     func request<T: Decodable>(endpoint: Endpoint, responseType: T.Type) async throws -> T
+    func requestWithStatus<T: Decodable>(endpoint: Endpoint, responseType: T.Type) async throws -> (T, Int)
 }
 
 class DefaultNetworkService: NetworkService {
@@ -24,5 +25,10 @@ class DefaultNetworkService: NetworkService {
     func request<T: Decodable>(endpoint: Endpoint, responseType: T.Type) async throws -> T {
         let request = endpoint.createRequest()
         return try await provider.request(request)
+    }
+    
+    func requestWithStatus<T: Decodable>(endpoint: Endpoint, responseType: T.Type) async throws -> (T, Int) {
+        let request = endpoint.createRequest()
+        return try await provider.requestWithStatus(request)
     }
 }

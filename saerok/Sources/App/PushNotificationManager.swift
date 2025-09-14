@@ -116,9 +116,8 @@ extension PushNotificationManager: MessagingDelegate {
                 let _: DTO.RegisterDeviceTokenResponse = try await networkService.performSRRequest(
                     .registerDeviceToken(body: .init(deviceId: deviceID, token: fcmToken))
                 )
-                try await self.injected?.interactors.user.toggleNotificationSetting(.comment)
-                try await self.injected?.interactors.user.toggleNotificationSetting(.birdIdSuggestion)
-                try await self.injected?.interactors.user.toggleNotificationSetting(.like)
+                
+                try await self.injected?.interactors.user.toggleAllNotificationSetting()
             } catch {
                 print(error.localizedDescription)
             }
