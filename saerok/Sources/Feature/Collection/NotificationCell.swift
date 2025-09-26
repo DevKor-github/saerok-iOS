@@ -16,8 +16,8 @@ struct NotificationCell: View {
         HStack(alignment: .top, spacing: 0) {
             ReactiveAsyncImage(
                 url: item.actorImageUrl,
-                scale: .medium,
-                quality: 0.8,
+                scale: .small,
+                size: .init(width: 25, height: 25),
                 downsampling: true
             )
             .frame(width: 25, height: 25)
@@ -43,8 +43,8 @@ struct NotificationCell: View {
 
             ReactiveAsyncImage(
                 url: item.collectionImageUrl ?? "",
-                scale: .medium,
-                quality: 0.8,
+                scale: .small,
+                size: .init(width: 60, height: 60),
                 downsampling: true
             )
             .aspectRatio(contentMode: .fill)

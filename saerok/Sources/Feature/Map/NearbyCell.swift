@@ -48,8 +48,8 @@ private extension NearbyCell {
             HStack(spacing: 5) {
                 ReactiveAsyncImage(
                     url: item.user.profileImageUrl,
-                    scale: .medium,
-                    quality: 0.8,
+                    scale: .small,
+                    size: .init(width: 25, height: 25),
                     downsampling: true
                 )
                 .frame(width: 25, height: 25)
@@ -74,8 +74,8 @@ private extension NearbyCell {
         VStack(spacing: 0) {
             ReactiveAsyncImage(
                 url: item.imageUrl ?? "",
-                scale: .medium,
-                quality: 0.8,
+                scale: .small,
+                size: .init(width: 89, height: 89),
                 downsampling: true
             )
             .aspectRatio(contentMode: .fill)

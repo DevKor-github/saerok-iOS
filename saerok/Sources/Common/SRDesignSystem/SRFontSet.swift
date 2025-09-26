@@ -22,6 +22,8 @@ extension Font {
         static let subtitle2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 18)
         static let subtitle3: Font = .custom(Pretendard.regular.rawValue, size: 18)
         static let subtitle1_2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 20)
+        static let subtitle1_3: Font = .custom(Pretendard.bold.rawValue, size: 20)
+        static let subtitle1_4: Font = .custom(Pretendard.regular.rawValue, size: 20)
 
         static let body0: Font = .custom(Pretendard.bold.rawValue, size: 16)
         static let body1: Font = .custom(Pretendard.regular.rawValue, size: 15)
@@ -33,6 +35,7 @@ extension Font {
         static let body4: Font = .custom(Pretendard.regular.rawValue, size: 14)
         static let body4_3: Font = .custom(Pretendard.semiBold.rawValue, size: 15)
 
+        static let caption0: Font = .custom(Pretendard.bold.rawValue, size: 13)
         static let caption1: Font = .custom(Pretendard.regular.rawValue, size: 13)
         static let caption1_2: Font = .custom(Pretendard.regular.rawValue, size: 13)
 

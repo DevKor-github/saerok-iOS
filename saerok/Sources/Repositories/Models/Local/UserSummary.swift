@@ -13,3 +13,21 @@ extension Local {
         let profileImageUrl: String
     }
 }
+
+extension Local.UserSummary {
+    static func from(dto: DTO.CommunityItem.UserInfo?) -> Self {
+        .init(
+            id: dto?.userId ?? -1,
+            nickname: dto?.nickname ?? "",
+            profileImageUrl: dto?.profileImageUrl ?? ""
+        )
+    }
+    
+    static func from(dto: DTO.CommunitySearchUserItem) -> Self {
+        .init(
+            id: dto.userId,
+            nickname: dto.nickname,
+            profileImageUrl: dto.profileImageUrl
+        )
+    }
+}

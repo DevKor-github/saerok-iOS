@@ -8,7 +8,6 @@
 
 import Foundation
 
-// MARK: - Protocols
 protocol FieldGuideInteractor {
     func refreshFieldGuide() async throws
     func refreshBookmarks() async throws
@@ -16,7 +15,6 @@ protocol FieldGuideInteractor {
     func toggleBookmark(birdID: Int) async throws -> Bool
 }
 
-// MARK: - Errors
 enum FieldGuideInteractorError: Error {
     case networkError(NetworkError)
     case repositoryError(Error)
@@ -24,7 +22,6 @@ enum FieldGuideInteractorError: Error {
     case unknownError(Error)
 }
 
-// MARK: - Interactor Implementation
 struct FieldGuideInteractorImpl: FieldGuideInteractor {
     let repository: BirdsRepository
 
@@ -61,7 +58,6 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
     }
 }
 
-// MARK: - Private Helpers
 private extension FieldGuideInteractorImpl {
     static let lastSyncKey = "LastBirdsSyncDate"
     
@@ -79,7 +75,6 @@ private extension FieldGuideInteractorImpl {
     }
 }
 
-// MARK: - Mocks
 struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
     func refreshBookmarks() async throws { }
     

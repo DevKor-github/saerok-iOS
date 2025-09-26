@@ -18,7 +18,7 @@ struct CollectionCommentCell: View {
             ReactiveAsyncImage(
                 url: item.user.profileImageUrl,
                 scale: .medium,
-                quality: 0.8,
+                size: .init(width: 25, height: 25),
                 downsampling: true
             )
             .frame(width: 25, height: 25)

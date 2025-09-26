@@ -27,8 +27,7 @@ struct BirdCardView: View {
                     AsyncImage(
                         url: url,
                         size: Constants.imageSize,
-                        scale: .medium,
-                        quality: 0.8,
+                        scale: .small,
                         downsampling: true
                     )
                     .clipped()

@@ -16,10 +16,6 @@ struct MapView: Routable {
         case detail(_ collectionID: Int)
     }
     
-    enum Mode: Equatable {
-        case idle, searching, resultShown
-    }
-    
     // MARK: - Dependencies
     
     @Environment(\.injected) var injected
@@ -39,7 +35,7 @@ struct MapView: Routable {
     @State private var address: String = ""
     @State private var text: String = ""
     @State private var response: [Local.KakaoPlace] = []
-    @State private var mode: Mode = .idle
+    @State private var mode: SearchInputBar.Mode = .idle
     @FocusState private var isFocused: Bool
     @State private var isMineOnly: Bool = false
     @State private var item: [Local.NearbyCollectionSummary] = []
@@ -141,6 +137,8 @@ private extension MapView {
         VStack(spacing: 14) {
             Color.clear.frame(height: 60)
             SearchInputBar(
+                tintColor: nil,
+                placeHolder: "원하는 장소를 입력하세요",
                 isModeIdle: isModeIdle,
                 text: $text,
                 isFocused: $isFocused,
@@ -355,45 +353,53 @@ private extension MapView {
 
 // MARK: - SearchBar
 
-extension MapView {
-    struct SearchInputBar: View {
-        let isModeIdle: Bool
-        @Binding var text: String
-        @FocusState.Binding var isFocused: Bool
-        @Binding var mode: Mode
-        let onTap: () -> Void
-        let onTextChange: (String) -> Void
-        
-        var body: some View {
-            HStack {
-                Button {
-                    if mode == .idle {
-                        mode = .searching
-                    } else {
-                        mode = .idle
-                    }
-                } label: {
-                    (isModeIdle
-                     ? Image.SRIconSet.searchSecondary
-                     : Image.SRIconSet.chevronLeft)
-                    .frame(.defaultIconSize)
-                }
-                TextField("원하는 장소를 입력하세요", text: $text)
-                    .onTapGesture { onTap() }
-            }
-            .frame(height: 44)
-            .padding(.leading, 14)
-            .textFieldDeletable(text: $text)
-            .srStyled(.textField(isFocused: $isFocused, alwaysFocused: true))
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
-            .contentShape(Rectangle())
-            .onTapGesture { onTap() }
-            .onChange(of: text) { _, new in
-                onTextChange(new)
-            }
-        }
+struct SearchInputBar: View {
+    enum Mode: Equatable {
+        case idle, searching, resultShown
     }
     
+    let tintColor: Color?
+    let placeHolder: String
+    let isModeIdle: Bool
+    @Binding var text: String
+    @FocusState.Binding var isFocused: Bool
+    @Binding var mode: Mode
+    let onTap: () -> Void
+    let onTextChange: (String) -> Void
+    
+    var body: some View {
+        HStack {
+            Button {
+                text = ""
+
+                if mode == .idle {
+                    mode = .searching
+                } else {
+                    mode = .idle
+                }
+            } label: {
+                (isModeIdle
+                 ? Image.SRIconSet.searchSecondary
+                 : Image.SRIconSet.chevronLeft)
+                .frame(.defaultIconSize, tintColor: tintColor)
+            }
+            TextField(placeHolder, text: $text)
+                .onTapGesture { onTap() }
+        }
+        .frame(height: 44)
+        .padding(.leading, 14)
+        .textFieldDeletable(text: $text)
+        .srStyled(.textField(isFocused: $isFocused, alwaysFocused: true, tintColor: tintColor))
+        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
+        .onChange(of: text) { _, new in
+            onTextChange(new)
+        }
+    }
+}
+
+extension MapView {
     struct SearchRefreshButton: View {
         let onTap: () -> Void
         

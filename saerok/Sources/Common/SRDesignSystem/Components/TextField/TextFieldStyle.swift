@@ -11,10 +11,12 @@ import SwiftUI
 struct SRTextFieldStyle: ViewModifier {
     var isFocused: FocusState<Bool>.Binding
     let alwaysFocused: Bool
+    let tintColor: Color
     
-    init(isFocused: FocusState<Bool>.Binding, alwaysFocused: Bool = false) {
+    init(isFocused: FocusState<Bool>.Binding, alwaysFocused: Bool = false, tintColor: Color = .main) {
         self.isFocused = isFocused
         self.alwaysFocused = alwaysFocused
+        self.tintColor = tintColor
     }
     
     func body(content: Content) -> some View {
@@ -26,7 +28,7 @@ struct SRTextFieldStyle: ViewModifier {
             .clipShape(RoundedRectangle(cornerRadius: 17))
             .overlay(
                 RoundedRectangle(cornerRadius: 17)
-                    .strokeBorder(!alwaysFocused ? (isFocused.wrappedValue ? Color.main : Color.border) : .main, lineWidth:2)
+                    .strokeBorder(!alwaysFocused ? (isFocused.wrappedValue ? tintColor : Color.border) : tintColor, lineWidth:2)
             )
     }
 }

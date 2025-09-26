@@ -139,7 +139,12 @@ private extension MyPageView {
     
     func nicknameView(_ user: User) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            ReactiveAsyncImage(url: user.imageURL ?? "", scale: .large, quality: 1.0, downsampling: true)
+            ReactiveAsyncImage(
+                url: user.imageURL ?? "",
+                scale: .small,
+                size: .init(width: 50, height: 50),
+                downsampling: true
+            )
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())

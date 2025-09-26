@@ -121,6 +121,8 @@ struct CachedTabContainer: View {
             FieldGuideView(path: $path)
         case .collection:
             CollectionView(path: $path)
+        case .community:
+            CommunityView(path: $path)
         case .profile:
             MyPageView(path: $path)
         }

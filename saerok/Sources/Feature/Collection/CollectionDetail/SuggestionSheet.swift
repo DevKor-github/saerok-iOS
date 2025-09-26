@@ -30,19 +30,12 @@ struct SuggestionSheet: View {
     var body: some View {
         VStack(spacing: 20) {
             header
-            
-            if suggestions.isEmpty && isMine {
-                emptyView
-            } else {
-                content
-            }
+            content
         }
+        .srbottomSheetStyle(presentationDetent: [.medium]) //test
         .onChange(of: selectedBird) { _, newValue in
             guard let _ = newValue else { return }
             showSuggestPopup = true
-        }
-        .onChange(of: suggestions) { _, _ in
-//            sortSuggestions()
         }
     }
 }
@@ -73,7 +66,16 @@ private extension SuggestionSheet {
         .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
     
+    @ViewBuilder
     var content: some View {
+        if suggestions.isEmpty && isMine {
+            emptyView
+        } else {
+            suggestionsList
+        }
+    }
+    
+    var suggestionsList: some View {
         ScrollView {
             VStack(spacing: 7) {
                 ForEach($suggestions) { item in

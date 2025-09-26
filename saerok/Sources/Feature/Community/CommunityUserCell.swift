@@ -1,22 +1,22 @@
 //
-//  CollectionLikeCell.swift
+//  CommunityUserCell.swift
 //  saerok
 //
-//  Created by HanSeung on 9/14/25.
+//  Created by HanSeung on 9/24/25.
 //
 
 
 import SwiftUI
 
-struct CollectionLikeCell: View {
+struct CommunityUserCell: View {
     let item: Local.UserSummary
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             ReactiveAsyncImage(
                 url: item.profileImageUrl,
-                scale: .medium,
-                quality: 0.5,
+                scale: .small,
+                size: .init(width: 49, height: 49),
                 downsampling: true
             )
             .frame(width: 49, height: 49)
@@ -36,11 +36,21 @@ struct CollectionLikeCell: View {
                 .frame(.defaultIconSize)
                 .foregroundStyle(.srGray)
         }
-        .frame(height: 61)
-        .padding(.leading, 7)
-        .padding(.trailing, 11)
+        .padding(.vertical, 11)
+        .padding(.horizontal, 24)
         .background(Color.srWhite)
-        .cornerRadius(20)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .overlay(alignment: .top) {
+            divider
+        }
+        .overlay(alignment: .bottom) {
+            divider
+                .offset(y: 1)
+        }
     }
+    
+    private let divider: some View = {
+        Rectangle()
+            .fill(Color.srLightGray)
+            .frame(height: 1)
+    }()
 }

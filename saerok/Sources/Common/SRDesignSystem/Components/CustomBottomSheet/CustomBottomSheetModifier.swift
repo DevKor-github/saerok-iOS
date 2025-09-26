@@ -5,9 +5,8 @@
 //  Created by HanSeung on 7/13/25.
 //
 
-import SwiftUI
 
-// MARK: - View Extension
+import SwiftUI
 
 extension View {
     func bottomSheet<SheetContent: View>(
@@ -176,10 +175,3 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             .animation(.default, value: isShowing)
     }
 }
-
-let sheetIndicator: some View = {
-    Capsule()
-        .frame(width: 110, height: 3)
-        .foregroundColor(.whiteGray)
-        .padding(.top, 5)
-}()

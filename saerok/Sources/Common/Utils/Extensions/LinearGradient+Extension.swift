@@ -28,6 +28,15 @@ extension LinearGradient {
         endPoint: .trailing
     )
     
+    static let srPointGradient: LinearGradient = .init(
+        gradient: Gradient(stops: [
+            .init(color: .srLightGray, location: 0.0),
+            .init(color: .point, location: 0.84),
+        ]),
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+    
     static let collectionBackground: LinearGradient = .init(
         stops: [
             Gradient.Stop(color: Color(red: 0.97, green: 0.97, blue: 0.97), location: 0.00),

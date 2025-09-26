@@ -17,49 +17,75 @@ struct CollectionLikerSheet: View {
     @State private var isLoading: Bool = true
     
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
-            ZStack(alignment: .top) {
-                HStack {
-                    Text("좋아요")
-                    Text("\(likers.count)")
-                        .foregroundStyle(.splash)
-                    Spacer()
-                    Button(action: { onDismiss() }) {
-                        Image.SRIconSet.delete
-                            .frame(.defaultIconSizeSmall, tintColor: .srGray)
-                            .padding(.leading, 20)
-                            .padding(.vertical, 5)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .font(.SRFontSet.subtitle2)
-                .padding(.horizontal, SRDesignConstant.defaultPadding)
-                .padding(.vertical, 22)
-                .background(.srLightGray)
-                sheetIndicator
+        content
+            .task {
+                await reloadData()
             }
-            
-            ScrollView {
-                VStack(spacing: 7) {
-                    ForEach(likers) { item in
-                        CollectionLikeCell(item: item)
-                    }
-                    Color.clear
-                        .frame(height: UIScreen.main.bounds.height * 0.5)
+    }
+}
+
+// MARK: - Subviews
+
+
+private extension CollectionLikerSheet {
+    var content: some View {
+        VStack(alignment: .center, spacing: 0) {
+            header
+            likerList
+        }
+        .srbottomSheetStyle(presentationDetent: [.fraction(0.7)])
+        .shimmer(when: $isLoading)
+    }
+    
+    var header: some View {
+        ZStack(alignment: .top) {
+            HStack {
+                Text("좋아요")
+                Text("\(likers.count)")
+                    .foregroundStyle(.splash)
+                Spacer()
+                Button(action: { onDismiss() }) {
+                    Image.SRIconSet.delete
+                        .frame(.defaultIconSizeSmall, tintColor: .srGray)
+                        .padding(.leading, 20)
+                        .padding(.vertical, 5)
                 }
+                .contentShape(Rectangle())
+            }
+            .font(.SRFontSet.subtitle2)
+            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.vertical, 22)
+            .background(.srLightGray)
+            sheetIndicator
+        }
+    }
+    
+    var likerList: some View {
+        ScrollView {
+            VStack(spacing: 7) {
+                ForEach(likers) { item in
+                    CollectionLikerCell(item: item)
+                }
+                
+                Color.clear
+                    .frame(height: UIScreen.main.bounds.height * 0.3)
             }
         }
-        .presentationDetents([.fraction(0.7)])
-        .presentationCornerRadius(30)
-        .presentationBackground(.srLightGray)
-        .presentationDragIndicator(.hidden)
-        .ignoresSafeArea(edges: .bottom)
-        .shimmer(when: $isLoading)
-        .onAppear {
-            Task {
-                likers = try await injected.interactors.collection.fetchLikeUsers(collectionID)
-                isLoading = false
-            }
+        .refreshable {
+            await reloadData()
+        }
+    }
+}
+
+// MARK: - Helpers
+
+private extension CollectionLikerSheet {
+    func reloadData() async {
+        do {
+            likers = try await injected.interactors.collection.fetchLikeUsers(collectionID)
+            isLoading = false
+        } catch {
+            isLoading = false
         }
     }
 }

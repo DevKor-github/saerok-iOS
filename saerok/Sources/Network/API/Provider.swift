@@ -7,6 +7,8 @@
 
 import Foundation
 
+struct EmptyResponse: Decodable {}
+
 final class Provider {
     private let defaultURLSession = URLSession(configuration: .default)
     private let decoder = JSONDecoder()
@@ -18,9 +20,10 @@ final class Provider {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }
-        
+//        
 //        if let jsonString = String(data: data, encoding: .utf8) {
 //            print("📦 Response JSON: \(jsonString)")
+//            print("-----------------------")
 //        } else {
 //            print("⚠️ Response 데이터를 문자열로 변환할 수 없음")
 //        }
@@ -73,5 +76,3 @@ final class Provider {
         }
     }
 }
-
-struct EmptyResponse: Decodable {}

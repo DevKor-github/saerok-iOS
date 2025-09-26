@@ -18,7 +18,8 @@ struct CollectionItem: View {
                 ReactiveAsyncImage(
                     url: bird.imageURL ?? "",
                     scale: .medium,
-                    quality: 0.8,
+                    // TODO: - 셀크기에 맞는 사이즈로 수정
+                    size: .zero,
                     downsampling: true
                 )
                 .scaledToFit()

@@ -32,7 +32,7 @@ struct UserInteractorImpl: UserInteractor {
     private var deviceID: String { TokenManager.shared.getDeviceId() }
     
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
-        guard let jpegData = image.resizedAndCompressed() else {
+        guard let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image) else {
             throw UserInteractorError.invalidImageData
         }
         

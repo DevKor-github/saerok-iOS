@@ -24,3 +24,4 @@ struct IconButtonStyle: ButtonStyle {
 extension ButtonStyle where Self == IconButtonStyle {
     static var icon: Self { Self() }
 }
+

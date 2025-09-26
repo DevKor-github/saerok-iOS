@@ -77,6 +77,9 @@ extension Image {
         case plus
         case adopt
         case plane
+        case fire
+        case unknown
+        case commentCommunity
         
         // MARK: Tabbar
         case doongzi
@@ -215,6 +218,10 @@ extension Image.SRIconSet {
         case .plus: return Image(.plus)
         case .adopt: return Image(.adopt)
         case .plane: return Image(.plane)
+        case .fire: return Image(.fire)
+        case .unknown: return Image(.unknown)
+        case .commentCommunity: return Image(.communityComment)
+            
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)

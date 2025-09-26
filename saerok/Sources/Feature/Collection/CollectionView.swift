@@ -192,8 +192,8 @@ private extension CollectionView {
             VStack(alignment: .leading) {
                 ReactiveAsyncImage(
                     url: bird.imageURL ?? "",
-                    scale: .medium,
-                    quality: 0.8,
+                    scale: .small,
+                    size: .zero,
                     downsampling: true
                 )
                 .scaledToFit()

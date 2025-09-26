@@ -1,5 +1,5 @@
 //
-//  SRAPIEndpoint.swift
+//  SREndpoint.swift
 //  saerok
 //
 //  Created by HanSeung on 3/20/25.
@@ -45,6 +45,16 @@ enum SREndpoint: Endpoint {
     
     case myBookmarks
     case toggleBookmark(birdId: Int)
+    
+    // MARK: Community API
+    
+    case communityMain
+    case communityPendingBirdId(page: Int? = nil, size: Int? = nil)
+    case communityPopular(page: Int? = nil, size: Int? = nil)
+    case communityRecent(page: Int? = nil, size: Int? = nil)
+    case communitySearch(query: String)
+    case communitySearchUsers(query: String, page: Int? = nil, size: Int? = nil)
+    case communitySearchCollections(query: String, page: Int? = nil, size: Int? = nil)
     
     // MARK: Auth API
     
@@ -121,12 +131,19 @@ extension SREndpoint {
         case .deleteAllNotifications: "notifications/all"
         case .deleteNotification(let notificationId): "notifications/\(notificationId)"
         case .notificationsUnreadCount: "notifications/unread-count"
+        case .communityMain: "community/main"
+        case .communityPendingBirdId: "community/pending-bird-id"
+        case .communityPopular: "community/popular"
+        case .communityRecent: "community/recent"
+        case .communitySearch: "community/search"
+        case .communitySearchUsers: "community/search/users"
+        case .communitySearchCollections: "community/search/collections"
         }
     }
     
     var method: String {
         switch self {
-        case .fullSync, .birdChanges, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers: "GET"
+        case .fullSync, .birdChanges, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections: "GET"
         case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification: "DELETE"
@@ -230,6 +247,61 @@ extension SREndpoint {
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withInternetDateTime, .withColonSeparatorInTimeZone]
             return ["since": formatter.string(from: since)]
+        case .communityPendingBirdId(let page, let size):
+            if let page, let size {
+                return [
+                    "page": "\(page)",
+                    "size": "\(size)"
+                ]
+            } else {
+                return nil
+            }
+        case .communityPopular(let page, let size):
+            if let page, let size {
+                return [
+                    "page": "\(page)",
+                    "size": "\(size)"
+                ]
+            } else {
+                return nil
+            }
+        case .communityRecent(let page, let size):
+            if let page, let size {
+                return [
+                    "page": "\(page)",
+                    "size": "\(size)"
+                ]
+            } else {
+                return nil
+            }
+        case .communitySearch(let query):
+            return [
+                "q": query
+            ]
+        case .communitySearchUsers(let query, let page, let size):
+            if let page, let size {
+                return [
+                    "q": query,
+                    "page": "\(page)",
+                    "size": "\(size)"
+                ]
+            } else {
+                return [
+                    "q": query
+                ]
+            }
+        case .communitySearchCollections(let query, let page, let size):
+            if let page, let size {
+                return [
+                    "q": query,
+                    "page": "\(page)",
+                    "size": "\(size)"
+                ]
+            } else {
+                return [
+                    "q": query
+                ]
+            }
         default:
             return nil
         }
@@ -297,6 +369,20 @@ extension SREndpoint {
             return DTO.NotificationResponse.self
         case .notificationsUnreadCount:
             return DTO.GetUnreadCount.self
+        case .communityMain:
+            return DTO.CommunityMainResponse.self
+        case .communityPendingBirdId:
+            return DTO.CommunityPendingBirdIdResponse.self
+        case .communityPopular:
+            return DTO.CommunityPopularResponse.self
+        case .communityRecent:
+            return DTO.CommunityRecentResponse.self
+        case .communitySearch:
+            return DTO.CommunitySearchResponse.self
+        case .communitySearchUsers:
+            return DTO.CommunitySearchUsersResponse.self
+        case .communitySearchCollections:
+            return DTO.CommunitySearchCollectionsResponse.self
         default:
             return EmptyResponse.self
         }

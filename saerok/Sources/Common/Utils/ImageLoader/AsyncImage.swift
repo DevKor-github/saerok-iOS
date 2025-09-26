@@ -14,7 +14,6 @@ struct AsyncImage: View {
     let url: String
     let size: CGSize
     let scale: ImageScale
-    let quality: CGFloat
     let downsampling: Bool
     
     var body: some View {
@@ -27,7 +26,6 @@ struct AsyncImage: View {
                 from: URL(string: url),
                 size: size,
                 scale: scale,
-                quality: quality,
                 downsampled: downsampling
             )
             isLoading = false
@@ -79,7 +77,7 @@ struct ReactiveAsyncImage: View {
     @State private var isLoading: Bool = true
     let url: String
     let scale: ImageScale
-    let quality: CGFloat
+    let size: CGSize
     let downsampling: Bool
     
     var body: some View {
@@ -95,9 +93,8 @@ struct ReactiveAsyncImage: View {
         .task {
             uiImage = try? await ImageLoader.loadFromURL(
                 from: URL(string: url),
-                size: .zero,
+                size: size,
                 scale: scale,
-                quality: quality,
                 downsampled: downsampling
             )
 

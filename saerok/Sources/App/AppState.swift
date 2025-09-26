@@ -22,6 +22,7 @@ extension AppState {
         var collectionView = CollectionView.Routing()
         var addCollectionItemView = CollectionFormView.Routing()
         var mapView = MapView.Routing()
+        var communityView = CommunityView.Routing()
     }
 }
 

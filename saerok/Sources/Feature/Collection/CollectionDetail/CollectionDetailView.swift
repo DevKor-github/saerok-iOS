@@ -47,7 +47,7 @@ struct CollectionDetailView: View {
     @State private var newSuggesting: Local.Bird? = nil
     @State private var selectedPreview: Local.BirdSuggestion? = nil
     @State private var selectedAdopting: Local.BirdSuggestion? = nil
-
+    
     // MARK:  View State
 
     @State private var uiState = CollectionUIState()
@@ -102,7 +102,7 @@ struct CollectionDetailView: View {
             fetchCollectionComments()
             fetchSuggestion()
         }
-        .navigationDestination(for: CollectionDetailView.Route.self, destination: { route in
+        .navigationDestination(for: CollectionDetailView.Route.self) { route in
             switch route {
             case .edit:
                 if let path = path {
@@ -124,7 +124,7 @@ struct CollectionDetailView: View {
                     BirdDetailView(birdID: suggestion.bird.id, path: bindingPath)
                 }
             }
-        })
+        }
     }
 }
 
@@ -200,7 +200,7 @@ private extension CollectionDetailView {
         .topOverlay(observed: selectedPreview?.bird.id) { birdPreview }
         .ignoresSafeArea(.all)
     }
-
+    
     var navigationBar: some View {
         NavigationBar(
             leading: {
@@ -232,7 +232,7 @@ private extension CollectionDetailView {
             ReactiveAsyncImage(
                 url: collection.user.profileImageUrl,
                 scale: .small,
-                quality: 0.5,
+                size: .init(width: 25, height: 25),
                 downsampling: true
             )
             .frame(width: 25, height: 25)
@@ -258,7 +258,7 @@ private extension CollectionDetailView {
         ReactiveAsyncImage(
             url: collection.imageURL,
             scale: .medium,
-            quality: 1.0,
+            size: .zero,
             downsampling: true
         )
         .scaledToFill()
@@ -312,7 +312,6 @@ private extension CollectionDetailView {
                     url: suggestion.bird.imageURL!,
                     size: CGSize(width: 220, height: 227),
                     scale: .medium,
-                    quality: 0.8,
                     downsampling: true
                 )
                 .clipped()
