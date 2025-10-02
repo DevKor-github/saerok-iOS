@@ -8,18 +8,16 @@
 
 import SwiftUI
 
-struct CollectionItem: View {
+struct CollectionItemView: View {
     let bird: Local.CollectionSummary
     var tapped: () -> Void
     
     var body: some View {
         Button(action: tapped) {
             VStack(alignment: .leading, spacing: 8) {
-                ReactiveAsyncImage(
+                ReactiveAsyncImageWithMetadata(
                     url: bird.imageURL ?? "",
                     scale: .medium,
-                    // TODO: - 셀크기에 맞는 사이즈로 수정
-                    size: .zero,
                     downsampling: true
                 )
                 .scaledToFit()
@@ -41,6 +39,6 @@ struct CollectionItem: View {
 }
 
 #Preview {
-    CollectionItem(bird: .mockData[0], tapped: {})
+    CollectionItemView(bird: .mockData[0], tapped: {})
         .padding(100)
 }

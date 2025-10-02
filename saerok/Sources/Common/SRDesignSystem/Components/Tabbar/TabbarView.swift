@@ -24,14 +24,19 @@ struct TabbarView: View {
     
     private var tabItems: some View {
         HStack {
-            ForEach((TabbedItems.allCases), id: \.self){ item in
+            ForEach((TabbedItems.allCases), id: \.self) { item in
                 Button {
+                    let selectedBefore = self.selectedTab
+                    
                     injected.appState[\.routing.contentView.tabSelection] = item
                     HapticManager.shared.trigger(.light)
-                    if item == .fieldGuide {
-                        injected.appState[\.routing.fieldGuideView.scrollToTop] = UUID()
-                    } else if item == .collection {
-                        injected.appState[\.routing.collectionView.scrollToTop] = UUID()
+                    
+                    if selectedBefore == item {
+                        if item == .fieldGuide {
+                            injected.appState[\.routing.fieldGuideView.scrollToTop] = UUID()
+                        } else if item == .collection {
+                            injected.appState[\.routing.collectionView.scrollToTop] = UUID()
+                        }
                     }
                 } label: {
                     HStack {

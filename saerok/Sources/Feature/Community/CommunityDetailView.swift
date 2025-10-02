@@ -29,8 +29,11 @@ struct CommunityDetailView: View {
     private var navigationBar: some View {
         NavigationBar(
             center: {
-                Text(type.title)
-                    .font(.SRFontSet.subtitle2)
+                barIcon
+                HStack(spacing: 7) {
+                    Text(type.title)
+                        .font(.SRFontSet.subtitle2)
+                }
             }, leading: {
                 Button {
                     path.removeLast()
@@ -42,6 +45,26 @@ struct CommunityDetailView: View {
             })
     }
     
+    private var barIcon: some View {
+        switch type {
+        case .recent:
+            barIconStyle(icon: .commentCommunity, background: .accent)
+        case .popular:
+            barIconStyle(icon: .fire, background: .fire)
+        case .suggestion:
+            barIconStyle(icon: .unknown, background: .pointtext)
+
+        }
+    }
+    
+    private func barIconStyle(icon: Image.SRIconSet, background: Color) -> some View {
+        icon
+            .frame(.defaultIconSize, tintColor: icon == .unknown ? .srWhite : nil)
+            .padding(4)
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+    
     private var itemList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
@@ -49,7 +72,7 @@ struct CommunityDetailView: View {
                     Button {
                         path.append(CommunityView.Route.detail(id: item.id))
                     } label: {
-                        CommunityCell(item: item, type: type)
+                        CommunityCell(item: item)
                     }
                     .buttonStyle(.plain)
                 }

@@ -41,6 +41,7 @@ extension Font {
 
         static let caption2: Font = .custom(Moneygraphy.regular.rawValue, size: 13)
         static let caption3: Font = .custom(Pretendard.regular.rawValue, size: 12)
+        static let caption3_2: Font = .custom(Pretendard.bold.rawValue, size: 12)
         
         static let button1: Font = .custom(Pretendard.bold.rawValue, size: 18)
         static let button2: Font = .custom(Pretendard.semiBold.rawValue, size: 15)

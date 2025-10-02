@@ -260,7 +260,7 @@ private extension CommunityView {
                     Button {
                         path.append(Route.detail(id: item.id))
                     } label: {
-                        CommunityCell(item: item, type: type)
+                        CommunityCell(item: item)
                     }
                     .buttonStyle(.plain)
                 }
@@ -315,7 +315,7 @@ private extension CommunityView {
         } label: {
             HStack(spacing: 9) {
                 icon
-                    .frame(.defaultIconSize)
+                    .frame(.defaultIconSize, tintColor: icon == .unknown ? .srWhite : nil)
                     .padding(4)
                     .background(background)
                     .clipShape(RoundedRectangle(cornerRadius: 8))

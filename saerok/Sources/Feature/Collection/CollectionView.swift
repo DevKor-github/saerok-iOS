@@ -160,7 +160,7 @@ private extension CollectionView {
                     VStack(spacing: 0) {
                         CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
                         StaggeredGrid(items: collectionSummaries.reversed(), columns: 2) { bird in
-                            CollectionItem(bird: bird, tapped: {
+                            CollectionItemView(bird: bird, tapped: {
                                 injected.appState[\.routing.collectionView.collectionID] = bird.id
                             })
                         }

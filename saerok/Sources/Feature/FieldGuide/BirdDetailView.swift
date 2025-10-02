@@ -114,7 +114,7 @@ private extension BirdDetailView {
     func birdImageWithTag(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.birdImageSpacing) {
             if let url = bird.imageURL {
-                ReactiveAsyncImage(url: url, scale: .medium, size: .zero, downsampling: false)
+                ReactiveAsyncImage(url: url, scale: .medium, size: .zero, downsampling: false, isCachingEnabled: false)
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity)
                     .cornerRadius(Constants.imageCornerRadius)

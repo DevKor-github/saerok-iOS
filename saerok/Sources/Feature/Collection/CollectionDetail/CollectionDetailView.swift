@@ -259,7 +259,8 @@ private extension CollectionDetailView {
             url: collection.imageURL,
             scale: .medium,
             size: .zero,
-            downsampling: true
+            downsampling: true,
+            isCachingEnabled: false
         )
         .scaledToFill()
         .cornerRadius(35)

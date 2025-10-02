@@ -25,9 +25,9 @@ enum CommunityType {
 struct CommunityCell: View {
     typealias Item = Local.CommunityItemSummary
     typealias CellType = CommunityType
-        
+    
     let item: Item
-    let type: CellType
+    private var type: CellType { item.birdName == nil ? .suggestion : .recent }
     
     var body: some View {
         HStack(spacing: 0) {
@@ -48,25 +48,22 @@ struct CommunityCell: View {
     
     var infoSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(subTitleText(item: item, type))
-                    .font(.SRFontSet.caption3)
-                    .foregroundStyle(.srGray)
-                    .padding(.bottom, 9)
-                Text(item.birdName ?? "이름 모를 새")
+            VStack(alignment: .leading, spacing: 5.5) {
+                nameTag(item: item, type)
+                Text(item.note)
                     .font(.SRFontSet.body3)
                     .foregroundStyle(.black)
-                    .padding(.bottom, 4)
-                Text(item.note)
-                    .font(.SRFontSet.caption1_2)
-                    .foregroundStyle(.srDarkGray)
-                    .lineSpacing(4)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 7) {
+                    Text(item.discoveredDate?.timeAgoText ?? "방금 전")
+                    comma
+                    Text("\(item.locationAlias)에서")
+                }
+                .foregroundStyle(.srGray)
+                .font(.SRFontSet.caption3)
                 Spacer()
             }
             .frame(height: 86)
-                        
+            
             HStack(spacing: 5) {
                 ReactiveAsyncImage(
                     url: item.user.profileImageUrl,
@@ -93,7 +90,7 @@ struct CommunityCell: View {
     }
     
     var imageSection: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .trailing, spacing: 0) {
             ReactiveAsyncImage(
                 url: item.imageURL ?? "",
                 scale: .small,
@@ -106,12 +103,22 @@ struct CommunityCell: View {
             .cornerRadius(13)
             .padding(.top, 15)
             .padding(.trailing, 15)
-
-            imageCaptionView(item: item, type)
-            .frame(height: 20)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 19)
+            
+            imageCaptionView
+                .frame(height: 20)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 19)
         }
+    }
+    
+    private func nameTag(item: Item, _ type: CellType) -> some View {
+        Text(item.birdName ?? "이름을 알려주세요!")
+            .font(.SRFontSet.caption3_2)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 1)
+            .foregroundStyle(type == .suggestion ? .srWhite : .srGray)
+            .background(type == .suggestion ? Color.pointtext : Color.srLightGray)
+            .cornerRadius(5)
     }
     
     private func iconWithCount(_ image: Image.SRIconSet, _ value: Int) -> some View {
@@ -125,33 +132,19 @@ struct CommunityCell: View {
         }
     }
     
-    private func subTitleText(item: Item, _ type: CellType) -> String {
-        switch type {
-        case .popular:
-            "\(item.locationAlias)에서"
-        case .recent, .suggestion:
-            (item.discoveredDate ?? .now).timeAgoText
-        }
-    }
-    
     @ViewBuilder
-    private func imageCaptionView(item: Item, _ type: CellType) -> some View {
-        switch type {
-        case .suggestion:
-            HStack(spacing: 4.87) {
-                Image(.unknown)
-                    .renderingMode(.template)
-                    .resizable()
-                    .frame(width: 11.25, height: 13.75)
-                    .foregroundStyle(.pointtext)
-                Text("\(item.suggestionUserCount ?? 0)명 참여중")
-                    .font(.SRFontSet.body4)
-                    .foregroundStyle(.srGray)
-            }
-        default:
-            HStack(spacing: 12) {
+    private var imageCaptionView: some View {
+        HStack(spacing: 12) {
+            if item.likeCount > 0 {
                 iconWithCount(.heartFilled, item.likeCount)
+            }
+            if item.commentCount > 0 {
                 iconWithCount(.commentFilled, item.commentCount)
+            }
+            if let count = item.suggestionUserCount,
+               count > 0
+            {
+                iconWithCount(.unknown, count)
             }
         }
     }
@@ -161,9 +154,16 @@ struct CommunityCell: View {
             .fill(Color.srLightGray)
             .frame(height: 1)
     }()
+    
+    private let comma: some View = {
+        Rectangle()
+            .foregroundColor(.clear)
+            .frame(width: 2, height: 2)
+            .background(Color(red: 0.59, green: 0.59, blue: 0.59))
+            .cornerRadius(1)
+    }()
 }
 
 #Preview {
-    CommunityCell(item: .mock1, type: .recent)
-    CommunityCell(item: .pendingMock1, type: .suggestion)
+    CommunityCell(item: .pendingMock1)
 }

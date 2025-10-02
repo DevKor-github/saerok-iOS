@@ -79,6 +79,21 @@ struct ReactiveAsyncImage: View {
     let scale: ImageScale
     let size: CGSize
     let downsampling: Bool
+    let isCachingEnabled: Bool
+    
+    init(
+        url: String,
+        scale: ImageScale,
+        size: CGSize,
+        downsampling: Bool,
+        isCachingEnabled: Bool = true
+    ) {
+        self.url = url
+        self.scale = scale
+        self.size = size
+        self.downsampling = downsampling
+        self.isCachingEnabled = isCachingEnabled
+    }
     
     var body: some View {
         Group {
@@ -95,7 +110,8 @@ struct ReactiveAsyncImage: View {
                 from: URL(string: url),
                 size: size,
                 scale: scale,
-                downsampled: downsampling
+                downsampled: downsampling,
+                isCachingEnabled: isCachingEnabled
             )
 
             isLoading = false
