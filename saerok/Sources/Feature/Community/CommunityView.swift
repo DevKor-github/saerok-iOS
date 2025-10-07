@@ -260,7 +260,7 @@ private extension CommunityView {
                     Button {
                         path.append(Route.detail(id: item.id))
                     } label: {
-                        CommunityCell(item: item)
+                        CommunityCell(item: item, type: type)
                     }
                     .buttonStyle(.plain)
                 }

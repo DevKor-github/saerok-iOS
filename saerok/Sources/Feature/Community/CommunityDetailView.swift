@@ -72,7 +72,7 @@ struct CommunityDetailView: View {
                     Button {
                         path.append(CommunityView.Route.detail(id: item.id))
                     } label: {
-                        CommunityCell(item: item)
+                        CommunityCell(item: item, type: self.type)
                     }
                     .buttonStyle(.plain)
                 }

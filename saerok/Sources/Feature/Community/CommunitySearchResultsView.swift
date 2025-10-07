@@ -60,7 +60,7 @@ struct CommunitySearchResultsView: View {
                 Button {
                     path.append(CommunityView.Route.detail(id: item.id))
                 } label: {
-                    CommunityCell(item: item)
+                    CommunityCell(item: item, type: .recent)
                 }
                 .buttonStyle(.plain)
             }

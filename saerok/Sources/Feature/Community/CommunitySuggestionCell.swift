@@ -86,8 +86,3 @@ struct CommunitySuggestionCell: View {
         .frame(height: 20)
     }
 }
-
-
-#Preview {
-    CommunitySuggestionCell(item: .pendingMock2)
-}

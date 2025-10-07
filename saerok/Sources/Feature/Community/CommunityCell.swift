@@ -27,7 +27,7 @@ struct CommunityCell: View {
     typealias CellType = CommunityType
     
     let item: Item
-    private var type: CellType { item.birdName == nil ? .suggestion : .recent }
+    let type: CellType
     
     var body: some View {
         HStack(spacing: 0) {
@@ -91,34 +91,59 @@ struct CommunityCell: View {
     
     var imageSection: some View {
         VStack(alignment: .trailing, spacing: 0) {
-            ReactiveAsyncImage(
-                url: item.imageURL ?? "",
-                scale: .small,
-                size: .init(width: 89, height: 89),
-                downsampling: true
-            )
-            .aspectRatio(contentMode: .fill)
-            .frame(maxWidth: 89, maxHeight: 89)
-            .clipped()
-            .cornerRadius(13)
-            .padding(.top, 15)
-            .padding(.trailing, 15)
+            ZStack(alignment: .bottomLeading) {
+                ReactiveAsyncImage(
+                    url: item.imageURL ?? "",
+                    scale: .small,
+                    size: .init(width: 89, height: 89),
+                    downsampling: true
+                )
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: 89, maxHeight: 89)
+                .clipped()
+                .cornerRadius(13)
+                .padding(.top, showCaption ? 12 : 0)
+                .padding(.trailing, 24)
+                
+                if item.isPopular && type != .popular {
+                    popularBadge
+                        .offset(x: 74, y: 4)
+                }
+            }
             
             imageCaptionView
                 .frame(height: 20)
                 .padding(.vertical, 8)
-                .padding(.horizontal, 19)
+                .padding(.horizontal, 24)
         }
     }
     
     private func nameTag(item: Item, _ type: CellType) -> some View {
-        Text(item.birdName ?? "이름을 알려주세요!")
+        Text(item.birdName ?? (type == .suggestion ? "이름 모를 새" : "이름을 알려주세요!"))
             .font(.SRFontSet.caption3_2)
             .padding(.horizontal, 3)
             .padding(.vertical, 1)
-            .foregroundStyle(type == .suggestion ? .srWhite : .srGray)
-            .background(type == .suggestion ? Color.pointtext : Color.srLightGray)
+            .foregroundStyle(tagTextColor(item: item, type: type))
+            .background(tagBackgroundColor(item: item, type: type))
             .cornerRadius(5)
+    }
+    
+    private func tagTextColor(item: Item, type: CellType) -> Color {
+        switch type {
+        case .suggestion:
+            return .srGray
+        default:
+            return item.birdName == nil ? .srWhite : .srGray
+        }
+    }
+    
+    private func tagBackgroundColor(item: Item, type: CellType) -> Color {
+        switch type {
+        case .suggestion:
+            return .srLightGray
+        default:
+            return item.birdName == nil ? .pointtext : .srLightGray
+        }
     }
     
     private func iconWithCount(_ image: Image.SRIconSet, _ value: Int) -> some View {
@@ -134,19 +159,27 @@ struct CommunityCell: View {
     
     @ViewBuilder
     private var imageCaptionView: some View {
-        HStack(spacing: 12) {
-            if item.likeCount > 0 {
-                iconWithCount(.heartFilled, item.likeCount)
-            }
-            if item.commentCount > 0 {
-                iconWithCount(.commentFilled, item.commentCount)
-            }
-            if let count = item.suggestionUserCount,
-               count > 0
-            {
-                iconWithCount(.unknown, count)
+        if showCaption {
+            HStack(spacing: 12) {
+                if item.likeCount > 0 {
+                    iconWithCount(.heartFilled, item.likeCount)
+                }
+                if item.commentCount > 0 {
+                    iconWithCount(.commentFilled, item.commentCount)
+                }
+                if let count = item.suggestionUserCount,
+                   count > 0
+                {
+                    iconWithCount(.unknown, count)
+                }
             }
         }
+    }
+    
+    private var showCaption: Bool {
+        item.likeCount > 0 ||
+        item.commentCount > 0 ||
+        (item.suggestionUserCount ?? 0) > 0
     }
     
     private let divider: some View = {
@@ -162,8 +195,11 @@ struct CommunityCell: View {
             .background(Color(red: 0.59, green: 0.59, blue: 0.59))
             .cornerRadius(1)
     }()
-}
-
-#Preview {
-    CommunityCell(item: .pendingMock1)
+    
+    private let popularBadge: some View = {
+        Image.SRIconSet.fire
+            .frame(.defaultIconSize, tintColor: .srWhite)
+            .padding(4)
+            .background(Circle().fill(Color.fire))
+    }()
 }

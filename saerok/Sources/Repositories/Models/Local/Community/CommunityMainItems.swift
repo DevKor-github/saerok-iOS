@@ -35,11 +35,3 @@ extension Local.CommunityMainItems {
         )
     }
 }
-
-extension Local.CommunityMainItems {
-    static let mock: Local.CommunityMainItems = .init(
-        pendingCollections: Local.CommunityItemSummary.pendingMocks,
-        recentCollections: Local.CommunityItemSummary.mocks,
-        popularCollections: Local.CommunityItemSummary.mocks
-    )
-}

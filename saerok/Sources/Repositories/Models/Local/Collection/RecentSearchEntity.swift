@@ -12,7 +12,7 @@ import SwiftData
 extension Local {
     @Model
     final class RecentSearchEntity {
-        @Relationship var bird: Local.Bird
+        @Relationship(deleteRule: .cascade) var bird: Local.Bird
         var createdAt: Date
         
         init(bird: Local.Bird, createdAt: Date = .now) {

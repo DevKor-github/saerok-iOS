@@ -76,7 +76,7 @@ struct MockCommunityInteractorImpl: CommunityInteractor {
     init() {}
 
     func fetchMain() async throws -> Local.CommunityMainItems {
-        Local.CommunityMainItems.mock
+        Local.CommunityMainItems.init()
     }
 
     func fetchItems(type: CommunityType, page: Int?, size: Int?) async throws -> [Local.CommunityItemSummary] {
