@@ -80,9 +80,3 @@ struct CommunityDetailView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        CommunityDetailView(type: .popular, path: .constant(.init()))
-    }
-}

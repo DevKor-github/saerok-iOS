@@ -47,7 +47,9 @@ struct ReactiveAsyncImageWithMetadata: View {
             }
         }
         .task {
-            guard let url = URL(string: url) else { return }
+            guard let url = URL(string: url),
+                  uiImage == nil
+            else { return }
             
             if metadata == nil {
                 metadata = try? await ImageLoader.fetchMetadata(from: url)

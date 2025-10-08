@@ -78,6 +78,7 @@ struct EditProfileView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
+                .buttonStyle(.borderedIcon)
             })
     }
     

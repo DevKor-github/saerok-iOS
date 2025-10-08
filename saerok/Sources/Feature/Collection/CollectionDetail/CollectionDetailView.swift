@@ -25,7 +25,7 @@ struct CollectionDetailView: View {
     }
     
     struct CollectionUIState: Equatable {
-        var isLoading: LoadState = .loading
+        var loadState: LoadState = .loading
         var showPopup: Bool = false
         var showSuggestPopup: Bool = false
         var showAdoptPopup: Bool = false
@@ -33,6 +33,7 @@ struct CollectionDetailView: View {
         var showSuggestionSheet: Bool = false
         var showShareSheet: Bool = false
         var showLikerSheet: Bool = false
+        var showFullImage = false
         var text: String = ""
     }
     
@@ -91,13 +92,14 @@ struct CollectionDetailView: View {
                 shareButton
             }
             
-            if uiState.isLoading == .invalid {
+            if uiState.loadState == .invalid {
                 InvalidAlertView(action: { path?.wrappedValue.removeLast() })
                     .ignoresSafeArea(.all)
             }
         }
         .regainSwipeBack()
         .onAppear {
+            if uiState.loadState == .loaded { return }
             fetchCollectionDetail()
             fetchCollectionComments()
             fetchSuggestion()
@@ -148,7 +150,7 @@ private extension CollectionDetailView {
                 }
                 .shimmer(
                     when: Binding(
-                        get: { uiState.isLoading != .loaded },
+                        get: { uiState.loadState != .loaded },
                         set: { _ in }
                     )
                 )
@@ -199,6 +201,10 @@ private extension CollectionDetailView {
         }
         .topOverlay(observed: selectedPreview?.bird.id) { birdPreview }
         .ignoresSafeArea(.all)
+        .fullImageOverlay(
+            isPresented: $uiState.showFullImage,
+            image: collectionImage,
+        )
     }
     
     var navigationBar: some View {
@@ -253,20 +259,27 @@ private extension CollectionDetailView {
         .background(Color.glassWhite)
         .clipShape(RoundedRectangle(cornerRadius: .infinity))
     }
-    
+
+    @ViewBuilder
     var imageSection: some View {
-        ReactiveAsyncImage(
+        let image = ReactiveAsyncImageWithMetadata(
             url: collection.imageURL,
             scale: .medium,
-            size: .zero,
             downsampling: true,
-            isCachingEnabled: false
+            isCachingEnabled: true
         )
-        .scaledToFill()
-        .cornerRadius(35)
-        .padding(.horizontal, 9)
-        .frame(width: UIScreen.main.bounds.width)
-        .clipped()
+
+        image
+            .scaledToFill()
+            .cornerRadius(35)
+            .padding(.horizontal, 9)
+            .frame(width: UIScreen.main.bounds.width)
+            .clipped()
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    uiState.showFullImage = true
+                }
+            }
     }
     
     var descriptionSection: some View {
@@ -415,9 +428,9 @@ private extension CollectionDetailView {
                 let collectionBird = try await injected.interactors.collection.fetchCollectionDetail(id: collectionID)
                 self.collection = collectionBird
                 downloadImage(from: collectionBird.imageURL)
-                uiState.isLoading = .loaded
+                uiState.loadState = .loaded
             } catch {
-                uiState.isLoading = .invalid
+                uiState.loadState = .invalid
             }
         }
     }

@@ -92,7 +92,7 @@ extension Local.CollectionDetail {
     static let mockData: [Local.CollectionDetail] = [
         .init(
             id: 1,
-            imageURL: "",
+            imageURL: "https://dbscthumb-phinf.pstatic.net/4420_000_1/20160427160204260_123LR4QQ6.jpg/s_sm6_16_i2.jpg?type=m1500",
             discoveredDate: Date(timeIntervalSince1970: 1_710_000_000),
             coordinate: (latitude: 37.5665, longitude: 126.9780),
             address: "서울 중구 세종대로 110 서울특별시청",

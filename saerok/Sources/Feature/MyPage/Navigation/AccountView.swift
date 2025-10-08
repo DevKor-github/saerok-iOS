@@ -27,7 +27,6 @@ struct AccountView: View {
             
             Group {
                 userInfoSection
-                
                 logoutRow
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
@@ -93,6 +92,7 @@ struct AccountView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
+                .buttonStyle(.borderedIcon)
             })
     }
     

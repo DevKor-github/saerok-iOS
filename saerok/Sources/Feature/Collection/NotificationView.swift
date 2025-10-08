@@ -80,6 +80,7 @@ struct NotificationView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
+                .buttonStyle(.borderedIcon)
             }, trailing: {
                 Menu {
                     Button {
