@@ -8,13 +8,20 @@
 
 import SwiftUI
 
-struct StaggeredGrid<Content: View, T: Hashable>: View {
+struct StaggeredGrid<Content: View, T: Hashable, Header: View>: View {
     var items: [T]
     var columns: Int
     var spacing: CGFloat
+    var header: (() -> Header)?
     var content: (T) -> Content
     
-    init(items: [T], columns: Int, spacing: CGFloat = 8, @ViewBuilder content: @escaping (T) -> Content) {
+    init(
+        items: [T],
+        columns: Int,
+        spacing: CGFloat = 8,
+        @ViewBuilder header: () -> Header? = { nil },
+        @ViewBuilder content: @escaping (T) -> Content
+    ) {
         self.items = items
         self.columns = columns
         self.spacing = spacing
@@ -36,12 +43,16 @@ struct StaggeredGrid<Content: View, T: Hashable>: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: spacing) {
-            ForEach(generateColumns(), id: \.self) { columnItems in
+            ForEach(Array(generateColumns().enumerated()), id: \.offset) { colIndex, columnItems in
                 LazyVStack(spacing: spacing) {
-                    ForEach(columnItems, id: \.hashValue) { item in
-                        content(item)
+                    ForEach(Array(columnItems.enumerated()), id: \.element.hashValue) { rowIndex, item in
+                        if colIndex == 0 && rowIndex == 0, let header = header {
+                            header()
+                        } else {
+                            content(item)
+                        }
                     }
-                    
+
                     Group {
                         Rectangle()
                         Rectangle()

@@ -11,6 +11,18 @@ extension Local {
         let id: Int
         let nickname: String
         let profileImageUrl: String
+        
+        init(id: Int, nickname: String, profileImageUrl: String) {
+            self.id = id
+            self.nickname = nickname
+            self.profileImageUrl = profileImageUrl
+        }
+        
+        init() {
+            self.id = 0
+            self.nickname = ""
+            self.profileImageUrl = ""
+        }
     }
 }
 

@@ -45,6 +45,7 @@ struct CommunityDetailView: View {
             })
     }
     
+    @ViewBuilder
     private var barIcon: some View {
         switch type {
         case .recent:
@@ -53,7 +54,8 @@ struct CommunityDetailView: View {
             barIconStyle(icon: .fire, background: .fire)
         case .suggestion:
             barIconStyle(icon: .unknown, background: .pointtext)
-
+        case .search:
+            EmptyView()
         }
     }
     

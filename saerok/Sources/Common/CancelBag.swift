@@ -8,7 +8,7 @@
 
 import Combine
 
-final class CancleBag {
+final class CancelBag {
     fileprivate(set) var cancellables = [any Cancellable]()
     private let equalToAny: Bool
     
@@ -20,13 +20,13 @@ final class CancleBag {
         cancellables.removeAll()
     }
     
-    func isEqual(to other: CancleBag) -> Bool {
+    func isEqual(to other: CancelBag) -> Bool {
         return other === self || other.equalToAny || self.equalToAny
     }
 }
 
 extension Cancellable {
-    func store(in cancelBag: CancleBag) {
+    func store(in cancelBag: CancelBag) {
         cancelBag.cancellables.append(self)
     }
 }

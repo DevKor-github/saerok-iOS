@@ -10,6 +10,7 @@ import SwiftUI
 
 struct CommunityUserCell: View {
     let item: Local.UserSummary
+    let keyword: String
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -27,7 +28,7 @@ struct CommunityUserCell: View {
                     .stroke(.srLightGray, lineWidth: 2)
                 )
 
-            Text(item.nickname)
+            Text(item.nickname.highlighted(keyword: keyword))
                 .font(.SRFontSet.body4_3)
             
             Spacer()

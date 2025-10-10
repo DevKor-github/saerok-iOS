@@ -19,6 +19,7 @@ protocol UserInteractor {
     func deleteNotification(_ id: Int) async throws
     func deleteAllNotification() async throws
     func hasUnreadNotifications() async throws -> Bool
+    func fetchUserSummary(userID: Int) async throws -> Local.UserProfileSummary
 }
 
 enum UserInteractorError: Error {
@@ -87,6 +88,10 @@ struct UserInteractorImpl: UserInteractor {
     func hasUnreadNotifications() async throws -> Bool {
         return try await repository.getUnreadCount() == 0 ? false : true
     }
+    
+    func fetchUserSummary(userID: Int) async throws -> Local.UserProfileSummary {
+        return try await .from(repository.getUserSummary(userID))
+    }
 }
 
 struct MockUserInteractorImpl: UserInteractor {
@@ -111,4 +116,6 @@ struct MockUserInteractorImpl: UserInteractor {
     func readAllNotification() async throws { }
     
     func deleteAllNotification() async throws { }
+    
+    func fetchUserSummary(userID: Int) async throws -> Local.UserProfileSummary { fatalError() }
 }

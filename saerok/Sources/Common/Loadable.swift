@@ -13,7 +13,7 @@ typealias LoadableSubject<T> = Binding<Loadable<T>>
 
 enum Loadable<T> {
     case notRequested
-    case isLoading(last: T?, cancelBag: CancleBag)
+    case isLoading(last: T?, cancelBag: CancelBag)
     case loaded(T)
     case failed(Error)
     
@@ -34,7 +34,7 @@ enum Loadable<T> {
 }
 
 extension Loadable {
-    mutating func setIsLoading(cancelBag: CancleBag) {
+    mutating func setIsLoading(cancelBag: CancelBag) {
         self = .isLoading(last: value, cancelBag: cancelBag)
     }
     
@@ -114,7 +114,7 @@ extension Loadable: Equatable where T: Equatable {
 
 extension LoadableSubject {
     func load<T>(_ resource: @escaping () async throws -> T) where Value == Loadable<T> {
-        let cancelBag = CancleBag()
+        let cancelBag = CancelBag()
         let task = Task {
             do {
                 wrappedValue = .loaded(try await resource())

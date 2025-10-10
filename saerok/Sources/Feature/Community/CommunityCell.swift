@@ -8,20 +8,6 @@
 
 import SwiftUI
 
-enum CommunityType {
-    case recent
-    case popular
-    case suggestion
-    
-    var title: String {
-        switch self {
-        case .recent: return "최근에 올라온 새록"
-        case .popular: return "요즘 인기있는 새록"
-        case .suggestion: return "이 새 이름이 뭔가요?"
-        }
-    }
-}
-
 struct CommunityCell: View {
     typealias Item = Local.CommunityItemSummary
     typealias CellType = CommunityType
@@ -49,47 +35,37 @@ struct CommunityCell: View {
     var infoSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             VStack(alignment: .leading, spacing: 5.5) {
-                nameTag(item: item, type)
-                Text(item.note)
-                    .font(.SRFontSet.body3)
-                    .foregroundStyle(.black)
-                HStack(spacing: 7) {
-                    Text(item.discoveredDate?.timeAgoText ?? "방금 전")
-                    comma
-                    Text("\(item.locationAlias)에서")
-                }
-                .foregroundStyle(.srGray)
-                .font(.SRFontSet.caption3)
+                infoContent
                 Spacer()
             }
             .frame(height: 86)
             
-            HStack(spacing: 5) {
-                ReactiveAsyncImage(
-                    url: item.user.profileImageUrl,
-                    scale: .small,
-                    size: .init(width: 25, height: 25),
-                    downsampling: true
-                )
-                .frame(width: 25, height: 25)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .inset(by: 0.8)
-                        .stroke(.srLightGray, lineWidth: 2)
-                )
-                
-                Text(item.user.nickname)
-                    .font(.SRFontSet.caption1)
-            }
-            .padding(.bottom, 0)
+            userSection
         }
         .padding(.leading, 24)
         .padding(.trailing, 7)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+    @ViewBuilder
+    private var infoContent: some View {
+        switch type {
+        case .search:
+            VStack(alignment: .leading, spacing: 5.5) {
+                dateAndLocation
+                nameTag(item: item, type)
+                note(item: item, type)
+            }
+        default:
+            VStack(alignment: .leading, spacing: 5.5) {
+                nameTag(item: item, type)
+                note(item: item, type)
+                dateAndLocation
+            }
+        }
+    }
     
-    var imageSection: some View {
+    private var imageSection: some View {
         VStack(alignment: .trailing, spacing: 0) {
             ZStack(alignment: .bottomLeading) {
                 ReactiveAsyncImage(
@@ -118,36 +94,69 @@ struct CommunityCell: View {
         }
     }
     
+    @ViewBuilder
     private func nameTag(item: Item, _ type: CellType) -> some View {
-        Text(item.birdName ?? (type == .suggestion ? "이름 모를 새" : "이름을 알려주세요!"))
-            .font(.SRFontSet.caption3_2)
-            .padding(.horizontal, 3)
-            .padding(.vertical, 1)
-            .foregroundStyle(tagTextColor(item: item, type: type))
-            .background(tagBackgroundColor(item: item, type: type))
-            .cornerRadius(5)
-    }
-    
-    private func tagTextColor(item: Item, type: CellType) -> Color {
         switch type {
-        case .suggestion:
-            return .srGray
+        case .search(let keyword):
+            HighlightedNameTag(name: item.birdName ?? "", keyword: keyword)
         default:
-            return item.birdName == nil ? .srWhite : .srGray
+            Text(item.birdName ?? (type == .suggestion ? "이름 모를 새" : "이름을 알려주세요!"))
+                .font(.SRFontSet.caption3_2)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 1)
+                .foregroundStyle(tagTextColor(item: item, type: type))
+                .background(tagBackgroundColor(item: item, type: type))
+                .cornerRadius(5)
         }
     }
     
-    private func tagBackgroundColor(item: Item, type: CellType) -> Color {
+    private func note(item: Item, _ type: CellType) -> some View {
         switch type {
-        case .suggestion:
-            return .srLightGray
+        case .search:
+            Text(item.note)
+                .font(.SRFontSet.caption3_2)
+                .foregroundStyle(.srGray)
         default:
-            return item.birdName == nil ? .pointtext : .srLightGray
+            Text(item.note)
+                .font(.SRFontSet.body3)
+                .foregroundStyle(.black)
         }
+    }
+    
+    private var dateAndLocation: some View {
+        HStack(spacing: 7) {
+            Text(item.discoveredDate?.timeAgoText ?? "방금 전")
+            comma
+            Text("\(item.locationAlias)에서")
+        }
+        .foregroundStyle(.srGray)
+        .font(.SRFontSet.caption3)
+    }
+    
+    private var userSection: some View {
+        HStack(spacing: 5) {
+            ReactiveAsyncImage(
+                url: item.user.profileImageUrl,
+                scale: .small,
+                size: .init(width: 25, height: 25),
+                downsampling: true
+            )
+            .frame(width: 25, height: 25)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .inset(by: 0.8)
+                    .stroke(.srLightGray, lineWidth: 2)
+            )
+            
+            Text(item.user.nickname)
+                .font(.SRFontSet.caption1)
+        }
+        .padding(.bottom, 0)
     }
     
     private func iconWithCount(_ image: Image.SRIconSet, _ value: Int) -> some View {
-        return HStack(spacing: 3) {
+        HStack(spacing: 3) {
             image
                 .frame(.custom(width: 15, height: 15), tintColor: .whiteGray)
             
@@ -176,12 +185,6 @@ struct CommunityCell: View {
         }
     }
     
-    private var showCaption: Bool {
-        item.likeCount > 0 ||
-        item.commentCount > 0 ||
-        (item.suggestionUserCount ?? 0) > 0
-    }
-    
     private let divider: some View = {
         Rectangle()
             .fill(Color.srLightGray)
@@ -202,4 +205,42 @@ struct CommunityCell: View {
             .padding(4)
             .background(Circle().fill(Color.fire))
     }()
+}
+
+private extension CommunityCell {
+    var showCaption: Bool {
+        item.likeCount > 0 ||
+        item.commentCount > 0 ||
+        (item.suggestionUserCount ?? 0) > 0
+    }
+    
+    func tagTextColor(item: Item, type: CellType) -> Color {
+        switch type {
+        case .suggestion:
+            return .srGray
+        default:
+            return item.birdName == nil ? .srWhite : .srGray
+        }
+    }
+    
+    func tagBackgroundColor(item: Item, type: CellType) -> Color {
+        switch type {
+        case .suggestion:
+            return .srLightGray
+        default:
+            return item.birdName == nil ? .pointtext : .srLightGray
+        }
+    }
+}
+
+struct HighlightedNameTag: View {
+    let name: String
+    let keyword: String
+    
+    var body: some View {
+        let attributed = name.highlighted(keyword: keyword)
+        
+        Text(attributed)
+            .font(.SRFontSet.body3)
+    }
 }

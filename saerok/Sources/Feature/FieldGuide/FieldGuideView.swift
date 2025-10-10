@@ -169,7 +169,7 @@ private extension FieldGuideView {
     var headerSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
-            Text("585")
+            Text("\(fieldGuide.count)")
                 .font(.SRFontSet.heavy)
                 .fontWeight(.semibold)
                 .foregroundStyle(.splash)

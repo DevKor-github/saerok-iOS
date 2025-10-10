@@ -30,6 +30,14 @@ extension AppEnvironment {
         RootSelectorView()
             .modelContainer(modelContainer)
             .inject(diContainer)
+            .task {
+                let migrationKey = "lastMigratedAppVersion"
+                let context = ModelContext(modelContainer)
+                if AppVersionMigrator.needsMigration(forKey: migrationKey) {
+                    AppVersionMigrator.wipeRecentSearches(context)
+                    AppVersionMigrator.markMigrated(forKey: migrationKey)
+                }
+            }
             .onOpenURL { url in
                 if AuthApi.isKakaoTalkLoginUrl(url) {
                     let _ = AuthController.handleOpenUrl(url: url)

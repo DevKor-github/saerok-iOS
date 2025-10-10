@@ -68,6 +68,7 @@ enum SREndpoint: Endpoint {
     case me
     case updateMe(nickname: String? = nil, registerImage: DTO.ProfileRegisterImageRequest? = nil)
     case getProfilePresignedURL(contentType: String)
+    case profile(userId: Int)
     
     // MARK: Notifications API
     
@@ -108,6 +109,7 @@ extension SREndpoint {
         case .checkNickname: "user/check-nickname"
         case .me, .updateMe: "user/me"
         case .getProfilePresignedURL: "user/me/profile-image/presign"
+        case .profile(let userId): "profile/\(userId)"
         case .toggleBookmark(let ID): "birds/bookmarks/\(ID)/toggle"
         case .myBookmarks: "birds/bookmarks/"
         case .collectionComments(let collectionID): "collections/\(collectionID)/comments"
@@ -143,7 +145,7 @@ extension SREndpoint {
     
     var method: String {
         switch self {
-        case .fullSync, .birdChanges, .checkNickname, .me, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections: "GET"
+        case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections: "GET"
         case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification: "DELETE"
@@ -339,6 +341,8 @@ extension SREndpoint {
             return DTO.CheckNicknameResponse.self
         case .me, .updateMe:
             return DTO.MeResponse.self
+        case .profile:
+            return DTO.ProfileResponse.self
         case .toggleBookmark:
             return DTO.ToggleBookmarkResponse.self
         case .myBookmarks:

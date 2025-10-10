@@ -16,6 +16,8 @@ struct CollectionLikerSheet: View {
     @State private var likers: [Local.UserSummary] = []
     @State private var isLoading: Bool = true
     
+    @Binding var path: NavigationPath
+    
     var body: some View {
         content
             .task {
@@ -64,7 +66,13 @@ private extension CollectionLikerSheet {
         ScrollView {
             VStack(spacing: 7) {
                 ForEach(likers) { item in
-                    CollectionLikerCell(item: item)
+                    Button {
+                        onDismiss()
+                        path.append(CollectionDetailView.Route.other(item.id))
+                    } label: {
+                        CollectionLikerCell(item: item)
+                    }
+                    .buttonStyle(.plain)
                 }
                 
                 Color.clear

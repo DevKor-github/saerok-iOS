@@ -60,7 +60,7 @@ struct CommunitySearchResultsView: View {
                 Button {
                     path.append(CommunityView.Route.detail(id: item.id))
                 } label: {
-                    CommunityCell(item: item, type: .recent)
+                    CommunityCell(item: item, type: .search(text))
                 }
                 .buttonStyle(.plain)
             }
@@ -70,7 +70,7 @@ struct CommunitySearchResultsView: View {
     private var userResult: some View {
         VStack(spacing: 0) {
             ForEach(searchMainItems.users, id: \.id) { user in
-                CommunityUserCell(item: user)
+                CommunityUserCell(item: user, keyword: text)
             }
         }
     }

@@ -12,10 +12,11 @@ struct CollectionDetailView: View {
     
     // MARK:  Route
 
-    enum Route {
+    enum Route: Hashable {
         case edit
         case findBird
         case preview
+        case other(_ id: Int)
     }
     
     enum LoadState {
@@ -125,6 +126,10 @@ struct CollectionDetailView: View {
                 {
                     BirdDetailView(birdID: suggestion.bird.id, path: bindingPath)
                 }
+            case .other(let id):
+                if let path = path {
+                    UserSummaryView(path: path, userID: id)
+                }
             }
         }
     }
@@ -170,7 +175,7 @@ private extension CollectionDetailView {
             )
         }
         .sheet(isPresented: $uiState.showLikerSheet) {
-            CollectionLikerSheet(collectionID: collectionID, onDismiss: { uiState.showLikerSheet.toggle() })
+            CollectionLikerSheet(collectionID: collectionID, onDismiss: { uiState.showLikerSheet.toggle() }, path: path ?? .constant(.init()))
         }
         .onTapGesture {
             isFocused = false

@@ -16,6 +16,7 @@ protocol UserRepository {
     func deleteAllNotification() async throws
     func deleteNotification(_ id: Int) async throws
     func getUnreadCount() async throws -> Int
+    func getUserSummary(_ id: Int) async throws -> DTO.ProfileResponse
 }
 
 extension MainRepository: UserRepository {
@@ -79,5 +80,12 @@ extension MainRepository: UserRepository {
             .notificationsUnreadCount
         )
         return response.unreadCount
+    }
+    
+    func getUserSummary(_ id: Int) async throws -> DTO.ProfileResponse {
+        let response: DTO.ProfileResponse = try await networkService.performSRRequest(
+            .profile(userId: id)
+        )
+        return response
     }
 }

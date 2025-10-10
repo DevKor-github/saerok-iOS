@@ -29,6 +29,7 @@ struct CommunityInteractorImpl: CommunityInteractor {
         case .popular: try await fetchPopular(page: page, size: size)
         case .recent: try await fetchRecent(page: page, size: size)
         case .suggestion: try await fetchPending(page: page, size: size)
+        case .search: fatalError("search case is not supported")
         }
     }
     

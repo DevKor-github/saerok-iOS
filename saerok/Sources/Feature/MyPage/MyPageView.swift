@@ -54,7 +54,7 @@ private extension MyPageView {
     var content: some View {
         ZStack(alignment: .topTrailing) {
             Image(.mypageLogo)
-
+            
             VStack(spacing: 35) {
                 Color.clear.frame(height: 80)
                 userSection
@@ -69,8 +69,8 @@ private extension MyPageView {
     
     @ViewBuilder
     var userSection: some View {
-        if let user = user, !isGuest {
-            nicknameView(user)
+        if let _ = user, !isGuest {
+            nicknameView
         } else {
             toLoginView
         }
@@ -88,13 +88,9 @@ private extension MyPageView {
             
             SettingItemView(title: "알림 설정", icon: .bell, onTap: { path.append(Route.notification) })
                 .disabled(user == nil)
-            
             SettingItemView(title: "새록 소식 및 이용 가이드", icon: .board, onTap: { openURL(.instagram) })
-            
             SettingItemView(title: "개인정보 처리 방침", icon: .locker, onTap: { openURL(.개인정보) })
-            
             SettingItemView(title: "의견 보내기", icon: .plane, onTap: { openURL(.feedback) })
-            
             SettingItemView(
                 title: "버전 정보",
                 icon: .info,
@@ -137,51 +133,16 @@ private extension MyPageView {
         }
     }
     
-    func nicknameView(_ user: User) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            ReactiveAsyncImage(
-                url: user.imageURL ?? "",
-                scale: .small,
-                size: .init(width: 50, height: 50),
-                downsampling: true
-            )
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 50, height: 50)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .inset(by: 1)
-                        .stroke(.srLightGray, lineWidth: 2)
-                )
-            
-            VStack(alignment: .leading, spacing: 8) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("안녕하세요,")
-                        .font(.SRFontSet.subtitle2)
-                    HStack(alignment: .bottom, spacing: 0) {
-                        Text("\(user.nickname)")
-                            .font(.SRFontSet.headline2)
-                        Text("님!")
-                            .font(.SRFontSet.subtitle2)
-                    }
-                }
-                
-                Text("새록과 함께한 지 +\(user.joinedDate.daysSince)일")
-                    .font(.SRFontSet.caption1)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            
-            Spacer()
-            
-            Button {
-                path.append(Route.editProfile)
-            } label: {
-                Image.SRIconSet.edit
-                    .frame(.defaultIconSizeLarge)
-            }
-            .buttonStyle(.icon)
-        }
+    private var nicknameView: some View {
+        UserInfoView(
+            type: .my,
+            user: .init(
+                id: 0,
+                nickname: user?.nickname ?? "",
+                profileImageUrl: user?.imageURL ?? ""
+            ),
+            joinedDate: user?.joinedDate ?? .now
+        )
     }
     
     private func syncUser() {
@@ -207,9 +168,71 @@ private extension MyPageView {
     }
 }
 
-#Preview {
-    @Previewable @State var path = NavigationPath()
-    NavigationStack(path: $path){
-        MyPageView(path: $path)
+struct UserInfoView: View {
+    enum ViewType {
+        case my
+        case other
+    }
+    
+    let type: ViewType
+    let user: Local.UserSummary
+    let joinedDate: Date
+    
+    var body: some View {
+        HStack(alignment: type == .my ? .top : .center, spacing: 8) {
+            ReactiveAsyncImage(
+                url: user.profileImageUrl,
+                scale: .small,
+                size: .init(width: 50, height: 50),
+                downsampling: true
+            )
+            .aspectRatio(contentMode: .fill)
+            .frame(width: 50, height: 50)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .inset(by: 1)
+                    .stroke(.srLightGray, lineWidth: 2)
+            )
+            
+            VStack(alignment: .leading, spacing: type == .my ? 8 : 0) {
+                nameView
+                daySinceView
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    private var nameView: some View {
+        switch type {
+        case .my:
+            VStack(alignment: .leading, spacing: 5) {
+                Text("안녕하세요,")
+                    .font(.SRFontSet.subtitle2)
+                HStack(alignment: .bottom, spacing: 0) {
+                    Text("\(user.nickname)")
+                        .font(.SRFontSet.headline2)
+                    Text("님!")
+                        .font(.SRFontSet.subtitle2)
+                }
+            }
+        case .other:
+            HStack(spacing: 0) {
+                Text(user.nickname)
+                    .font(.SRFontSet.headline2)
+                    .foregroundStyle(.splash)
+                Text("님의 새록")
+                    .font(.SRFontSet.subtitle2)
+            }
+        }
+    }
+    
+    private var daySinceView: some View {
+        Text("새록과 함께한 지 +\(joinedDate.daysSince)일")
+            .font(.SRFontSet.caption1)
+            .foregroundStyle(.secondary)
     }
 }
