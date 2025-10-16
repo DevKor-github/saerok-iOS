@@ -12,6 +12,7 @@ extension Local {
     struct CommunityItemSummary: Identifiable, Equatable {
         let id: Int
         let imageURL: String?
+        let thumbnailImageUrl: String?
         let discoveredDate: Date?
         let latitude: Double
         let longitude: Double
@@ -39,6 +40,7 @@ extension Local.CommunityItemSummary {
         return .init(
             id: dto.collectionId,
             imageURL: dto.imageUrl,
+            thumbnailImageUrl: dto.thumbnailImageUrl,
             discoveredDate: date,
             latitude: dto.latitude,
             longitude: dto.longitude,

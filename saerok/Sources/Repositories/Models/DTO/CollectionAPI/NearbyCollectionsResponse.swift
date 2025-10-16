@@ -14,6 +14,7 @@ extension DTO {
     struct NearbyCollectionItem: Decodable {
         let collectionId: Int
         let imageUrl: String?
+        let thumbnailImageUrl: String?
         let koreanName: String?
         let note: String
         let latitude: Double

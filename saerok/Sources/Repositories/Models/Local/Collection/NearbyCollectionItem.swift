@@ -10,6 +10,7 @@ extension Local {
     struct NearbyCollectionSummary: Decodable, Equatable {
         let collectionId: Int
         let imageUrl: String?
+        let thumbnailImageUrl: String?
         let koreanName: String?
         let latitude: Double
         let longitude: Double
@@ -32,6 +33,7 @@ extension Local.NearbyCollectionSummary {
     static func from(dto: DTO.NearbyCollectionItem) -> Local.NearbyCollectionSummary {
         .init(collectionId: dto.collectionId,
               imageUrl: dto.imageUrl,
+              thumbnailImageUrl: dto.thumbnailImageUrl,
               koreanName: dto.koreanName,
               latitude: dto.latitude,
               longitude: dto.longitude,
@@ -54,6 +56,7 @@ extension Local.NearbyCollectionSummary {
         .init(
             collectionId: 1,
             imageUrl: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706145130176_A6K6GWVX2.jpg/ia82_60_i4.jpg?type=m1500",
+            thumbnailImageUrl: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706145130176_A6K6GWVX2.jpg/ia82_60_i4.jpg?type=m1500",
             koreanName: "까치",
             latitude: 37.987654,
             longitude: 127.123456,
@@ -71,6 +74,7 @@ extension Local.NearbyCollectionSummary {
         .init(
             collectionId: 2,
             imageUrl: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706174655287_5CQ0PFVKS.jpg/ia82_273_i1.jpg?type=m1500",
+            thumbnailImageUrl: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706145130176_A6K6GWVX2.jpg/ia82_60_i4.jpg?type=m1500",
             koreanName: "참새",
             latitude: 37.123456,
             longitude: 127.654321,

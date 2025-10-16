@@ -268,12 +268,7 @@ private extension FieldGuideView {
             }
         }
         .ignoresSafeArea(.all)
-        .onAppear {
-            if !fieldGuide.isEmpty {
-                fieldGuideState = .loaded(())
-            }
-            loadFieldGuide()
-        }
+        .onAppear { loadFieldGuide() }
     }
     
     func loadingView() -> some View {
@@ -291,8 +286,12 @@ private extension FieldGuideView {
 
 private extension FieldGuideView {
     func loadFieldGuide() {
-        $fieldGuideState.load {
-            try? await injected.interactors.fieldGuide.refreshFieldGuide()
+        if !fieldGuide.isEmpty {
+            fieldGuideState = .loaded(())
+        } else {
+            $fieldGuideState.load {
+                try? await injected.interactors.fieldGuide.refreshFieldGuide()
+            }
         }
         
         if injected.appState[\.authStatus] != .guest {
@@ -335,9 +334,3 @@ extension FieldGuideView {
         injected.appState.updates(for: \.routing.contentView)
     }
 }
-
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    appDelegate.rootView
-}
-

@@ -17,7 +17,7 @@ import KakaoSDKUser
 @main
 struct saerokApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
+
     var body: some Scene {
         WindowGroup {
             appDelegate.rootView

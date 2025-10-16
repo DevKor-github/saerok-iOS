@@ -14,75 +14,47 @@ struct CommunitySuggestionCell: View {
     let item: Item
     
     var body: some View {
-        HStack(spacing: 0) {
+        VStack(spacing: 0) {
             imageSection
             descriptionSection
             Spacer()
         }
-        .frame(width: 225, height: 107)
-        .background(.white)
+        .frame(width: 107, height: 127)
+        .background(.srWhite)
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 0)
     }
     
     private var imageSection: some View {
         ReactiveAsyncImage(
-            url: item.imageURL ?? "",
+            url: item.thumbnailImageUrl ?? "",
             scale: .small,
             size: .init(width: 97, height: 97),
             downsampling: true
         )
         .aspectRatio(contentMode: .fill)
-        .frame(maxWidth: 97, maxHeight: 97)
         .clipped()
-        .cornerRadius(15)
-        .padding(5)
+        .frame(maxWidth: 97, maxHeight: 97)
+        .fixedSize()
+        .cornerRadius(15, corners: [.topLeft, .topRight])
+        .cornerRadius(5, corners: [.bottomLeft, .bottomRight])
+        .padding([.horizontal, .top], 5)
+        .padding(.bottom, 4)
     }
     
     private var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top, spacing: 3) {
-                Image.SRIconSet.pin
-                    .frame(.defaultIconSize, tintColor: .whiteGray)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.address ?? "")
-                        .font(.SRFontSet.body4_3)
-                        .lineLimit(1)
-                    Text(item.discoveredDate?.timeAgoText ?? "방금 전")
-                        .font(.SRFontSet.caption3)
-                        .foregroundStyle(.srGray)
-                        .lineLimit(1)
-                }
-            }
+        HStack(spacing: 3) {
             Spacer()
-            imageCaptionView
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 5)
-    }
-    
-    private func iconWithCount(_ image: Image.SRIconSet, _ value: Int) -> some View {
-        return HStack(spacing: 3) {
-            image
-                .frame(.custom(width: 15, height: 15), tintColor: .whiteGray)
-            
-            Text("\(value)")
-                .font(.SRFontSet.body4)
+            Image.SRIconSet.unknown
+                .frame(.custom(width: 15, height: 15), tintColor: .pointtext)
+            Text("\(item.suggestionUserCount ?? 0)명 참여")
+                .font(.SRFontSet.caption3)
                 .foregroundStyle(.srGray)
         }
+        .padding(.trailing, 11)
     }
-    
-    private var imageCaptionView: some View {
-        HStack(alignment: .center, spacing: 4.87) {
-            Image(.unknown)
-                .renderingMode(.template)
-                .resizable()
-                .frame(width: 11.25, height: 13.75)
-                .foregroundStyle(.pointtext)
-            Text("\(item.suggestionUserCount ?? 0)명")
-                .font(.SRFontSet.body4)
-                .foregroundStyle(.srGray)
-        }
-        .frame(height: 20)
-    }
+}
+
+#Preview {
+    CommunitySuggestionCell(item: .from(dto: .init(collectionId: 0, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMG2ABpDRm1U73-xRewqvyFn4d26Af1KeB1A&s", thumbnailImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMG2ABpDRm1U73-xRewqvyFn4d26Af1KeB1A&s", discoveredDate: "", latitude: 0, longitude: 0, locationAlias: "", address: nil, note: nil, likeCount: 0, commentCount: 0, isLiked: false, isPopular: false, bird: nil, user: nil, suggestionUserCount: 5)))
 }

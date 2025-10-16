@@ -17,6 +17,7 @@ extension Font {
         static let headline1: Font = .custom(Jalpullineunharu.regular.rawValue, size: 30)
         static let headline2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 22)
         static let headline2_2: Font = .custom(Moneygraphy.regular.rawValue, size: 22)
+        static let headline2_3: Font = .custom(Pretendard.semiBold.rawValue, size: 22)
 
         static let subtitle1: Font = .custom(Moneygraphy.regular.rawValue, size: 20)
         static let subtitle2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 18)
@@ -33,6 +34,7 @@ extension Font {
         static let body3: Font = .custom(Moneygraphy.regular.rawValue, size: 15)
         static let body3_2: Font = .custom(Jalpullineunharu.regular.rawValue, size: 15)
         static let body4: Font = .custom(Pretendard.regular.rawValue, size: 14)
+        static let body4_2: Font = .custom(Pretendard.regular.rawValue, size: 15)
         static let body4_3: Font = .custom(Pretendard.semiBold.rawValue, size: 15)
 
         static let caption0: Font = .custom(Pretendard.bold.rawValue, size: 13)
@@ -44,6 +46,7 @@ extension Font {
         static let caption3_2: Font = .custom(Pretendard.bold.rawValue, size: 12)
         
         static let button1: Font = .custom(Pretendard.bold.rawValue, size: 18)
+        static let button1_2: Font = .custom(Pretendard.medium.rawValue, size: 18)
         static let button2: Font = .custom(Pretendard.semiBold.rawValue, size: 15)
         static let button3: Font = .custom(Pretendard.bold.rawValue, size: 13)
 

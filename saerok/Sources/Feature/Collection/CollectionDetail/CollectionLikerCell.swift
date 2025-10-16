@@ -17,7 +17,8 @@ struct CollectionLikerCell: View {
                 url: item.profileImageUrl,
                 scale: .small,
                 size: .init(width: 49, height: 49),
-                downsampling: true
+                downsampling: true,
+                isCachingEnabled: true
             )
             .frame(width: 49, height: 49)
             .clipShape(Circle())

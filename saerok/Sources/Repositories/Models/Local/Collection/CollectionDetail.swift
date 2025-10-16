@@ -92,18 +92,18 @@ extension Local.CollectionDetail {
     static let mockData: [Local.CollectionDetail] = [
         .init(
             id: 1,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/4420_000_1/20160427160204260_123LR4QQ6.jpg/s_sm6_16_i2.jpg?type=m1500",
+            imageURL: "",
             discoveredDate: Date(timeIntervalSince1970: 1_710_000_000),
             coordinate: (latitude: 37.5665, longitude: 126.9780),
-            address: "서울 중구 세종대로 110 서울특별시청",
-            locationAlias: "서울 시청",
-            note: "도심 한가운데서 발견! 도심 한가운데서 발견! 도심 한가운데서 발견!",
+            address: "",
+            locationAlias: "",
+            note: "",
             accessLevel: .publicAccess,
-            likeCount: 5, isLiked: true, isMine: true, commentCount: 1,
-            birdName: "가짜청딱따구리",
+            likeCount: 0, isLiked: false, isMine: false, commentCount: 0,
+            birdName: "    ",
             birdID: 901,
-            scientificName: "Cham Sae",
-            user: .init(id: 0, nickname: "새록이", profileImageUrl: "nn")
+            scientificName: "    ",
+            user: .init(id: 0, nickname: "   ", profileImageUrl: "  ")
         ),
     ]
 }

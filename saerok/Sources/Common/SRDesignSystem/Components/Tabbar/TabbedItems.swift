@@ -59,3 +59,15 @@ enum TabbedItems: Int, CaseIterable {
         }
     }
 }
+
+extension TabbedItems {
+    var onboardingType: OnboardingType? {
+        switch self {
+        case .collection: return .saerok
+        case .fieldGuide: return .fieldGuide
+        case .map: return .map
+        case .community: return .nest
+        default: return nil  // 프로필 탭 등 온보딩 없는 경우
+        }
+    }
+}

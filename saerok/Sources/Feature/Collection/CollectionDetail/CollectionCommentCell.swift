@@ -10,6 +10,7 @@ import SwiftUI
 struct CollectionCommentCell: View {
     let isMyCollection: Bool
     let item: Local.CollectionComment
+    let onTap: () -> Void
     let onDelete: (Int) -> Void
     let onReport: () -> Void
 
@@ -27,12 +28,18 @@ struct CollectionCommentCell: View {
                 Circle()
                     .inset(by: 0.8)
                     .stroke(.srLightGray, lineWidth: 2)
-                )
+            )
+            .onTapGesture {
+                onTap()
+            }
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 5) {
                     Text(item.user.nickname)
                         .font(.SRFontSet.body3_2)
+                        .onTapGesture {
+                            onTap()
+                        }
 
                     Text(item.createdAt.timeAgoText)
                         .font(.SRFontSet.caption3)

@@ -12,6 +12,7 @@ struct CommunityView: Routable {
     enum Route: Hashable {
         case communityType(type: CommunityType)
         case detail(id: Int)
+        case other(id: Int)
     }
     
     // MARK: - Dependencies
@@ -34,6 +35,7 @@ struct CommunityView: Routable {
     @State private var loadingState: Loadable<Void> = .notRequested
     @State private var showPopup: Bool = false
     @State private var offsetY: CGFloat = 0
+    @State private var hasLoadedOnce = false
     
     @State private var text: String = ""
     @State var searchCase: CommunitySearchCase = .all
@@ -57,6 +59,8 @@ struct CommunityView: Routable {
                     CommunityDetailView(type: type, path: $path)
                 case .detail(let id):
                     CollectionDetailView(collectionID: id, path: $path)
+                case .other(let id):
+                    UserSummaryView(path: $path, userID: id)
                 }
             }
             .onChange(of: path) { _, path in
@@ -78,8 +82,10 @@ struct CommunityView: Routable {
     @ViewBuilder
     private var content: some View {
         switch loadingState {
-        case .notRequested, .isLoading:
+        case .notRequested:
             defaultView()
+        case .isLoading:
+            loadingView()
         case .loaded:
             loadedView()
         case .failed:
@@ -129,6 +135,13 @@ private extension CommunityView {
         .ignoresSafeArea(.all)
         .onTapGesture {
             if !isModeIdle { isFocused = false }
+        }
+        .onAppear {
+            if hasLoadedOnce {
+                Task { await refreshPosts() }
+            } else {
+                hasLoadedOnce = true
+            }
         }
     }
     
@@ -188,7 +201,10 @@ private extension CommunityView {
                         .padding(.bottom, 26)
                     
                     VStack(spacing: 44) {
-                        boardSection
+                        VStack(spacing: 15) {
+                            boardSection
+                            BannerView()
+                        }
                         listSection(.recent)
                         listSection(.popular)
                         Color.clear.frame(height: 70)
@@ -346,6 +362,10 @@ private extension CommunityView {
         }
         .ignoresSafeArea(.all)
         .onAppear(perform: loadPosts)
+    }
+    
+    func loadingView() -> some View {
+        ProgressView()
     }
     
     func failedView() -> some View {

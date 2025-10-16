@@ -27,6 +27,7 @@ extension Local.UserProfileSummary {
                     .init(
                         id: $0.collectionId,
                         imageURL: $0.imageUrl,
+                        thumbnailImageURL: $0.thumbnailImageUrl,
                         birdName: $0.birdKoreanName
                     )
                 },

@@ -69,7 +69,7 @@ struct CommunityCell: View {
         VStack(alignment: .trailing, spacing: 0) {
             ZStack(alignment: .bottomLeading) {
                 ReactiveAsyncImage(
-                    url: item.imageURL ?? "",
+                    url: item.thumbnailImageUrl ?? "",
                     scale: .small,
                     size: .init(width: 89, height: 89),
                     downsampling: true

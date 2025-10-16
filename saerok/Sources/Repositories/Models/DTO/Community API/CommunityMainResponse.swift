@@ -16,10 +16,10 @@ extension DTO {
 }
 
 extension DTO {
-    // MARK: - 공통 컬렉션 아이템
     struct CommunityItem: Decodable {
         let collectionId: Int
         let imageUrl: String?
+        let thumbnailImageUrl: String?
         let discoveredDate: String
         let latitude: Double
         let longitude: Double

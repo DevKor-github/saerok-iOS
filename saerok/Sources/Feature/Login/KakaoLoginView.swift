@@ -40,12 +40,10 @@ struct KakaoLoginView: View {
 private extension KakaoLoginView {
     func startLoginWithKakaoTalk() {
         if UserApi.isKakaoTalkLoginAvailable() {
-            // 카카오톡 앱 로그인
             UserApi.shared.loginWithKakaoTalk { oauthToken, error in
                 handleLoginResult(oauthToken, error: error)
             }
         } else {
-            // 앱이 없거나 시뮬레이터일 경우 웹 로그인
             UserApi.shared.loginWithKakaoAccount { oauthToken, error in
                 handleLoginResult(oauthToken, error: error)
             }

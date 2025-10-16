@@ -12,6 +12,7 @@ struct CollectionCommentSheet: View {
     let isMyCollection: Bool
     let nickname: String
     let comments: [Local.CollectionComment]
+    let onTap: () -> Void
     let onDelete: (Int) -> Void
     let onReport: () -> Void
     let onDismiss: () -> Void
@@ -29,6 +30,7 @@ struct CollectionCommentSheet: View {
                             CollectionCommentCell(
                                 isMyCollection: isMyCollection,
                                 item: item,
+                                onTap: onTap,
                                 onDelete: onDelete,
                                 onReport: onReport
                             )

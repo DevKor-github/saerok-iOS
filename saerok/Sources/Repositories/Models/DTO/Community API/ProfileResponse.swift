@@ -23,6 +23,7 @@ extension DTO {
         let birdKoreanName: String?
         let birdScientificName: String?
         let imageUrl: String
+        let thumbnailImageUrl: String?
         let note: String?
         let discoveredDate: String
         let uploadedDate: String

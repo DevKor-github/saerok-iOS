@@ -73,7 +73,7 @@ private extension NearbyCell {
     var imageSection: some View {
         VStack(spacing: 0) {
             ReactiveAsyncImage(
-                url: item.imageUrl ?? "",
+                url: item.thumbnailImageUrl ?? "",
                 scale: .small,
                 size: .init(width: 89, height: 89),
                 downsampling: true

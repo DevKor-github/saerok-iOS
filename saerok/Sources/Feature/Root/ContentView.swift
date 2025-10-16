@@ -46,6 +46,9 @@ struct ContentView: Routable {
                     .opacity(routingState.isTabbarHidden ? 0 : 1)
                     .allowsHitTesting(!routingState.isTabbarHidden)
             }
+            .ifLet(selectedTab.onboardingType) { view, type in
+                view.onboardingOverlay(type: type)
+            }
             .ignoresSafeArea(.all)
         }
         .ignoresSafeArea(.all)
@@ -125,6 +128,17 @@ struct CachedTabContainer: View {
             CommunityView(path: $path)
         case .profile:
             MyPageView(path: $path)
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func ifLet<T, Content: View>(_ value: T?, transform: (Self, T) -> Content) -> some View {
+        if let value {
+            transform(self, value)
+        } else {
+            self
         }
     }
 }

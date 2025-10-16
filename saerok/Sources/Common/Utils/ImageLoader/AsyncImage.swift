@@ -102,6 +102,7 @@ struct ReactiveAsyncImage: View {
                     .resizable()
             } else {
                 Color.border
+                    .frame(width: size.width, height: size.height)
                     .shimmer(when: $isLoading)
             }
         }

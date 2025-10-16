@@ -67,6 +67,10 @@ struct CollectionView: Routable {
             .onChange(of: routingState.addCollection, initial: true) { _, isTrue in
                 if isTrue { path.append(Route.addCollection) }
             }
+            .onChange(of: routingState.refreshCollections) { _, newID in
+                guard newID != nil else { return }
+                loadMyCollections()
+            }
             .onChange(of: routingState.scrollToTop) { _, newID in
                 guard let _ = newID else { return }
                 offsetY = 0
@@ -78,7 +82,6 @@ struct CollectionView: Routable {
                 }
             }
             .onAppear {
-                loadMyCollections()
                 loadUnreadNotification()
             }
             .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
@@ -251,11 +254,7 @@ private extension CollectionView {
             }
         }
         .customPopup(isPresented: $showPopup) { alertView }
-        .onAppear {
-            if !isGuestMode {
-                collectionState = .loaded(())
-            }
-        }
+        .onAppear { loadMyCollections() }
     }
     
     func loadingView() -> some View {
@@ -274,12 +273,8 @@ private extension CollectionView {
 private extension CollectionView {
     func loadMyCollections() {
         if !isGuestMode {
-            Task {
-                do {
-                    collectionSummaries = try await injected.interactors.collection.fetchMyCollections()
-                } catch {
-                    print("콜렉션에러: \(error)")
-                }
+            $collectionState.load {
+                collectionSummaries = try await injected.interactors.collection.fetchMyCollections()
             }
         }
     }
@@ -302,6 +297,7 @@ extension CollectionView {
         var collectionID: Int?
         var addCollection: Bool = false
         var scrollToTop: UUID?
+        var refreshCollections: UUID?   
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {

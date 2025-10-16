@@ -148,13 +148,18 @@ private extension CollectionFormView {
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
     
+    @ViewBuilder
     var submitButton: some View {
         Button {
             submitButtonTapped(self.mode)
         } label: {
-            Text(mode.submitButtonTitle)
-                .font(.SRFontSet.button)
-                .frame(maxWidth: .infinity)
+            if isSubmitting{
+                ProgressView()
+            } else {
+                Text(mode.submitButtonTitle)
+                    .font(.SRFontSet.button)
+                    .frame(maxWidth: .infinity)
+            }
         }
         .disabled(!collectionDraft.submittable && mode.isAddMode)
         .disabled(isSubmitting)
@@ -238,6 +243,7 @@ extension CollectionFormView {
             try? await injected.interactors.collection.createCollection(collectionDraft)
             isSubmitting = false
             path.removeLast()
+            injected.appState[\.routing.collectionView.refreshCollections] = UUID()
         }
     }
     
@@ -248,6 +254,7 @@ extension CollectionFormView {
             try? await injected.interactors.collection.deleteCollection(id)
             path.removeLast()
             path.removeLast()
+            injected.appState[\.routing.collectionView.refreshCollections] = UUID()
         }
     }
     

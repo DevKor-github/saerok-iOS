@@ -41,14 +41,14 @@ struct CommunitySearchResultsView: View {
 
         if !searchMainItems.collections.isEmpty {
             VStack(spacing: 0) {
-                sectionHeader(title: "새록", count: searchMainItems.collectionsCount)
+                sectionHeader(title: "새록", count: searchMainItems.collectionsCount, type: .collection)
                 collectionResult
             }
         }
 
         if !searchMainItems.users.isEmpty {
             VStack(spacing: 0) {
-                sectionHeader(title: "사용자", count: searchMainItems.usersCount)
+                sectionHeader(title: "사용자", count: searchMainItems.usersCount, type: .user)
                 userResult
             }
         }
@@ -70,13 +70,18 @@ struct CommunitySearchResultsView: View {
     private var userResult: some View {
         VStack(spacing: 0) {
             ForEach(searchMainItems.users, id: \.id) { user in
-                CommunityUserCell(item: user, keyword: text)
+                Button {
+                    path.append(CommunityView.Route.other(id: user.id))
+                } label: {
+                    CommunityUserCell(item: user, keyword: text)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
     
     @ViewBuilder
-    private func sectionHeader(title: String, count: Int) -> some View {
+    private func sectionHeader(title: String, count: Int, type: CommunitySearchCase) -> some View {
         HStack(spacing: 10) {
             Text(title)
                 .font(.SRFontSet.subtitle1_3)
@@ -84,7 +89,9 @@ struct CommunitySearchResultsView: View {
                 .font(.SRFontSet.subtitle1_4)
                 .foregroundStyle(.splash)
             Spacer()
-            Button { } label: {
+            Button {
+                searchCase = type
+            } label: {
                 HStack(spacing: 8) {
                     Text("더보기")
                         .font(.SRFontSet.caption1)

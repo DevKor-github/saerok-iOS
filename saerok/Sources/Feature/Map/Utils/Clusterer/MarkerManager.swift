@@ -92,7 +92,7 @@ final class ItemData: NSObject {
     
     func loadImage() async throws {
         guard image == nil,
-              let urlString = birdData.imageUrl,
+              let urlString = birdData.thumbnailImageUrl,
               let url = URL(string: urlString) else { return }
         
         try Task.checkCancellation()
@@ -174,12 +174,10 @@ final class BirdClusterManager {
         _ birds: [Local.NearbyCollectionSummary],
         touchHandlerGenerator: @escaping (Local.NearbyCollectionSummary) -> NMFOverlayTouchHandler
     ) {
-        // 기존 작업 중단
         refreshTask?.cancel()
         
         clusterer.clear()
         
-        // 새 태스크 생성 및 보관
         refreshTask = Task.detached(priority: .userInitiated) {
             await withTaskGroup(of: Void.self) { group in
                 var keyTagMap: [ItemKey: ItemData] = [:]
@@ -195,7 +193,7 @@ final class BirdClusterManager {
                     
                     group.addTask {
                         do {
-                            try await data.loadImage() // 내부에서 checkCancellation() 호출
+                            try await data.loadImage()
                         } catch is CancellationError { }
                         catch { }
                     }

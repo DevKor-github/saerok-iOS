@@ -145,6 +145,7 @@ private extension CollectionDetailView {
                     Color.clear
                         .frame(height: 57)
                     imageSection
+                        .shimmerIfLoading(uiState.loadState != .loaded)
                     
                     descriptionSection
                         .padding(.horizontal, SRDesignConstant.defaultPadding)
@@ -153,12 +154,7 @@ private extension CollectionDetailView {
                     Color.clear
                         .frame(height: 40)
                 }
-                .shimmer(
-                    when: Binding(
-                        get: { uiState.loadState != .loaded },
-                        set: { _ in }
-                    )
-                )
+                
                 Spacer()
             }
             navigationBar
@@ -169,6 +165,7 @@ private extension CollectionDetailView {
                 isMyCollection: collection.isMine,
                 nickname: collection.user.nickname,
                 comments: comments,
+                onTap: navigateToOther,
                 onDelete: deleteComment,
                 onReport: { uiState.showPopup = true },
                 onDismiss: { uiState.showCommentSheet.toggle() },
@@ -238,31 +235,38 @@ private extension CollectionDetailView {
         }
     }
     
+    @ViewBuilder
     var trailingProfileImage: some View {
-        HStack {
-            ReactiveAsyncImage(
-                url: collection.user.profileImageUrl,
-                scale: .small,
-                size: .init(width: 25, height: 25),
-                downsampling: true
-            )
-            .frame(width: 25, height: 25)
-            .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .inset(by: 0.8)
-                    .stroke(.srLightGray, lineWidth: 2)
-            )
-            .id(collection.id)
-            
-            Text(collection.user.nickname)
-                .font(.SRFontSet.body4)
+        if !collection.isMine {
+            Button(action: navigateToOther) {
+                HStack {
+                    ReactiveAsyncImage(
+                        url: collection.user.profileImageUrl,
+                        scale: .small,
+                        size: .init(width: 25, height: 25),
+                        downsampling: true
+                    )
+                    .frame(width: 25, height: 25)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .inset(by: 0.8)
+                            .stroke(.srLightGray, lineWidth: 2)
+                    )
+                    .id(collection.id)
+                    
+                    Text(collection.user.nickname)
+                        .font(.SRFontSet.body4)
+                }
+                .padding(.vertical, 7)
+                .padding(.leading, 10)
+                .padding(.trailing, 12)
+                .background(Color.glassWhite)
+                .clipShape(RoundedRectangle(cornerRadius: .infinity))
+            }
+        } else {
+            EmptyView()
         }
-        .padding(.vertical, 7)
-        .padding(.leading, 10)
-        .padding(.trailing, 12)
-        .background(Color.glassWhite)
-        .clipShape(RoundedRectangle(cornerRadius: .infinity))
     }
 
     @ViewBuilder
@@ -523,6 +527,10 @@ private extension CollectionDetailView {
         }
     }
     
+    func navigateToOther() {
+        path?.wrappedValue.append(Route.other(collection.user.id))
+    }
+    
     func downloadImage(from urlString: String) {
         guard let url = URL(string: urlString) else { return }
         
@@ -533,13 +541,6 @@ private extension CollectionDetailView {
             }
         }.resume()
     }
-}
-
-// MARK: - Preview
-
-#Preview {
-    @Previewable @State var path: NavigationPath = .init()
-    CollectionDetailView(collectionID: 1, path: $path)
 }
 
 extension View {
@@ -553,6 +554,15 @@ extension View {
             overlay()
         }
         .id(value)
+    }
+    
+    func shimmerIfLoading(_ condition: Bool) -> some View {
+        self.shimmer(
+            when: Binding(
+                get: { condition },
+                set: { _ in }
+            )
+        )
     }
 }
 

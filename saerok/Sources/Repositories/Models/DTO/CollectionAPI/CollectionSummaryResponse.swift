@@ -13,6 +13,7 @@ extension DTO {
     struct CollectionSummary: Codable, Identifiable {
         let collectionId: Int
         let imageUrl: String?
+        let thumbnailImageUrl: String?
         let koreanName: String?
         
         var id: Int { collectionId }

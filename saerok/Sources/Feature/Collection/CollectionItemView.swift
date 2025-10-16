@@ -16,7 +16,7 @@ struct CollectionItemView: View {
         Button(action: tapped) {
             VStack(alignment: .leading, spacing: 8) {
                 ReactiveAsyncImageWithMetadata(
-                    url: bird.imageURL ?? "",
+                    url: bird.thumbnailImageURL ?? "",
                     scale: .medium,
                     downsampling: true
                 )

@@ -218,8 +218,8 @@ private extension CollectionDescriptionSection {
             }
         } else {
             Button(action: onSuggestTap ?? {}) {
-                Image(.unknown)
-                    .padding(.horizontal, 3)
+                Image.SRIconSet.unknown
+                    .frame(.defaultIconSizeLarge, tintColor: .srWhite)
                     .padding(8)
                     .background(Color.pointtext)
                     .clipShape(Circle())

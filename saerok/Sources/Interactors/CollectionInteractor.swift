@@ -51,9 +51,7 @@ struct CollectionInteractorImpl: CollectionInteractor {
     func createCollection(_ draft: Local.CollectionDraft) async throws {
         guard let image = draft.image,
               let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image)
-        else {
-            throw CollectionInteractorError.invalidImageData
-        }
+        else { throw CollectionInteractorError.invalidImageData }
         
         let createResponse = try await repository.createCollection(draft.toDTO())
         
