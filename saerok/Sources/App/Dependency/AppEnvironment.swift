@@ -6,6 +6,7 @@
 //
 
 import SwiftData
+import Foundation
 
 @MainActor
 struct AppEnvironment {
@@ -15,6 +16,8 @@ struct AppEnvironment {
     /// 앱 실행 시 필요한 모든 의존성들을 초기화하여 `AppEnvironment`를 생성합니다.
     /// - Returns: 초기화 된 `AppEnvironment` 인스턴스
     static func bootstrap() -> AppEnvironment {
+        resetStoreOnceIfNeeded()
+
         let appState = Store<AppState>(AppState())
         let modelContainer = configuredModelContainer()
         let networkService = SRNetworkServiceImpl()
@@ -24,6 +27,18 @@ struct AppEnvironment {
         UserManager.shared.configure(with: ModelContext(modelContainer))
 
         return AppEnvironment(modelContainer: modelContainer, diContainer: diContainer)
+    }
+    
+    static func resetStoreOnceIfNeeded() {
+        let defaults = UserDefaults.standard
+        let flagKey = "didResetSwiftDataV2"
+
+        guard defaults.bool(forKey: flagKey) == false else { return }
+
+        let storeURL = URL.applicationSupportDirectory.appending(path: "default.store")
+        try? FileManager.default.removeItem(at: storeURL)
+
+        defaults.set(true, forKey: flagKey)
     }
 }
 
