@@ -48,9 +48,10 @@ struct NotificationView: View {
                     }
                 })
                 .listRowSeparator(.hidden)
-                .listRowInsets(.init(top: 0, leading: 9, bottom: 7, trailing: 9))
+                .listRowInsets(.init(top: 3.5, leading: 9, bottom: 3.5, trailing: 9))
+                .listRowBackground(Color.clear)
                 .padding(0)
-                .swipeActions(edge: .trailing) {
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                     Button(role: .destructive) {
                         Task {
                             try? await injected.interactors.user.deleteNotification(item.notificationId)
@@ -59,7 +60,7 @@ struct NotificationView: View {
                             }
                         }
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Image(systemName: "trash")
                     }
                 }
             }

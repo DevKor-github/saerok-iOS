@@ -18,23 +18,39 @@ enum NicknameStatus: Equatable {
     case notAvailable(String)
 }
 
+enum EnrollStatus: Equatable {
+    case loading
+    case editing
+}
+
 extension EnrollView {
     struct EnrollFirstFormView: View {
         @Environment(\.injected) var injected
         @Environment(\.modelContext) var modelContext
         
         @State private var nicknameStatus: NicknameStatus = .empty
-        @State private var isAgeChecked: Bool = false
+        @State private var enrollStatus: EnrollStatus = .editing
+        @State private var showstermSheet: Bool = false
+        
         @FocusState private var isFocused: Bool
         @Binding var user: User
         
         var body: some View {
-            ZStack {
+            VStack {
                 nicknameSection
+                Spacer()
                 nextButtonSection
             }
             .onChange(of: user.nickname) { _, newValue in
                 updateNicknameStatus(newValue)
+            }
+            .sheet(isPresented: $showstermSheet) {
+                TermsAgreementSheet(
+                    onDismiss: {
+                        showstermSheet.toggle()
+                    },
+                    nextButtonTapped: enrollButtonTapped,
+                    enrollStatus: $enrollStatus)
             }
         }
         
@@ -96,46 +112,24 @@ extension EnrollView {
         }
         
         private var nextButtonSection: some View {
-            VStack(alignment: .leading, spacing: 25) {
+            VStack {
                 Spacer()
-                
-                HStack(spacing: 9) {
-                    (isAgeChecked
-                    ? Image.SRIconSet.checkboxChecked
-                    : Image.SRIconSet.checkboxDefault)
-                    .frame(.defaultIconSizeLarge)
-                    
-                    Text("만 14세 이상이에요.")
-                        .font(.SRFontSet.body2)
-                        .foregroundStyle(.secondary)
-                }
-                .onTapGesture {
-                    isAgeChecked.toggle()
-                }
-                
-                Button(action: nextButtonTapped) {
+                Button(action: { showstermSheet.toggle() }) {
                     Text("다음")
-                        .frame(height: 32)
                 }
                 .buttonStyle(.primary)
-                .disabled((nicknameStatus != .available) && isAgeChecked)
+                .disabled(!(nicknameStatus == .available))
             }
         }
         
         // MARK: - Button Actions
         
-        private func nextButtonTapped() {
+        private func enrollButtonTapped() {
             Task {
-                do {
-                    let me: DTO.MeResponse = try await injected.networkService
-                        .performSRRequest(.updateMe(nickname: user.nickname))
-                    user.nickname = me.nickname
-                    user.email = me.email
-                    modelContext.insert(user)
-                    try modelContext.save()
-                } catch {
-                    print("요청 실패: \(error)")
-                }
+                enrollStatus = .loading
+                try await Task.sleep(for: .seconds(1))
+                try await injected.interactors.user.createAccount(nickname: user.nickname)
+                enrollStatus = .editing
             }
         }
         

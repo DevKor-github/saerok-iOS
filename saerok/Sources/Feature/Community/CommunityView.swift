@@ -13,6 +13,7 @@ struct CommunityView: Routable {
         case communityType(type: CommunityType)
         case detail(id: Int)
         case other(id: Int)
+        case addCollection
     }
     
     // MARK: - Dependencies
@@ -61,6 +62,8 @@ struct CommunityView: Routable {
                     CollectionDetailView(collectionID: id, path: $path)
                 case .other(let id):
                     UserSummaryView(path: $path, userID: id)
+                case .addCollection:
+                    CollectionFormView(mode: .add, path: $path)
                 }
             }
             .onChange(of: path) { _, path in
@@ -131,6 +134,10 @@ private extension CommunityView {
                     .allowsHitTesting(!isModeIdle)
                 }
             }
+            
+            addButton
+                .padding(.bottom, 106)
+                .padding(.trailing, 24)
         }
         .ignoresSafeArea(.all)
         .onTapGesture {
@@ -284,6 +291,19 @@ private extension CommunityView {
         }
     }
     
+    var addButton: some View {
+        var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
+
+        return Button {
+            path.append(Route.addCollection)
+        } label: {
+            Image(isGuestMode ? .floatingButtonInactive : .floatingButton)
+                .resizable()
+                .frame(width: 61, height: 61)
+                .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 0)
+        }
+    }
+    
     var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "로그인이 필요한 기능이에요",
@@ -340,9 +360,9 @@ private extension CommunityView {
                     .font(.SRFontSet.body2_3)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .contentShape(Rectangle())
     }
 }
 
@@ -366,6 +386,7 @@ private extension CommunityView {
     
     func loadingView() -> some View {
         ProgressView()
+            .onDisappear { loadingState.cancelLoading() }
     }
     
     func failedView() -> some View {
@@ -390,7 +411,7 @@ private extension CommunityView {
         await MainActor.run { self.mainItems = items }
     }
     
-    func debounceTask(delay: UInt64 = 800_000_000, action: @escaping @Sendable () async throws -> Void) {
+    func debounceTask(delay: UInt64 = 600_000_000, action: @escaping @Sendable () async throws -> Void) {
         searchDebounceTask?.cancel()
         searchDebounceTask = Task {
             try await Task.sleep(nanoseconds: delay)

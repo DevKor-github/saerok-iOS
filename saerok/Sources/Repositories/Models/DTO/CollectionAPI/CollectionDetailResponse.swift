@@ -35,7 +35,7 @@ extension DTO {
 
     struct UserInfo: Codable {
         let userId: Int
-        let nickname: String
+        let nickname: String?
         let profileImageUrl: String
     }
 

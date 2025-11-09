@@ -16,13 +16,15 @@ extension EnrollView {
             VStack(alignment: .leading) {
                 NavigationBar()
                 Group {
-                    Text("회원가입이\n완료되었습니다!🎉")
+                    Image(.saerokLogo)
+                        .resizable()
+                        .frame(width: 103, height: 52.5)
+                    Text("회원가입이 완료됐어요🎉")
                         .font(.SRFontSet.headline1)
                 }
                 Spacer()
                 Button(action: startButtonTapped) {
                     Text("새록 시작하기")
-                        .padding(.vertical, 5)
                 }
                 .buttonStyle(.primary)
             }

@@ -13,7 +13,6 @@ struct RootSelectorView: View {
     @Environment(\.injected) private var injected
     
     @State private var authStatus: AppState.AuthStatus = .notDetermined
-    @State private var user = User()
     @State private var showSplash = true
     
     @StateObject private var networkMonitor = NetworkMonitor.shared
@@ -41,7 +40,7 @@ private extension RootSelectorView {
         ZStack {
             switch authStatus {
             case .notDetermined:
-                LoginView($user, authStatus: $authStatus)
+                LoginView(authStatus: $authStatus)
 
             case .guest:
                 ContentView()
@@ -50,7 +49,7 @@ private extension RootSelectorView {
                 if isRegistered {
                     ContentView()
                 } else {
-                    LoginView($user, authStatus: $authStatus)
+                    LoginView(authStatus: $authStatus)
                 }
             }
 

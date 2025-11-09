@@ -17,7 +17,7 @@ extension DTO {
         let id: Int
         let type: NotificationType
         let actorId: Int
-        let actorNickname: String
+        let actorNickname: String?
         let actorProfileImageUrl: String
         let payload: NotificationPayload
         let isRead: Bool

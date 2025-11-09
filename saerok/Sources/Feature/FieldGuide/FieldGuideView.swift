@@ -30,8 +30,8 @@ struct FieldGuideView: Routable {
     
     // MARK: - View State
     
-    @State private var fieldGuide: [Local.Bird]
-    @State private var fieldGuideState: Loadable<Void>
+    @State private var fieldGuide: [Local.Bird] = []
+    @State private var fieldGuideState: Loadable<Void> = .notRequested
     @State private var filterKey: BirdFilter = .init()
     @State private var showSeasonSheet = false
     @State private var showHabitatSheet = false
@@ -41,9 +41,7 @@ struct FieldGuideView: Routable {
 
     // MARK: - Init
     
-    init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
-        self.fieldGuide = []
-        self._fieldGuideState = .init(initialValue: state)
+    init(path: Binding<NavigationPath>) {
         self._navigationPath = path
     }
     
@@ -88,8 +86,10 @@ struct FieldGuideView: Routable {
     @ViewBuilder
     private var content: some View {
         switch fieldGuideState {
-        case .notRequested, .isLoading:
+        case .notRequested:
             defaultView()
+        case .isLoading:
+            loadingView()
         case .loaded:
             loadedView()
         case let .failed(error):
@@ -217,7 +217,7 @@ private extension FieldGuideView {
     
     var scrollToTopButton: some View {
         Button {
-            offsetY = 0
+            routingState.scrollToTop = UUID()
         } label: {
             Image.SRIconSet.upper
                 .frame(.defaultIconSizeLarge)
@@ -225,6 +225,7 @@ private extension FieldGuideView {
         .srStyled(.iconButton)
         .padding(.bottom, 114)
         .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .opacity(offsetY > 0 ? 0 : 1)
     }
     
     var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
@@ -328,9 +329,5 @@ extension FieldGuideView {
     
     var routingBinding: Binding<Routing> {
         $routingState.dispatched(to: injected.appState, \.routing.fieldGuideView)
-    }
-    
-    var tapUpdate: AnyPublisher<ContentView.Routing, Never> {
-        injected.appState.updates(for: \.routing.contentView)
     }
 }

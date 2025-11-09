@@ -9,7 +9,10 @@
 import UIKit
 
 protocol UserInteractor {
+    func createAccount(nickname: String) async throws
+    func deleteAccount() async throws
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse
+    func deleteProfileImage() async throws
     func fetchNotifications() async throws -> [Local.NotificationItem]
     func fetchNotificationSetting() async throws -> Local.NotificationSettings
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool
@@ -32,6 +35,18 @@ struct UserInteractorImpl: UserInteractor {
     
     private var deviceID: String { TokenManager.shared.getDeviceId() }
     
+    func createAccount(nickname: String) async throws {
+        try await repository.createNewUser(nickname: nickname)
+    }
+    
+    func deleteAccount() async throws {
+        try await repository.deleteAccount()
+        if let user = try await repository.getUser() {
+            try await repository.deleteUser(user)
+            TokenManager.shared.clearTokens()
+        }
+    }
+    
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
         guard let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image) else {
             throw UserInteractorError.invalidImageData
@@ -49,6 +64,10 @@ struct UserInteractorImpl: UserInteractor {
         return try await repository.updateProfileImage(registerRequest)
     }
     
+    func deleteProfileImage() async throws {
+        _ = try await repository.deleteProfileImage()
+    }
+
     func fetchNotifications() async throws -> [Local.NotificationItem] {
         return try await .init(from: repository.fetchNotifications())
     }
@@ -59,9 +78,11 @@ struct UserInteractorImpl: UserInteractor {
     }
     
     func toggleAllNotificationSetting() async throws {
-        let _ = try await toggleNotificationSetting(.birdIdSuggestion)
-        let _ = try await toggleNotificationSetting(.comment)
-        let _ = try await toggleNotificationSetting(.like)
+        async let bird = toggleNotificationSetting(.birdIdSuggestion)
+        async let comment = toggleNotificationSetting(.comment)
+        async let like = toggleNotificationSetting(.like)
+
+        let _ = try await (bird, comment, like)
     }
 
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool {
@@ -95,6 +116,12 @@ struct UserInteractorImpl: UserInteractor {
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func deleteProfileImage() async throws { }
+    
+    func createAccount(nickname: String) async throws { }
+    
+    func deleteAccount() async throws { }
+
     func hasUnreadNotifications() async throws -> Bool { true }
     
     func deleteNotification(_ id: Int) async throws { }

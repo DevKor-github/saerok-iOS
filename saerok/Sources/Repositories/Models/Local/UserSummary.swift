@@ -30,7 +30,7 @@ extension Local.UserSummary {
     static func from(dto: DTO.CommunityItem.UserInfo?) -> Self {
         .init(
             id: dto?.userId ?? -1,
-            nickname: dto?.nickname ?? "",
+            nickname: dto?.nickname ?? "탈퇴한 사용자",
             profileImageUrl: dto?.profileImageUrl ?? ""
         )
     }

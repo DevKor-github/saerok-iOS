@@ -21,6 +21,7 @@ class MapController: ObservableObject {
     @Published var pendingActions: [Action] = []
     @Published var selectedBird: Local.NearbyCollectionSummary? = nil
     @Published var allBirdMarkers: [Local.NearbyCollectionSummary] = []
+    @Published var visibleRadius: Double = 1000
 
     init(locationManager: LocationManager) {
         self.locationManager = locationManager

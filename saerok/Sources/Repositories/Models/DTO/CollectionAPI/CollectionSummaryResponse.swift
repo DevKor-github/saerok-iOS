@@ -15,6 +15,7 @@ extension DTO {
         let imageUrl: String?
         let thumbnailImageUrl: String?
         let koreanName: String?
+        let createdAt: String?
         
         var id: Int { collectionId }
     }

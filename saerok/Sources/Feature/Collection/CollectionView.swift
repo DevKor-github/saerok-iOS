@@ -30,7 +30,7 @@ struct CollectionView: Routable {
     // MARK: - View State
     
     @State private var collectionSummaries: [Local.CollectionSummary] = []
-    @State private var collectionState: Loadable<Void> = .notRequested
+    @State private var loadingState: Loadable<Void> = .notRequested
     @State private var offsetY: CGFloat = 0
     @State private var showPopup: Bool = false
     @State private var hasUnread: Bool = false
@@ -40,8 +40,7 @@ struct CollectionView: Routable {
     
     // MARK: - Init
     
-    init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
-        self._collectionState = .init(initialValue: state)
+    init(path: Binding<NavigationPath>) {
         self._path = path
     }
     
@@ -81,15 +80,12 @@ struct CollectionView: Routable {
                     routingBinding.wrappedValue.collectionID = nil
                 }
             }
-            .onAppear {
-                loadUnreadNotification()
-            }
             .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
     }
     
     @ViewBuilder
     private var content: some View {
-        switch collectionState {
+        switch loadingState {
         case .notRequested: defaultView()
         case .isLoading: loadingView()
         case .loaded: loadedView()
@@ -117,12 +113,16 @@ private extension CollectionView {
             }
         }
         .ignoresSafeArea(.all)
+        .onAppear { loadUnreadNotification() }
     }
     
     @ViewBuilder
     var headerBackgroundColor: some View {
         Color.srWhite
-        Image(.blurTemplate).opacity(opacityForScroll(offset: offsetY))
+        Image(.blurTemplate)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .opacity(opacityForScroll(offset: offsetY))
         Rectangle().fill(.thinMaterial).ignoresSafeArea()
     }
     
@@ -162,7 +162,7 @@ private extension CollectionView {
                     navigationBar
                     VStack(spacing: 0) {
                         CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
-                        StaggeredGrid<_, _, EmptyView>(items: collectionSummaries.reversed(), columns: 2) { bird in
+                        StaggeredGrid<_, _, EmptyView>(items: collectionSummaries, columns: 2) { bird in
                             CollectionItemView(bird: bird, tapped: {
                                 injected.appState[\.routing.collectionView.collectionID] = bird.id
                             })
@@ -260,6 +260,7 @@ private extension CollectionView {
     func loadingView() -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
+            .onDisappear { loadingState.cancelLoading() }
     }
     
     func failedView(_ error: Error) -> some View {
@@ -273,7 +274,7 @@ private extension CollectionView {
 private extension CollectionView {
     func loadMyCollections() {
         if !isGuestMode {
-            $collectionState.load {
+            $loadingState.load {
                 collectionSummaries = try await injected.interactors.collection.fetchMyCollections()
             }
         }

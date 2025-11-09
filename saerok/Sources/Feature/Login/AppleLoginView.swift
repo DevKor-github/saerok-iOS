@@ -78,7 +78,9 @@ private extension AppleLoginView {
             let response: DTO.AuthResponse = try await injected
                 .networkService
                 .performSRRequest(.appleLogin(authorizationCode: authorizationCode))
+            
             TokenManager.shared.trySocialLogin(accessToken: response.accessToken)
+            
             await MainActor.run {
                 user.id = id
                 user.email = email ?? "Unknown"

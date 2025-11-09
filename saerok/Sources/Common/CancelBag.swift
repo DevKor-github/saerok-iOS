@@ -15,7 +15,7 @@ final class CancelBag {
     init(equalToAny: Bool = false) {
         self.equalToAny = equalToAny
     }
-    
+ 
     func cancel() {
         cancellables.removeAll()
     }

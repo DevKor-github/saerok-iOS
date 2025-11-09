@@ -23,7 +23,6 @@ final class ImageCache {
     
     public func set(_ image: UIImage, forKey key: String) {
         let pixels = image.size.width * image.size.height * image.scale * image.scale
-        let cost = Int(pixels) * 4
         cache.setObject(image, forKey: key as NSString)
     }
 }

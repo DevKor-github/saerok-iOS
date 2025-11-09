@@ -37,8 +37,3 @@ struct CollectionItemView: View {
         .buttonStyle(.plain)
     }
 }
-
-#Preview {
-    CollectionItemView(bird: .mockData[0], tapped: {})
-        .padding(100)
-}

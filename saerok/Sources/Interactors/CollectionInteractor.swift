@@ -19,7 +19,8 @@ protocol CollectionInteractor {
     func toggleLike(_ id: Int) async throws -> Bool
     func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary]
     func reportCollection(_ id: Int) async throws
-    
+    func reportComment(collecionId: Int, commentId: Int) async throws
+
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion]
     func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion
     func toggleAgree(_ id: Int, suggestion: Local.BirdSuggestion) async throws -> Local.BirdSuggestion
@@ -41,7 +42,8 @@ struct CollectionInteractorImpl: CollectionInteractor {
     let repository: CollectionRepository
     
     func fetchMyCollections() async throws -> [Local.CollectionSummary] {
-        return try await repository.fetchCollectionSummaries()
+        try await repository.fetchCollectionSummaries()
+            .sorted { $0.createdAt > $1.createdAt }
     }
     
     func fetchCollectionDetail(id: Int) async throws -> Local.CollectionDetail {
@@ -111,6 +113,10 @@ struct CollectionInteractorImpl: CollectionInteractor {
     func reportCollection(_ id: Int) async throws {
         try await repository.reportCollection(id)
     }
+    
+    func reportComment(collecionId: Int, commentId: Int) async throws {
+        try await repository.reportComment(collecionId, commentId: commentId)
+    }
 
     
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] {
@@ -149,6 +155,8 @@ struct CollectionInteractorImpl: CollectionInteractor {
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
+    func reportComment(collecionId: Int, commentId: Int) async throws { }
+    
     func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary] { [] }
     
     func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] { [] }
@@ -159,9 +167,7 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     
     func createCollection(_ draft: Local.CollectionDraft) async throws { }
     
-    func fetchMyCollections() async throws -> [Local.CollectionSummary] {
-        return Local.CollectionSummary.mockData
-    }
+    func fetchMyCollections() async throws -> [Local.CollectionSummary] { [] }
     
     func fetchCollectionDetail(id: Int) async throws -> Local.CollectionDetail {
         return Local.CollectionDetail.mockData[0]

@@ -46,9 +46,7 @@ struct ContentView: Routable {
                     .opacity(routingState.isTabbarHidden ? 0 : 1)
                     .allowsHitTesting(!routingState.isTabbarHidden)
             }
-            .ifLet(selectedTab.onboardingType) { view, type in
-                view.onboardingOverlay(type: type)
-            }
+            .onboardingOverlay(type: selectedTab.onboardingType)
             .ignoresSafeArea(.all)
         }
         .ignoresSafeArea(.all)
@@ -83,40 +81,53 @@ extension ContentView {
 
 struct CachedTabContainer: View {
     let selectedTab: TabbedItems
-    @State private var cache: [TabbedItems: AnyView] = [:]
     @Binding var path: NavigationPath
-    
+    @State private var cache: [TabbedItems: AnyView] = [:]
+
     var body: some View {
         ZStack {
             ForEach(TabbedItems.allCases, id: \.self) { tab in
+                let isSelected = (selectedTab == tab)
                 Group {
                     if tab == .map {
-                        if selectedTab == .map {
+                        if isSelected {
                             MapView(path: $path)
                         } else {
                             EmptyView()
                         }
-                    } else if let cached = cache[tab] {
-                        cached
-                    } else if selectedTab == tab {
-                        LazyView(viewFor(tab, path: path))
-                            .onAppear {
-                                cache[tab] = AnyView(viewFor(tab, path: path))
-                            }
                     } else {
-                        EmptyView()
+                        if let cached = cache[tab] {
+                            cached
+                        } else if isSelected {
+                            let built = AnyView(TabContent(tab: tab, path: $path))
+                            built
+                                .onAppear {
+                                    cache[tab] = built
+                                }
+                        } else {
+                            EmptyView()
+                        }
                     }
                 }
-                .opacity(selectedTab == tab ? 1 : 0)
-                .scaleEffect(selectedTab == tab ? 1 : 0.98)
-                .offset(y: selectedTab == tab ? 0 : 5)
+                .opacity(isSelected ? 1 : 0)
+                .scaleEffect(isSelected ? 1 : 0.98)
+                .offset(y: isSelected ? 0 : 5)
                 .animation(.spring(response: 0.15, dampingFraction: 0.9), value: selectedTab)
             }
         }
     }
-    
+}
+
+private struct TabContent: View {
+    let tab: TabbedItems
+    @Binding var path: NavigationPath
+
+    var body: some View {
+        content
+    }
+
     @ViewBuilder
-    private func viewFor(_ tab: TabbedItems, path: NavigationPath) -> some View {
+    private var content: some View {
         switch tab {
         case .map:
             EmptyView()
@@ -128,17 +139,6 @@ struct CachedTabContainer: View {
             CommunityView(path: $path)
         case .profile:
             MyPageView(path: $path)
-        }
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func ifLet<T, Content: View>(_ value: T?, transform: (Self, T) -> Content) -> some View {
-        if let value {
-            transform(self, value)
-        } else {
-            self
         }
     }
 }

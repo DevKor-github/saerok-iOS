@@ -20,6 +20,8 @@ struct AccountView: View {
     private var user: User? { userManager.user }
     
     @State var showPopup: Bool = false
+    @State var showDeletePopup: Bool = false
+    @State var isDeleting: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
@@ -27,7 +29,10 @@ struct AccountView: View {
             
             Group {
                 userInfoSection
-                logoutRow
+                VStack(spacing: 16) {
+                    logoutRow
+                    deleteAccountRow
+                }
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
             
@@ -35,6 +40,8 @@ struct AccountView: View {
         }
         .regainSwipeBack()
         .customPopup(isPresented: $showPopup) { alertView }
+        .customPopup(isPresented: $showDeletePopup) { deleteAlertView }
+        .disabled(isDeleting)
     }
     
     @ViewBuilder
@@ -70,6 +77,26 @@ struct AccountView: View {
                     .foregroundStyle(.black)
                     .padding(2)
                 Text("로그아웃")
+                    .font(.SRFontSet.body2)
+            }
+            .padding(.vertical, 9)
+            .padding(.horizontal, 15)
+            .background(Color.srLightGray)
+            .cornerRadius(.infinity)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var deleteAccountRow: some View {
+        Button {
+            showDeletePopup = true
+        } label: {
+            HStack(spacing: 8) {
+                Image.SRIconSet.logout
+                    .frame(.custom(width: 19, height: 20), tintColor: .red)
+                    .foregroundStyle(.black)
+                    .padding(2)
+                Text("회원탈퇴")
                     .font(.SRFontSet.body2)
             }
             .padding(.vertical, 9)
@@ -117,11 +144,43 @@ struct AccountView: View {
         )
     }
     
+    var deleteAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "정말 탈퇴하시겠어요?",
+            message: "탈퇴 시 탐조기록이 모두 삭제돼요",
+            leading: .init(
+                title: "회원탈퇴",
+                action: {
+                    deleteAccount()
+                },
+                style: .delete
+            ),
+            trailing: .init(
+                title: "돌아가기",
+                action: {
+                    showDeletePopup = false
+                },
+                style: .confirm
+            ),
+            center: nil
+        )
+    }
+    
     func logout() {        
         Task { @MainActor in
             TokenManager.shared.clearTokens()
             userManager.deleteUser()
             injected.appState[\.authStatus] = .notDetermined
+        }
+    }
+    
+    func deleteAccount() {
+        Task {
+            isDeleting = true
+            try await injected.interactors.user.deleteAccount()
+            injected.appState[\.authStatus] = .notDetermined
+            showDeletePopup = false
+            isDeleting = false
         }
     }
 }

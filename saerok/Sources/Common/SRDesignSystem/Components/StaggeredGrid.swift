@@ -8,6 +8,8 @@
 
 import SwiftUI
 
+private extension View {}
+
 struct StaggeredGrid<Content: View, T: Hashable, Header: View>: View {
     var items: [T]
     var columns: Int
@@ -15,16 +17,32 @@ struct StaggeredGrid<Content: View, T: Hashable, Header: View>: View {
     var header: (() -> Header)?
     var content: (T) -> Content
     
+    // 헤더 있는 버전
     init(
         items: [T],
         columns: Int,
         spacing: CGFloat = 8,
-        @ViewBuilder header: () -> Header? = { nil },
+        @ViewBuilder header: @escaping () -> Header,
         @ViewBuilder content: @escaping (T) -> Content
     ) {
         self.items = items
         self.columns = columns
         self.spacing = spacing
+        self.header = header
+        self.content = content
+    }
+    
+    // 헤더 없는 버전 (Header == EmptyView 로 고정)
+    init(
+        items: [T],
+        columns: Int,
+        spacing: CGFloat = 8,
+        @ViewBuilder content: @escaping (T) -> Content
+    ) where Header == EmptyView {
+        self.items = items
+        self.columns = columns
+        self.spacing = spacing
+        self.header = nil
         self.content = content
     }
     
@@ -46,8 +64,11 @@ struct StaggeredGrid<Content: View, T: Hashable, Header: View>: View {
             ForEach(Array(generateColumns().enumerated()), id: \.offset) { colIndex, columnItems in
                 LazyVStack(spacing: spacing) {
                     ForEach(Array(columnItems.enumerated()), id: \.element.hashValue) { rowIndex, item in
-                        if colIndex == 0 && rowIndex == 0, let header = header {
-                            header()
+                        if colIndex == 0 && rowIndex == 0, let header {
+                            VStack(spacing: spacing) {
+                                header()
+                                content(item)
+                            }
                         } else {
                             content(item)
                         }
@@ -65,3 +86,4 @@ struct StaggeredGrid<Content: View, T: Hashable, Header: View>: View {
         .padding(.vertical)
     }
 }
+

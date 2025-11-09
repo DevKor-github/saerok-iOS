@@ -14,6 +14,7 @@ extension Local {
         let imageURL: String?
         let thumbnailImageURL: String?
         let birdName: String?
+        let createdAt: Date
     }
 }
 
@@ -23,42 +24,8 @@ extension Local.CollectionSummary {
             id: dto.collectionId,
             imageURL: dto.imageUrl,
             thumbnailImageURL: dto.thumbnailImageUrl,
-            birdName: dto.koreanName
+            birdName: dto.koreanName,
+            createdAt: DateFormatter.iso8601.date(from: dto.createdAt ?? "") ?? .now
         )
     }
-}
-
-extension Local.CollectionSummary {
-    static let mockData: [Local.CollectionSummary] = [
-        .init(
-            id: 1,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
-            thumbnailImageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
-            birdName: "가짜청딱따구리"
-        ),
-        .init(
-            id: 2,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/5041_000_1/20171207142615274_7IO0RPQAT.jpg/ib68_188_i3.jpg?type=m1500",
-            thumbnailImageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
-            birdName: "가짜참새"
-        ),
-        .init(
-            id: 3,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706175201747_5965PTVUI.jpg/ia82_278_i4.jpg?type=m1500",
-            thumbnailImageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
-            birdName: "가짜참매"
-        ),
-        .init(
-            id: 4,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706152059339_0WNI1C2F5.jpg/ia82_93_i4.jpg?type=m1500",
-            thumbnailImageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
-            birdName: "가짜갈매기"
-        ),
-        .init(
-            id: 5,
-            imageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706175201747_5965PTVUI.jpg/ia82_278_i4.jpg?type=m1500",
-            thumbnailImageURL: "https://dbscthumb-phinf.pstatic.net/3997_000_1/20150706182907626_U2GYB4NMS.jpg/ia82_327_i4.jpg?type=m1500",
-            birdName: "가짜쇠백로"
-        )
-    ]
 }

@@ -82,3 +82,13 @@ extension DateFormatter {
         return formatter
     }()
 }
+
+extension DateFormatter {
+    static let iso8601Basic: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter
+    }()
+}

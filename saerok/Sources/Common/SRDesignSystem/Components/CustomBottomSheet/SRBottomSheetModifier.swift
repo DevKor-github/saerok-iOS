@@ -9,19 +9,20 @@
 import SwiftUI
 
 extension View {
-    func srbottomSheetStyle(presentationDetent det: Set<PresentationDetent> = [.medium, .large]) -> some View {
-        self.modifier(SRBottomSheetModifier(detent: det))
+    func srbottomSheetStyle(presentationDetent det: Set<PresentationDetent> = [.medium, .large], backgroundColor: Color = .srLightGray) -> some View {
+        self.modifier(SRBottomSheetModifier(detent: det, backgroundColor: backgroundColor))
     }
 }
 
 struct SRBottomSheetModifier: ViewModifier {
     let detent: Set<PresentationDetent>
+    let backgroundColor: Color
     
     func body(content: Content) -> some View {
         content
             .presentationDetents(detent)
-            .presentationCornerRadius(30)
-            .presentationBackground(.srLightGray)
+//            .presentationCornerRadius(30)
+            .presentationBackground(backgroundColor)
             .presentationDragIndicator(.hidden)
             .ignoresSafeArea(edges: .bottom)
     }

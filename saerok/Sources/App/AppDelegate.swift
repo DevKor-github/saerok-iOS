@@ -34,8 +34,8 @@ extension AppDelegate {
     ) -> Bool {
         FirebaseApp.configure()
         PushNotificationManager.shared.configurePush(application: application, diContainer: environment.diContainer)
-        KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
-//        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
+//        KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
+        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
         
         Task { @MainActor in
             environment.diContainer.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
@@ -62,7 +62,6 @@ extension AppDelegate {
     private func requestTrackingAuthorization() {
         Task {
             _ = await ATTrackingManager.requestTrackingAuthorization()
-            print("ATT 요청이 완료되었습니다.")
         }
     }
 }

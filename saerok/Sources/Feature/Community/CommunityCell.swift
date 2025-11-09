@@ -59,6 +59,7 @@ struct CommunityCell: View {
         default:
             VStack(alignment: .leading, spacing: 5.5) {
                 nameTag(item: item, type)
+                    .padding(.bottom, 1.5)
                 note(item: item, type)
                 dateAndLocation
             }
@@ -125,7 +126,7 @@ struct CommunityCell: View {
     
     private var dateAndLocation: some View {
         HStack(spacing: 7) {
-            Text(item.discoveredDate?.timeAgoText ?? "방금 전")
+            Text(item.createdAt.timeAgoText)
             comma
             Text("\(item.locationAlias)에서")
         }

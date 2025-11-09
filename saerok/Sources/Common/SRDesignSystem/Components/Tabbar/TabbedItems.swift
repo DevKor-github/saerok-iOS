@@ -9,9 +9,9 @@ import SwiftUI
 
 enum TabbedItems: Int, CaseIterable {
     case collection = 0
-    case fieldGuide 
-    case map
+    case fieldGuide
     case community
+    case map
     case profile
     
     var title: String {
@@ -61,13 +61,13 @@ enum TabbedItems: Int, CaseIterable {
 }
 
 extension TabbedItems {
-    var onboardingType: OnboardingType? {
+    var onboardingType: OnboardingType {
         switch self {
         case .collection: return .saerok
         case .fieldGuide: return .fieldGuide
         case .map: return .map
         case .community: return .nest
-        default: return nil  // 프로필 탭 등 온보딩 없는 경우
+        case .profile: return .profile
         }
     }
 }

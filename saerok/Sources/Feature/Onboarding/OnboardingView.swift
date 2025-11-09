@@ -118,7 +118,7 @@ struct OnboardingView: View {
         Button(action: onSkip) {
             ZStack {
                 if currentIndex == type.pages.count - 1 {
-                    Text("새록 시작하기")
+                    Text("\(type.rawValue) 시작하기")
                         .frame(maxWidth: .infinity)
                         .font(.SRFontSet.button1_2)
                         .padding(.vertical, 16)
@@ -155,15 +155,6 @@ struct OnboardingView: View {
     }
 }
 
-#Preview {
-    ZStack {
-        Color.gray
-        OnboardingView(type: .fieldGuide, onSkip: {})
-    }
-    .ignoresSafeArea()
-    .background(Color.gray)
-}
-
 struct OnboardingPage: Identifiable {
     let id = UUID()
     let tabName: String
@@ -178,6 +169,7 @@ enum OnboardingType: String, CaseIterable, Identifiable {
     case fieldGuide = "도감"
     case map = "지도"
     case nest = "둥지"
+    case profile = "프로필"
     
     var id: String { rawValue }
     
@@ -232,6 +224,9 @@ enum OnboardingType: String, CaseIterable, Identifiable {
                       description: "다양한 새록을 보고,\n검색을 통해 원하는 새를 찾아보세요!",
                       imageName: .onboarding41, imageYOffset: 37)
             ]
+            
+        case .profile:
+            return []
         }
     }
 }

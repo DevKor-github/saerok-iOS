@@ -11,6 +11,7 @@ import SwiftUI
 extension View {
     func bottomSheet<SheetContent: View>(
         isShowing: Binding<Bool>? = nil,
+        isFocused: FocusState<Bool>? = nil,
         alwaysOnDisplay: Bool = false,
         topOffset: CGFloat = 100,
         backgroundColor: Color = .srLightGray,
@@ -21,6 +22,7 @@ extension View {
         self.modifier(
             BottomSheetModifier(
                 isShowing: isShowing ?? .constant(true),
+                isFocused: isFocused,
                 alwaysOnDisplay: alwaysOnDisplay,
                 topOffset: topOffset,
                 backgroundColor: backgroundColor,
@@ -56,6 +58,7 @@ enum BottomSheetDetent {
 
 struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     @Binding var isShowing: Bool
+    var isFocused: FocusState<Bool>?
     let alwaysOnDisplay: Bool
     let topOffset: CGFloat
     let backgroundColor: Color
@@ -93,6 +96,11 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
         .onChange(of: isShowing) { _, new in
             if new == false {
                 currentDetent = .medium
+            }
+        }
+        .onAppear {
+            if alwaysOnDisplay {
+                currentDetent = .minimum
             }
         }
     }
@@ -167,7 +175,11 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             .ignoresSafeArea()
             .onTapGesture {
                 withAnimation {
-                    isShowing = false
+                    if let isFocused, isFocused.wrappedValue {
+                        isFocused.wrappedValue.toggle()
+                    } else {
+                        isShowing = false
+                    }
                 }
             }
             .transition(.opacity)

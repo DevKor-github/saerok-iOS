@@ -16,7 +16,7 @@ struct OnboardingOverlayModifier: ViewModifier {
         ZStack {
             content
 
-            if showOnboarding {
+            if showOnboarding && type != .profile {
                 Color.black.opacity(0.5)
                     .ignoresSafeArea()
                     .transition(.opacity)

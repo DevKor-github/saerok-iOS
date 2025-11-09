@@ -41,6 +41,8 @@ struct CollectionFormView: Routable {
     @State private var isImageLoading: Bool = false
     @StateObject var collectionDraft: Local.CollectionDraft
     
+    @State private var lastPathCount: Int = 0
+
     private var locationManager: LocationManager { LocationManager.shared }
     
     init(mode: CollectionFormMode, path: Binding<NavigationPath>) {
@@ -74,6 +76,7 @@ struct CollectionFormView: Routable {
                 self.collectionDraft.bird = selectedBird
             }
             .onAppear {
+                lastPathCount = path.count
                 injected.appState[\.routing.collectionView.addCollection] = false
                 loadBirdIfNeededOnEditMode()
             }
@@ -86,7 +89,9 @@ struct CollectionFormView: Routable {
                 }
             }
             .onDisappear {
-                injected.appState[\.routing.addCollectionItemView.locationSelected] = false
+                if path.count < lastPathCount {
+                    injected.appState[\.routing.addCollectionItemView] = .init()
+                }
             }
             .navigationBarHidden(true)
     }
@@ -131,6 +136,7 @@ private extension CollectionFormView {
                 AnyView(EmptyView())
             }
         }
+        .disabled(isSubmitting)
     }
     
     var visibilityToggleButton: some View {
@@ -248,10 +254,12 @@ extension CollectionFormView {
     }
     
     func deleteCollection() {
+        isSubmitting = true
         Task {
             guard let id = collectionDraft.collectionID else { return }
-            
+
             try? await injected.interactors.collection.deleteCollection(id)
+            isSubmitting = false
             path.removeLast()
             path.removeLast()
             injected.appState[\.routing.collectionView.refreshCollections] = UUID()

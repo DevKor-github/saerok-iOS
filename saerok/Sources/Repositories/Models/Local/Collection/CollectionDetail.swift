@@ -32,7 +32,7 @@ extension Local {
             likeCount += isOn ? 1 : -1
             isLiked = isOn
         }
-        
+    
         static func == (lhs: Local.CollectionDetail, rhs: Local.CollectionDetail) -> Bool {
             lhs.id == rhs.id &&
             lhs.discoveredDate == rhs.discoveredDate &&
@@ -81,7 +81,7 @@ extension Local.CollectionDetail {
             scientificName: dto.bird.scientificName,
             user: Local.UserSummary(
                 id: dto.user.userId,
-                nickname: dto.user.nickname,
+                nickname: dto.user.nickname ?? "탈퇴한 사용자",
                 profileImageUrl: dto.user.profileImageUrl
             )
         )

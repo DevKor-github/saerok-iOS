@@ -19,9 +19,9 @@ struct MyPageView: View {
     
     @Environment(\.injected) var injected
     
-    @ObservedObject var userManager = UserManager.shared
+    @StateObject var userManager = UserManager.shared
     private var user: User? { userManager.user }
-    
+
     @Binding var path: NavigationPath
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -33,7 +33,7 @@ struct MyPageView: View {
     
     var body: some View {
         content
-            .navigationDestination(for: Route.self) { route in
+            .navigationDestination(for: MyPageView.Route.self) { route in
                 switch route {
                 case .account:
                     AccountView(path: $path)
@@ -43,7 +43,7 @@ struct MyPageView: View {
                     EditProfileView(path: $path)
                 }
             }
-            .onAppear {
+            .task(id: isGuest ? "guest" : "user") {
                 syncUser()
             }
     }
@@ -141,12 +141,14 @@ private extension MyPageView {
                 nickname: user?.nickname ?? "",
                 profileImageUrl: user?.imageURL ?? ""
             ),
-            joinedDate: user?.joinedDate ?? .now
+            joinedDate: user?.joinedDate ?? .now,
+            onTap: { path.append(Route.editProfile) }
         )
     }
     
     private func syncUser() {
         Task {
+            if !isGuest, user != nil { return }
             do {
                 let me: DTO.MeResponse = try await injected.networkService.performSRRequest(.me)
                 userManager.syncUser(from: me)
@@ -177,6 +179,7 @@ struct UserInfoView: View {
     let type: ViewType
     let user: Local.UserSummary
     let joinedDate: Date
+    let onTap: () -> Void
     
     var body: some View {
         HStack(alignment: type == .my ? .top : .center, spacing: 8) {
@@ -202,6 +205,14 @@ struct UserInfoView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             
             Spacer()
+            
+            if type == .my {
+                Button(action: onTap) {
+                    Image.SRIconSet.edit
+                        .frame(.defaultIconSizeLarge)
+                }
+                .buttonStyle(.icon)
+            }
         }
     }
     

@@ -79,7 +79,7 @@ struct MapView: Routable {
                 isNavigating = true
                 injected.appState[\.routing.mapView.navigation] = nil
                 Task { @MainActor in
-                    mapController.moveCamera(lat: update.latitude, lng: update.longitude)
+                    mapController.moveCamera(lat: update.latitude, lng: update.longitude, animated: true)
                     try? await Task.sleep(for: .seconds(0.3))
                     try? await fetchPosition(update.latitude, update.longitude)
 
@@ -95,7 +95,7 @@ struct MapView: Routable {
             Text("")
             .task {
                 if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
-                    Task { @MainActor in
+                    Task {
                         position = (location.latitude, location.longitude)
                         try? await fetchNearby(mineOnly: isMineOnly)
                         mapViewState = .loaded(())
@@ -258,7 +258,7 @@ private extension MapView {
 private extension MapView {
     func searchCellTapped(_ item: Local.KakaoPlace) {
         position = (item.latitude, item.longtitude)
-        mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
+        mapController.moveCamera(lat: item.latitude, lng: item.longtitude, animated: true)
         mode = .idle
     }
     
@@ -286,10 +286,11 @@ private extension MapView {
     }
     
     func fetchNearby(mineOnly: Bool) async throws {
+        let radius = mapController.visibleRadius
         item = try await  injected.interactors.collection.fetchNearbyCollections(
             lat: position.0,
             lng: position.1,
-            rad: 1000,
+            rad: radius,
             isMineOnly: mineOnly,
             isGuest: isGuest
         )

@@ -29,7 +29,9 @@ extension Store {
     }
 
     func updates<T: Equatable>(for keyPath: KeyPath<Output, T>) -> AnyPublisher<T, Failure> {
-        map(keyPath).removeDuplicates().eraseToAnyPublisher()
+        map(keyPath)
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 }
 

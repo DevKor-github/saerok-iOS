@@ -16,6 +16,7 @@ struct CollectionDetailView: View {
         case edit
         case findBird
         case preview
+        case bird(_ id: Int)
         case other(_ id: Int)
     }
     
@@ -82,7 +83,7 @@ struct CollectionDetailView: View {
                 showPopup: $uiState.showPopup,
                 showSuggestPopup: $uiState.showSuggestPopup,
                 showAdoptPopup: $uiState.showAdoptPopup,
-                alertView: alertView,
+                alertView: postReportAlertView,
                 adoptView: adoptAlertView,
                 suggestAlertView: suggestAlertView
             )
@@ -100,16 +101,19 @@ struct CollectionDetailView: View {
         }
         .regainSwipeBack()
         .onAppear {
+            uiState.loadState = .loading
             if uiState.loadState == .loaded { return }
-            fetchCollectionDetail()
-            fetchCollectionComments()
-            fetchSuggestion()
+            loadData()
         }
         .navigationDestination(for: CollectionDetailView.Route.self) { route in
             switch route {
             case .edit:
                 if let path = path {
                     CollectionFormView(mode: .edit(collection), path: path)
+                }
+            case .bird(let id):
+                if let path = path {
+                    BirdDetailView(birdID: id, path: path)
                 }
             case .findBird:
                 if let path = path {
@@ -160,14 +164,14 @@ private extension CollectionDetailView {
             navigationBar
         }
         .background(Color.srLightGray)
-        .bottomSheet(isShowing: $uiState.showCommentSheet, keyboard: keyboard) {
+        .bottomSheet(isShowing: $uiState.showCommentSheet, isFocused: _isFocused, keyboard: keyboard) {
             CollectionCommentSheet(
+                collectionId: collectionID,
                 isMyCollection: collection.isMine,
                 nickname: collection.user.nickname,
                 comments: comments,
-                onTap: navigateToOther,
+                onTap: navigateToOther(_:),
                 onDelete: deleteComment,
-                onReport: { uiState.showPopup = true },
                 onDismiss: { uiState.showCommentSheet.toggle() },
             )
         }
@@ -238,7 +242,9 @@ private extension CollectionDetailView {
     @ViewBuilder
     var trailingProfileImage: some View {
         if !collection.isMine {
-            Button(action: navigateToOther) {
+            Button {
+                navigateToOther(collection.user.id)
+            } label: {
                 HStack {
                     ReactiveAsyncImage(
                         url: collection.user.profileImageUrl,
@@ -356,7 +362,7 @@ private extension CollectionDetailView {
         }
     }
     
-    var alertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+    var postReportAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "게시물을 신고하시겠어요?",
             message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
@@ -426,40 +432,47 @@ private extension CollectionDetailView {
             center: nil
         )
     }
+    
+    
 }
 
 // MARK: - Networking
 
 private extension CollectionDetailView {
-    func fetchCollectionDetail() {
+    func loadData() {
         Task {
-            do {
-                let collectionBird = try await injected.interactors.collection.fetchCollectionDetail(id: collectionID)
-                self.collection = collectionBird
-                downloadImage(from: collectionBird.imageURL)
-                uiState.loadState = .loaded
-            } catch {
-                uiState.loadState = .invalid
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { await fetchCollectionDetail() }
+                group.addTask { await fetchCollectionComments() }
+                group.addTask { await fetchSuggestion() }
+                await group.waitForAll()
             }
         }
     }
     
-    func fetchCollectionComments() {
-        Task {
-            do {
-                comments = try await injected.interactors.collection.fetchComments(collectionID)
-            } catch {
-                print(error.localizedDescription)
-            }
+    func fetchCollectionDetail() async {
+        do {
+            let collectionBird = try await injected.interactors.collection.fetchCollectionDetail(id: collectionID)
+            self.collection = collectionBird
+            downloadImage(from: collectionBird.imageURL)
+            uiState.loadState = .loaded
+        } catch {
+            uiState.loadState = .invalid
         }
     }
     
-    func fetchSuggestion() {
-        Task {
-            let result = try await injected.interactors.collection.fetchBirdSuggestions(collectionID)
-            suggestions = result
-            if !result.isEmpty { selectedPreview = suggestions[0] }
+    func fetchCollectionComments() async {
+        do {
+            comments = try await injected.interactors.collection.fetchComments(collectionID)
+        } catch {
+            print(error.localizedDescription)
         }
+    }
+    
+    func fetchSuggestion() async {
+        guard let result = try? await injected.interactors.collection.fetchBirdSuggestions(collectionID) else { return }
+        suggestions = result
+        if !result.isEmpty { selectedPreview = suggestions[0] }
     }
     
     func postComment() {
@@ -467,6 +480,7 @@ private extension CollectionDetailView {
             do {
                 try await injected.interactors.collection.createComments(id: collectionID, uiState.text)
                 comments = try await injected.interactors.collection.fetchComments(collectionID)
+                collection.commentCount += 1
             } catch {
                 
             }
@@ -478,8 +492,8 @@ private extension CollectionDetailView {
         Task {
             do {
                 try await injected.interactors.collection.deleteComment(collectionId: collectionID, commentId: id)
-                collection.commentCount -= 1
                 comments = try await injected.interactors.collection.fetchComments(collectionID)
+                collection.commentCount -= 1
             } catch {
                 print(error.localizedDescription)
             }
@@ -523,12 +537,12 @@ private extension CollectionDetailView {
             try await injected.interactors.collection.adoptSuggestion(collectionID, birdId: birdId)
             uiState.showAdoptPopup = false
             uiState.showSuggestionSheet = false
-            fetchCollectionDetail()
+            await fetchCollectionDetail()
         }
     }
     
-    func navigateToOther() {
-        path?.wrappedValue.append(Route.other(collection.user.id))
+    func navigateToOther(_ userId: Int) {
+        path?.wrappedValue.append(Route.other(userId))
     }
     
     func downloadImage(from urlString: String) {

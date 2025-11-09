@@ -44,7 +44,7 @@ extension Local.NearbyCollectionSummary {
               isLiked: dto.isLiked,
               user: .init(
                 userId: dto.user.userId,
-                nickname: dto.user.nickname,
+                nickname: dto.user.nickname ?? "탈퇴한 사용자",
                 profileImageUrl: dto.user.profileImageUrl
               )
         )

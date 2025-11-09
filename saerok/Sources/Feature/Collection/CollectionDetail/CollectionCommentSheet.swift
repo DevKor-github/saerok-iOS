@@ -9,13 +9,18 @@
 import SwiftUI
 
 struct CollectionCommentSheet: View {
+    let collectionId: Int
     let isMyCollection: Bool
     let nickname: String
     let comments: [Local.CollectionComment]
-    let onTap: () -> Void
+    let onTap: (_ userId: Int) -> Void
     let onDelete: (Int) -> Void
-    let onReport: () -> Void
     let onDismiss: () -> Void
+
+    @State var showReportCommentPopup: Bool = false
+    @State private var selectedCommentId: Int? = nil
+
+    @Environment(\.injected) private var injected: DIContainer
 
     var body: some View {
         VStack(spacing: 20) {
@@ -30,9 +35,12 @@ struct CollectionCommentSheet: View {
                             CollectionCommentCell(
                                 isMyCollection: isMyCollection,
                                 item: item,
-                                onTap: onTap,
+                                onTap: { onTap(item.user.id) },
                                 onDelete: onDelete,
-                                onReport: onReport
+                                onReport: {
+                                    selectedCommentId = item.id
+                                    showReportCommentPopup.toggle()
+                                }
                             )
                         }
 
@@ -42,6 +50,9 @@ struct CollectionCommentSheet: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
+        }
+        .customPopup(isPresented: $showReportCommentPopup) {
+            commentReportAlertView
         }
     }
 
@@ -80,4 +91,43 @@ struct CollectionCommentSheet: View {
         }
         .padding(.top, 78)
     }
+    
+    var commentReportAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "이 댓글을 신고하시겠어요?",
+            message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
+            leading: .init(
+                title: "신고하기",
+                action: {
+                    test()
+                    showReportCommentPopup = false
+                },
+                style: .delete
+            ),
+            trailing: .init(
+                title: "돌아가기",
+                action: { showReportCommentPopup = false },
+                style: .confirm
+            ),
+            center: nil
+        )
+    }
+    
+    func test() {
+        if let id = selectedCommentId {
+            Task {
+                do {
+                    try await injected.interactors.collection.reportComment(
+                        collecionId: collectionId,
+                        commentId: id
+                    )
+                    selectedCommentId = nil
+                } catch {
+                    print(error.localizedDescription)
+                }
+                
+            }
+        }
+    }
 }
+

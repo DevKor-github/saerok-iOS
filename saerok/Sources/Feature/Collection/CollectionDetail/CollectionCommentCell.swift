@@ -56,10 +56,12 @@ struct CollectionCommentCell: View {
                             }
                         }
                         
-                        Button {
-                            onReport()
-                        } label: {
-                            Label("신고하기", systemImage: "light.beacon.max")
+                        if !item.isMine {
+                            Button {
+                                onReport()
+                            } label: {
+                                Label("신고하기", systemImage: "light.beacon.max")
+                            }
                         }
                     } label: {
                         Image.SRIconSet.option.frame(.defaultIconSize)

@@ -11,7 +11,7 @@ import SwiftData
 
 extension Local {
     @Model
-    final class Bird: Sendable, Equatable {
+    final class Bird: Equatable {
         @Attribute(.unique) var id: Int
         var name: String              // 국명
         var scientificName: String    // 학명
@@ -101,7 +101,7 @@ extension Local.Bird {
             id: 901,
             name: "가짜청딱따구리",
             scientificName: "Picus canus",
-            detail: "청딱따구리는 길이가 25~26cm로 딱따구리 중에서 큰 편에 속하는 새이고, 날개 폭이 38~40cm이며, 무게는 약 125g이다.  청딱따구리는 윗부분이 올리브 녹색으로 균일하고 목을 가로질러 밝은 회색으로 변하며 머리는 후자의 색이다. 전형적인 딱따구리 표시는 작고 특별히 눈에 띄지 않는다. 회색 머리에 검은 콧수염이 있고, 수컷은 붉은 왕관을 갖고 있다. ",
+            detail: "청딱따구리는 길이가 25~26cm로 딱따구리 중에서 큰 편에 속하는 새이고, 날개 폭이 38~40cm이며, 무게는 약 125g이다.청딱따구리는 윗부분이 올리브 녹색으로 균일하고 목을 가로질러 밝은 회색으로 변하며 머리는 후자의 색이다. 전형적인 딱따구리 표시는 작고 특별히 눈에 띄지 않는다. 회색 머리에 검은 콧수염이 있고, 수컷은 붉은 왕관을 갖고 있다. ",
             classification: "딱따구리목 > 딱따구리과 > 딱따구리속",
             seasons: [.spring, .summer],
             habitats: [.wetland],
@@ -224,3 +224,4 @@ extension Local.Bird {
             )
     ]
 }
+

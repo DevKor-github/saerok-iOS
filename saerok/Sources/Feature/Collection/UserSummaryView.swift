@@ -53,8 +53,13 @@ private extension UserSummaryView {
         ZStack(alignment: .topLeading) {
             ScrollView(showsIndicators: true) {
                 Color.clear.frame(height: 70)
-                UserInfoView(type: .other, user: user?.userSummary ?? .init(), joinedDate: user?.joinedDate ?? .now)
-                    .padding(.leading, 15)
+                UserInfoView(
+                    type: .other,
+                    user: user?.userSummary ?? .init(),
+                    joinedDate: user?.joinedDate ?? .now,
+                    onTap: {}
+                )
+                .padding(.leading, 15)
                 StaggeredGrid(
                     items: user?.collections.reversed() ?? [],
                     columns: 2,
@@ -63,8 +68,7 @@ private extension UserSummaryView {
                     CollectionItemView(
                         bird: bird,
                         tapped: {
-                            injected
-                                .appState[\.routing.collectionView.collectionID] = bird.id
+                            path.append( CommunityView.Route.detail(id: bird.id))
                         })
                 }
                 .padding(.horizontal, 9)
@@ -90,14 +94,15 @@ private extension UserSummaryView {
     
     private var countView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer()
             Text("\(user?.collectionCount ?? 0)")
                 .font(.SRFontSet.heavy)
                 .fontWeight(.semibold)
                 .foregroundStyle(.splash)
             Text("종의 새가 새록에 담겨있어요")
                 .font(.SRFontSet.caption1)
+                .foregroundStyle(.black)
         }
+        .padding(.horizontal, 19)
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundColor(.clear)
         .frame(height: 82)
@@ -108,9 +113,6 @@ private extension UserSummaryView {
                 .inset(by: 0.5)
                 .stroke(.splash, lineWidth: 1)
         )
+        .fixedSize(horizontal: false, vertical: true)
     }
-}
-
-private extension UserSummaryView {
-    
 }

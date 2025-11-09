@@ -24,6 +24,8 @@ struct EditProfileView: View {
     @State private var profileImage: UIImage?
     @State private var isShowingImagePicker = false
     @State private var isLoadingImage = false
+    @State private var showOption = false
+    
     @State var imageReloadKey = UUID()
     
     var body: some View {
@@ -46,6 +48,40 @@ struct EditProfileView: View {
                 saveButton
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
+        }
+        .sheet(isPresented: $showOption) {
+            VStack(spacing: 36) {
+                Spacer()
+                Button {
+                    showOption.toggle()
+                    isShowingImagePicker.toggle()
+                } label: {
+                    Text("변경하기")
+                        .font(.SRFontSet.subtitle3)
+                        .bold()
+                }
+                
+                Button {
+                    Task {
+                        do {
+                            try await injected.interactors.user.deleteProfileImage()
+                            updateProfileImage()
+                        } catch {
+                            print(error.localizedDescription)
+                        }
+                        showOption.toggle()
+                    }
+                } label: {
+                    Text("삭제하기")
+                        .font(.SRFontSet.subtitle3)
+                        .bold()
+                        .foregroundStyle(.red)
+                }
+                Spacer()
+            }
+            .buttonStyle(.plain)
+            .presentationDetents([.fraction(0.2)])
+            .ignoresSafeArea(.all)
         }
         .sheet(isPresented: $isShowingImagePicker) {
             ZStack {
@@ -100,7 +136,7 @@ struct EditProfileView: View {
             )
             .overlay {
                 Button {
-                    isShowingImagePicker = true
+                    showOption = true
                 } label: {
                     Image.SRIconSet.edit
                         .frame(.defaultIconSizeLarge)
@@ -171,7 +207,7 @@ struct EditProfileView: View {
     
     private var saveButton: some View {
         Button(action: saveButtonTapped) {
-            Text("수정하기")
+            Text("닉네임 수정하기")
         }
         .buttonStyle(.primary)
         .disabled(nicknameStatus != .available)

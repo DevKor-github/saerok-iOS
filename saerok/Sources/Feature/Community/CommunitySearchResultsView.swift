@@ -18,6 +18,8 @@ struct CommunitySearchResultsView: View {
                             .padding(.top, 32)
                     }
                     .frame(maxWidth: .infinity)
+                } else if searchMainItems.isEmpty && mode == .resultShown {
+                    emptyView
                 } else {
                     switch searchCase {
                     case .all:
@@ -104,5 +106,23 @@ struct CommunitySearchResultsView: View {
         .padding(.horizontal, 24)
         .padding(.vertical, 18)
         .background(Color.srWhite)
+    }
+    
+    private var emptyView: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 5) {
+                Text("지금은 고요한 숲처럼 조용하네요.")
+                    .font(.SRFontSet.subtitle1_2)
+                Text("검색 결과가 없어요.")
+                    .font(.SRFontSet.body2)
+                    .foregroundStyle(.secondary)
+            }
+            Image(.logoBack)
+                .renderingMode(.template)
+                .resizable()
+                .foregroundStyle(.srWhite)
+                .frame(width: 116, height: 128)
+        }
+        .padding(.top, 108)
     }
 }

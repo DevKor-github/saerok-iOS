@@ -18,15 +18,15 @@ struct LoginView: View {
     
     @Environment(\.injected) var injected
     @State var showingAlert: Bool = false
-    @Binding private var user: User
+    @State private var user: User = .init()
     @Query private var users: [User]
     @Binding private var authStatus: AppState.AuthStatus
+    
     var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
         injected.appState.updates(for: \.authStatus)
     }
     
-    init(_ user: Binding<User>, authStatus: Binding<AppState.AuthStatus>) {
-        self._user = user
+    init(authStatus: Binding<AppState.AuthStatus>) {
         self._authStatus = authStatus
     }
     

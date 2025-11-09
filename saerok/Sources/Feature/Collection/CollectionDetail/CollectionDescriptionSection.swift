@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct CollectionDescriptionSection: View {
-    let collection: Local.CollectionDetail
+    var collection: Local.CollectionDetail
     var path: Binding<NavigationPath>?
 
     var onLikeToggle: () -> Void
@@ -17,7 +17,7 @@ struct CollectionDescriptionSection: View {
     var onCommentTap: () -> Void
     var onReportTap: () -> Void
     var onSuggestTap: (() -> Void)?
-    
+        
     // MARK: - Environment
     
     @Environment(\.injected) private var injected: DIContainer
@@ -200,9 +200,9 @@ private extension CollectionDescriptionSection {
     @ViewBuilder
     var toDogamButton: some View {
         if let birdID = collection.birdID {
-            if let bindingPath = path {
-                NavigationLink {
-                    BirdDetailView(birdID: birdID, path: bindingPath)
+            if let path = path {
+                Button {
+                    path.wrappedValue.append(CollectionDetailView.Route.bird(birdID))
                 } label: {
                     Image.SRIconSet.toDogam
                         .frame(.defaultIconSizeVeryLarge)

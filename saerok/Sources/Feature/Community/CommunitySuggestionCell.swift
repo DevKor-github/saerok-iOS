@@ -54,7 +54,3 @@ struct CommunitySuggestionCell: View {
         .padding(.trailing, 11)
     }
 }
-
-#Preview {
-    CommunitySuggestionCell(item: .from(dto: .init(collectionId: 0, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMG2ABpDRm1U73-xRewqvyFn4d26Af1KeB1A&s", thumbnailImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMG2ABpDRm1U73-xRewqvyFn4d26Af1KeB1A&s", discoveredDate: "", latitude: 0, longitude: 0, locationAlias: "", address: nil, note: nil, likeCount: 0, commentCount: 0, isLiked: false, isPopular: false, bird: nil, user: nil, suggestionUserCount: 5)))
-}

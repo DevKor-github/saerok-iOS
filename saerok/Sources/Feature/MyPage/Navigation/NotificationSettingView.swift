@@ -71,14 +71,15 @@ struct NotificationSettingView: View {
             )) {
                 Task {
                     do {
+                        HapticManager.shared.trigger(.light)
                         let newValue = try await injected.interactors.user.toggleNotificationSetting(type)
-                        
                         withAnimation(.bouncy(duration: 0.4)) {
                             settings[type] = newValue
+                            HapticManager.shared.trigger(.success)
                         }
                     } catch {
                         print("알림 설정 업데이트 실패: \(error.localizedDescription)")
-                    
+                        HapticManager.shared.trigger(.error)
                     }
                 }
             }

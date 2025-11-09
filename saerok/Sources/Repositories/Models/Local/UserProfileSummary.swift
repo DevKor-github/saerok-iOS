@@ -28,7 +28,8 @@ extension Local.UserProfileSummary {
                         id: $0.collectionId,
                         imageURL: $0.imageUrl,
                         thumbnailImageURL: $0.thumbnailImageUrl,
-                        birdName: $0.birdKoreanName
+                        birdName: $0.birdKoreanName,
+                        createdAt: Date.fromSimpleDateString($0.uploadedDate) ?? .now
                     )
                 },
             collectionCount: dto.collectionCount

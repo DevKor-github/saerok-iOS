@@ -25,7 +25,7 @@ extension Local {
 extension Local.NotificationItem {
     init(from dto: DTO.NotificationItem) throws {
         self.notificationId = dto.id
-        self.actorNickname = dto.actorNickname
+        self.actorNickname = dto.actorNickname ?? "탈퇴한 사용자"
         self.actorImageUrl = dto.actorProfileImageUrl
 
         switch dto.type {

@@ -21,6 +21,7 @@ extension DTO {
         let imageUrl: String?
         let thumbnailImageUrl: String?
         let discoveredDate: String
+        let createdAt: String
         let latitude: Double
         let longitude: Double
         let locationAlias: String?
@@ -41,7 +42,7 @@ extension DTO {
 
         struct UserInfo: Decodable {
             let userId: Int
-            let nickname: String
+            let nickname: String?
             let profileImageUrl: String
         }
     }

@@ -24,7 +24,7 @@ protocol CollectionRepository {
     func fetchLikeUsers(_ id: Int) async throws -> DTO.CollectionLikeUsersResponse
     func deleteCollectionComment(collectionId: Int, commentId: Int) async throws
     func reportCollection(_ id: Int) async throws
-    
+    func reportComment(_ collectionId: Int, commentId: Int) async throws
     func fetchBirdSuggestions(collectionId: Int) async throws -> [Local.BirdSuggestion]
     func suggestBird(collectionId: Int, birdId: Int) async throws
     func toggleSuggestionAgree(collectionId: Int, birdId: Int) async throws -> DTO.ToggleSuggestionResponse
@@ -160,9 +160,13 @@ extension MainRepository: CollectionRepository {
         )
     }
 
-    func fetchBirdSuggestions(
-        collectionId: Int
-    ) async throws -> [Local.BirdSuggestion] {
+    func reportComment(_ collectionId: Int, commentId: Int) async throws {
+        let _: EmptyResponse = try await networkService.performSRRequest(
+            .reportComment(collectionId: collectionId, commentId: commentId)
+        )
+    }
+    
+    func fetchBirdSuggestions(collectionId: Int) async throws -> [Local.BirdSuggestion] {
         let result: DTO.SuggestionListResponse = try await networkService.performSRRequest(
             .getSuggestions(collectionId: collectionId)
         )

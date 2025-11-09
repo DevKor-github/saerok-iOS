@@ -9,7 +9,6 @@
 import Foundation
 import SwiftData
 
-@MainActor
 final class UserManager: ObservableObject {
     static let shared = UserManager()
     

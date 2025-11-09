@@ -12,11 +12,9 @@ extension Local {
         let users: [Local.UserSummary]
         var collectionsCount: Int { collections.count }
         var usersCount: Int { users.count }
-
-        init(
-            collections: [Local.CommunityItemSummary],
-            users: [Local.UserSummary]
-        ) {
+        var isEmpty: Bool { collections.isEmpty && users.isEmpty }
+        
+        init(collections: [Local.CommunityItemSummary], users: [Local.UserSummary]) {
             self.collections = collections
             self.users = users
         }

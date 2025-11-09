@@ -14,6 +14,7 @@ extension Local {
         let imageURL: String?
         let thumbnailImageUrl: String?
         let discoveredDate: Date?
+        let createdAt: Date
         let latitude: Double
         let longitude: Double
         let locationAlias: String
@@ -42,6 +43,7 @@ extension Local.CommunityItemSummary {
             imageURL: dto.imageUrl,
             thumbnailImageUrl: dto.thumbnailImageUrl,
             discoveredDate: date,
+            createdAt: DateFormatter.iso8601.date(from: dto.createdAt) ?? .now,
             latitude: dto.latitude,
             longitude: dto.longitude,
             locationAlias: dto.locationAlias ?? "",
