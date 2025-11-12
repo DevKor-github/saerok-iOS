@@ -88,6 +88,7 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
     
     private func handleDeepLink(_ num: Int) {
         Task { @MainActor in
+            self.injected?.appState[\.routing.contentView.tabSelection] = .collection
             self.injected?.appState[\.routing.collectionView.collectionID] = num
         }
     }

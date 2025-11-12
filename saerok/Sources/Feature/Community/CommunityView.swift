@@ -34,7 +34,7 @@ struct CommunityView: Routable {
     @State private var searchMainItems: Local.CommunitySearchMainItems = .init(collections: [], users: [])
     
     @State private var loadingState: Loadable<Void> = .notRequested
-    @State private var showPopup: Bool = false
+    @State private var showLoginPopup: Bool = false
     @State private var offsetY: CGFloat = 0
     @State private var hasLoadedOnce = false
     
@@ -42,8 +42,9 @@ struct CommunityView: Routable {
     @State var searchCase: CommunitySearchCase = .all
     @State private var mode: SearchInputBar.Mode = .idle
     private var isModeIdle: Bool { mode == .idle }
+    private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
+
     @FocusState private var isFocused: Bool
-    
     @State private var searchDebounceTask: Task<Void, Error>? = nil
 
     // MARK: - Init
@@ -79,7 +80,7 @@ struct CommunityView: Routable {
             .onPreferenceChange(ScrollPreferenceKey.self) { value in
                 self.offsetY = value
             }
-            .customPopup(isPresented: $showPopup) { alertView }
+            .customPopup(isPresented: $showLoginPopup) { alertView }
     }
     
     @ViewBuilder
@@ -292,10 +293,12 @@ private extension CommunityView {
     }
     
     var addButton: some View {
-        var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
-
-        return Button {
-            path.append(Route.addCollection)
+        Button {
+            if isGuestMode {
+                showLoginPopup.toggle()
+            } else {
+                path.append(Route.addCollection)
+            }
         } label: {
             Image(isGuestMode ? .floatingButtonInactive : .floatingButton)
                 .resizable()
@@ -310,13 +313,13 @@ private extension CommunityView {
             message: "로그인하고 더 많은 기능을 사용해보세요!",
             leading: .init(
                 title: "취소",
-                action: { showPopup = false },
+                action: { showLoginPopup = false },
                 style: .bordered
             ),
             trailing: .init(
                 title: "로그인",
                 action: {
-                    showPopup = false
+                    showLoginPopup = false
                     injected.appState[\.authStatus] = .notDetermined
                 },
                 style: .confirm
@@ -390,7 +393,9 @@ private extension CommunityView {
     }
     
     func failedView() -> some View {
-        VStack { Text("불러오기에 실패했어요") }
+        Text("불러오기에 실패했어요")
+            .font(.SRFontSet.body0)
+            .bold()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.srWhite)
     }
