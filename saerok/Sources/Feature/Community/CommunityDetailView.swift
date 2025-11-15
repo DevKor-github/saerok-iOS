@@ -7,14 +7,17 @@ struct CommunityDetailView: View {
     private var interactor: CommunityInteractor { injected.interactors.community }
     
     @State private var items: [Local.CommunityItemSummary] = []
+    @State private var page: Int = 1
+    private let size: Int = 20
+    @State private var isLoading = false
+    @State private var hasNext = true
+    
     @Binding var path: NavigationPath
 
     var body: some View {
         content
             .task {
-                do {
-                    items = try await interactor.fetchItems(type: type, page: nil, size: nil)
-                } catch { }
+                await loadInitial()
             }
     }
     
@@ -70,15 +73,59 @@ struct CommunityDetailView: View {
     private var itemList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(items) { item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     Button {
                         path.append(CommunityView.Route.detail(id: item.id))
                     } label: {
                         CommunityCell(item: item, type: self.type)
                     }
                     .buttonStyle(.plain)
+                    .onAppear {
+                        if index == items.count - 1 {
+                            Task { await loadMore() }
+                        }
+                    }
+                }
+                
+                if isLoading {
+                    ProgressView().padding()
                 }
             }
         }
+    }
+}
+
+// MARK: - Paging Methods
+
+extension CommunityDetailView {
+    private func loadInitial() async {
+        page = 1
+        hasNext = true
+        items = []
+        await loadMore()
+    }
+
+    private func loadMore() async {
+        guard !isLoading, hasNext else { return }
+        isLoading = true
+        
+        do {
+            let newItems = try await interactor.fetchItems(
+                type: type,
+                page: page,
+                size: size
+            )
+            
+            items.append(contentsOf: newItems)
+            if newItems.count < size {
+                hasNext = false
+            } else {
+                page += 1
+            }
+        } catch {
+            hasNext = false
+        }
+        
+        isLoading = false
     }
 }

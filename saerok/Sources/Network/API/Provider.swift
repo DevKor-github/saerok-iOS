@@ -20,7 +20,7 @@ final class Provider {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }
-//        
+        
 //        if let jsonString = String(data: data, encoding: .utf8) {
 //            print("📦 Response JSON: \(jsonString)")
 //            print("-----------------------")
