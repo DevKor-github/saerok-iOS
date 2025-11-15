@@ -53,9 +53,3 @@ extension User {
         case kakao
     }
 }
-
-
-extension User {
-//    static let mock: User = .init(nickname: "하나관새록전문가")
-}
-

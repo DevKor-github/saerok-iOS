@@ -59,7 +59,7 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
 }
 
 private extension FieldGuideInteractorImpl {
-    static let lastSyncKey = "LastBirdsSyncDate"
+    static let lastSyncKey = "LastBirdsSyncDate2.0.2"
     
     func readLastSyncDate() -> Date {
         (UserDefaults.standard.object(forKey: Self.lastSyncKey) as? Date) ?? .distantPast

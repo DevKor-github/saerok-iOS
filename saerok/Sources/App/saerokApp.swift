@@ -31,7 +31,7 @@ extension AppEnvironment {
             .modelContainer(modelContainer)
             .inject(diContainer)
             .task {
-                let migrationKey = "lastMigratedAppVersion"
+                let migrationKey = "lastMigratedAppVersion2.0.2"
                 let context = ModelContext(modelContainer)
                 if AppVersionMigrator.needsMigration(forKey: migrationKey) {
                     AppVersionMigrator.wipeRecentSearches(context)

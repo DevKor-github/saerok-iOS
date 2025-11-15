@@ -95,6 +95,7 @@ private extension MainRepository {
     func clearExistingBirds() throws {
         let existingBirds = try modelContext.fetch(FetchDescriptor<Local.Bird>())
         existingBirds.forEach { modelContext.delete($0) }
+        try save()
     }
     
     func store(_ birds: [DTO.Bird]) async throws {
@@ -106,7 +107,7 @@ private extension MainRepository {
             }
             insertBirds(localBirds)
         }
-        try? save()
+        try save()
     }
     
     func convert(dtoBirds: [DTO.Bird]) -> [Local.Bird] {
@@ -114,7 +115,9 @@ private extension MainRepository {
     }
     
     func insertBirds(_ birds: [Local.Bird]) {
-        birds.forEach { modelContext.insert($0) }
+        for bird in birds {
+            modelContext.insert(bird)
+        }
     }
     
     func save() throws {
