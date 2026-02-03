@@ -96,7 +96,6 @@ final class ItemData: NSObject {
               let url = URL(string: urlString) else { return }
         
         try Task.checkCancellation()
-
         let (data, _) = try await URLSession.shared.data(from: url)
         try Task.checkCancellation()
         

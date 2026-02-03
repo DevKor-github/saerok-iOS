@@ -10,41 +10,76 @@ import SwiftData
 import SwiftUI
 import KakaoSDKUser
 
-struct MyPageView: View {
-    enum Route {
-        case account
-        case editProfile
-        case notification
-    }
-    
-    @Environment(\.injected) var injected
-    
-    @StateObject var userManager = UserManager.shared
-    private var user: User? { userManager.user }
+enum MyPageRoute: AppRoute {
+    case account
+    case editProfile
+    case notification
+}
 
-    @Binding var path: NavigationPath
+extension MyPageView {
+    @Observable
+    final class ViewModel {
+        private let userManager = UserManager.shared
+        var user: User? { userManager.user }
+        
+        // MARK: Dependencies
+        private let appState: Store<AppState>
+        private let interactor: UserInteractor
+        var isGuest: Bool { appState[\.authStatus] == .guest }
+        
+        init(appState: Store<AppState>, interactor: UserInteractor) {
+            self.appState = appState
+            self.interactor = interactor
+        }
+        
+        func changeStatusToLogout() {
+            appState[\.authStatus] = .notDetermined
+        }
+        
+        func syncUser() {
+            Task {
+                if !isGuest, user != nil { return }
+                do {
+                    let me = try await interactor.getUser()
+                    userManager.syncUser(from: me)
+                }
+            }
+        }
+    }
+}
+
+struct MyPageView: View {
+    typealias Route = MyPageRoute
+    
+    @EnvironmentObject private var coordinator: AppCoordinator
+    
+    @State private var viewModel: ViewModel
+    
     @State private var showAlert = false
     @State private var alertMessage = ""
-    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-"
         return "\(version)"
     }
     
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
+    
     var body: some View {
         content
-            .navigationDestination(for: MyPageView.Route.self) { route in
+            .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .account:
-                    AccountView(path: $path)
+                    AccountView(viewModel: coordinator.makeAccountViewModel())
                 case .notification:
-                    NotificationSettingView(path: $path)
+                    NotificationSettingView()
                 case .editProfile:
-                    EditProfileView(path: $path)
+                    EditProfileView()
                 }
             }
-            .task(id: isGuest ? "guest" : "user") {
-                syncUser()
+            .task(id: viewModel.isGuest ? "guest" : "user") {
+                viewModel.syncUser()
             }
     }
 }
@@ -69,7 +104,7 @@ private extension MyPageView {
     
     @ViewBuilder
     var userSection: some View {
-        if let _ = user, !isGuest {
+        if let _ = viewModel.user, !viewModel.isGuest {
             nicknameView
         } else {
             toLoginView
@@ -81,13 +116,13 @@ private extension MyPageView {
             SettingItemView(
                 title: "내 계정 관리",
                 icon: .my,
-                onTap: { path.append(Route.account) },
-                isDisabled: isGuest
+                onTap: { coordinator.push(Route.account) },
+                isDisabled: viewModel.isGuest
             )
-            .disabled(user == nil)
+            .disabled(viewModel.user == nil)
             
-            SettingItemView(title: "알림 설정", icon: .bell, onTap: { path.append(Route.notification) })
-                .disabled(user == nil)
+            SettingItemView(title: "알림 설정", icon: .bell, onTap: { coordinator.push(Route.notification) })
+                .disabled(viewModel.user == nil)
             SettingItemView(title: "새록 소식 및 이용 가이드", icon: .board, onTap: { openURL(.instagram) })
             SettingItemView(title: "개인정보 처리 방침", icon: .locker, onTap: { openURL(.개인정보) })
             SettingItemView(title: "의견 보내기", icon: .plane, onTap: { openURL(.feedback) })
@@ -129,7 +164,7 @@ private extension MyPageView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onTapGesture {
-            injected.appState[\.authStatus] = .notDetermined
+            viewModel.changeStatusToLogout()
         }
     }
     
@@ -138,22 +173,12 @@ private extension MyPageView {
             type: .my,
             user: .init(
                 id: 0,
-                nickname: user?.nickname ?? "",
-                profileImageUrl: user?.imageURL ?? ""
+                nickname: viewModel.user?.nickname ?? "",
+                profileImageUrl: viewModel.user?.imageURL ?? ""
             ),
-            joinedDate: user?.joinedDate ?? .now,
-            onTap: { path.append(Route.editProfile) }
+            joinedDate: viewModel.user?.joinedDate ?? .now,
+            onTap: { coordinator.push(Route.editProfile) }
         )
-    }
-    
-    private func syncUser() {
-        Task {
-            if !isGuest, user != nil { return }
-            do {
-                let me: DTO.MeResponse = try await injected.networkService.performSRRequest(.me)
-                userManager.syncUser(from: me)
-            }
-        }
     }
 }
 

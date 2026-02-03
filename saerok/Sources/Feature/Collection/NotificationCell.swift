@@ -68,21 +68,21 @@ struct NotificationCell: View {
                     .offset(x: 9, y: 19)
             }
         )
-        .onTapGesture {
-            onTap()
-        }
+        .onTapGesture(perform: onTap)
     }
     
     @ViewBuilder
     private var notificationText: some View {
         switch item.type {
         case .like:
-            Text(item.actorNickname).font(.SRFontSet.body2_3) + Text("님이 나의 새록을 좋아해요.").font(.SRFontSet.body4)
+            Text(item.actorNickname).font(.SRFontSet.body2_3)
+            + Text("님이 나의 새록을 좋아해요.").font(.SRFontSet.body4)
         case .comment:
-            Text(item.actorNickname).font(.SRFontSet.body2_3) + Text("님이 나의 새록에 댓글을 남겼어요. ").font(.SRFontSet.body4) + Text("“\(item.content ?? "")”").font(.SRFontSet.body4)
+            Text(item.actorNickname).font(.SRFontSet.body2_3)
+            + Text("님이 나의 새록에 댓글을 남겼어요. ").font(.SRFontSet.body4)
+            + Text("“\(item.content ?? "")”").font(.SRFontSet.body4)
         case .birdIdSuggestion:
-            Text("두근두근! 새로운 의견이 공유됐어요. 확인해볼까요?")
-                .font(.SRFontSet.body4)
+            Text("두근두근! 새로운 의견이 공유됐어요. 확인해볼까요?").font(.SRFontSet.body4)
         }
     }
 }

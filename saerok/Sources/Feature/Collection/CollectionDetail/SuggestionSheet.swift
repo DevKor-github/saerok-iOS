@@ -13,10 +13,12 @@ struct SuggestionSheet: View {
     let isMine: Bool
     let collectionID: Int
     let nickname: String
+    
     @Binding var suggestions: [Local.BirdSuggestion]
     @Binding var selectedBird: Local.Bird?
     @Binding var selectedPreview: Local.BirdSuggestion?
     @Binding var selectedAdopting: Local.BirdSuggestion?
+    @Binding var opinionFlow: OpinionFlow?
     
     @Binding var showSuggestPopup: Bool
     @Binding var showAdoptPopup: Bool
@@ -32,10 +34,11 @@ struct SuggestionSheet: View {
             header
             content
         }
-        .srbottomSheetStyle(presentationDetent: [.medium]) //test
+        .srbottomSheetStyle(presentationDetent: [.medium])
         .onChange(of: selectedBird) { _, newValue in
-            guard let _ = newValue else { return }
+            guard let newBird = newValue else { return }
             showSuggestPopup = true
+            Analytics.shared.log(.opinionConfirmView(.init(recordId: "\(collectionID)", opinionFlowId: opinionFlow!.flowId, birdId: "\(newBird.id)", birdName: newBird.name)))
         }
     }
 }

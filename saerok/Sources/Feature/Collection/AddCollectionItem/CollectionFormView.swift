@@ -9,27 +9,26 @@
 import Combine
 import SwiftUI
 
+enum CollectionFormRoute: AppRoute {
+    case findBird
+    case findLocation
+}
+
 struct CollectionFormView: Routable {
-    enum Route {
-        case findBird
-        case findLocation
-    }
-    
+    typealias Route = CollectionFormRoute
+
     let mode: CollectionFormMode
     
     // MARK:  Dependencies
     
     @Environment(\.injected) var injected
     @Environment(\.modelContext) var context
+    @EnvironmentObject var coordinator: AppCoordinator
     private var networkService: SRNetworkService { injected.networkService }
     
     // MARK:  Routable
     
     @State var routingState: Routing = .init()
-    
-    // MARK: Navigation
-    
-    @Binding var path: NavigationPath
     
     // MARK: View State
     
@@ -39,20 +38,19 @@ struct CollectionFormView: Routable {
     @State private var isPositionInitialized: Bool = false
     @State private var isSubmitting: Bool = false
     @State private var isImageLoading: Bool = false
-    @StateObject var collectionDraft: Local.CollectionDraft
+    @State var collectionDraft: Local.CollectionDraft
     
     @State private var lastPathCount: Int = 0
 
     private var locationManager: LocationManager { LocationManager.shared }
     
-    init(mode: CollectionFormMode, path: Binding<NavigationPath>) {
+    init(mode: CollectionFormMode) {
         self.mode = mode
-        self._path = path
         switch mode {
         case .add:
-            self._collectionDraft = StateObject(wrappedValue: .init(collectionID: nil))
+            self.collectionDraft = .init(collectionID: nil)
         case .edit(let detail):
-            self._collectionDraft = StateObject(wrappedValue: .fromDetail(detail))
+            self.collectionDraft = .fromDetail(detail)
         }
     }
     
@@ -63,20 +61,19 @@ struct CollectionFormView: Routable {
                 switch route {
                 case .findBird:
                     CollectionSearchView(
-                        path: $path,
                         onSelect: { selectedBird in
                             injected.appState[\.routing.addCollectionItemView.selectedBird] = selectedBird
-                            path.removeLast()
+                            coordinator.pop()
                         })
                 case .findLocation:
-                    FindPlaceView(collectionDraft: collectionDraft, path: $path)
+                    FindPlaceView(collectionDraft: $collectionDraft)
                 }
             })
             .onChange(of: routingState.selectedBird) { _, selectedBird in
                 self.collectionDraft.bird = selectedBird
             }
             .onAppear {
-                lastPathCount = path.count
+                lastPathCount = coordinator.path.count
                 injected.appState[\.routing.collectionView.addCollection] = false
                 loadBirdIfNeededOnEditMode()
             }
@@ -89,7 +86,7 @@ struct CollectionFormView: Routable {
                 }
             }
             .onDisappear {
-                if path.count < lastPathCount {
+                if coordinator.path.count < lastPathCount {
                     injected.appState[\.routing.addCollectionItemView] = .init()
                 }
             }
@@ -106,10 +103,13 @@ private extension CollectionFormView {
                 if mode.isAddMode {
                     ImageFormView(selectedImage: $collectionDraft.image, isImageLoading: $isImageLoading)
                 }
-                BirdNameFormView(draft: collectionDraft, path: $path)
-                LocationFormView(selectedCoord: $collectionDraft.coordinate, path: $path, address: collectionDraft.locationAlias)
+                BirdNameFormView(draft: $collectionDraft)
+                LocationFormView(
+                    selectedCoord: $collectionDraft.coordinate,
+                    address: collectionDraft.locationAlias
+                )
                 DateFormView(title: "발견 일시", date: $collectionDraft.discoveredDate)
-                NoteFormView(draft: collectionDraft)
+                NoteFormView(draft: $collectionDraft)
                 Spacer()
                 visibilityToggleButton
                 submitButton
@@ -195,17 +195,13 @@ private extension CollectionFormView {
         case .edit:
             NavigationBar(
                 leading: {
-                    Button("취소") {
-                        path.removeLast()
-                    }
+                    Button("취소") { coordinator.pop() }
                 },
                 trailing: {
-                    Button("삭제") {
-                        activePopup = .editModeDeleteConfirm
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.red)
-                    .bold()
+                    Button("삭제") { activePopup = .editModeDeleteConfirm }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.red)
+                        .bold()
                 }
             )
         }
@@ -248,7 +244,7 @@ extension CollectionFormView {
         Task {
             try? await injected.interactors.collection.createCollection(collectionDraft)
             isSubmitting = false
-            path.removeLast()
+            coordinator.pop()
             injected.appState[\.routing.collectionView.refreshCollections] = UUID()
         }
     }
@@ -260,8 +256,8 @@ extension CollectionFormView {
 
             try? await injected.interactors.collection.deleteCollection(id)
             isSubmitting = false
-            path.removeLast()
-            path.removeLast()
+            coordinator.pop()
+            coordinator.pop()
             injected.appState[\.routing.collectionView.refreshCollections] = UUID()
         }
     }
@@ -273,7 +269,7 @@ extension CollectionFormView {
             do {
                 try await injected.interactors.collection.editCollection(collectionDraft)
                 isSubmitting = false
-                path.removeLast()
+                coordinator.pop()
             } catch {
                 print("[EditCollection] ❌ 에러 발생: \(error.localizedDescription)")
                 dump(error)
@@ -315,10 +311,4 @@ extension CollectionFormView {
         static let maxNoteLength: Int = 50
         static let deleteButtonOffset: CGFloat = imageSize / 2
     }
-}
-
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
 }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "879048d39ea6f3ccbb62bab357944f6ea0a306202f82bb30ce0696754aa89a2b",
+  "originHash" : "d3c36cb556b552d873164ce5d49b549c1cb7d13099777beacc3672075c994161",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -29,12 +29,21 @@
       }
     },
     {
+      "identity" : "amplitude-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/amplitude/Amplitude-iOS.git",
+      "state" : {
+        "revision" : "7ec0f8971b68c1cb859028655fbff1bcde8170dd",
+        "version" : "8.22.2"
+      }
+    },
+    {
       "identity" : "amplitude-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/amplitude/Amplitude-Swift",
+      "location" : "https://github.com/amplitude/Amplitude-Swift.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "8555a54f7d174451642859f844ebef032c2a488b"
+        "revision" : "1f368406d103c7a45b0d8dbd7cddb0361f48d00b",
+        "version" : "1.15.4"
       }
     },
     {
@@ -42,8 +51,26 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/amplitude/AmplitudeCore-Swift.git",
       "state" : {
-        "revision" : "13fd0eb0aa080816ffa409669758b2e8787322b2",
-        "version" : "1.1.0"
+        "revision" : "1d9b590e202c3e2abb27ccb6b5b5ae62145406f0",
+        "version" : "1.2.4"
+      }
+    },
+    {
+      "identity" : "amplitudesessionreplay-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/amplitude/AmplitudeSessionReplay-iOS.git",
+      "state" : {
+        "revision" : "06cb1a73f07e41e323d19ade5d53c0a563fad91d",
+        "version" : "0.8.5"
+      }
+    },
+    {
+      "identity" : "amplitudeunified-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/amplitude/AmplitudeUnified-Swift",
+      "state" : {
+        "branch" : "main",
+        "revision" : "4425f43e13e4f115ace775a3e04b1ebaded057ff"
       }
     },
     {
@@ -56,12 +83,30 @@
       }
     },
     {
+      "identity" : "analytics-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/segmentio/analytics-swift",
+      "state" : {
+        "revision" : "f604cef21bb7269f76136c68bd664c6c993f8e28",
+        "version" : "1.9.1"
+      }
+    },
+    {
       "identity" : "app-check",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/app-check.git",
       "state" : {
         "revision" : "61b85103a1aeed8218f17c794687781505fbbef5",
         "version" : "11.2.0"
+      }
+    },
+    {
+      "identity" : "experiment-ios-client",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/amplitude/experiment-ios-client.git",
+      "state" : {
+        "revision" : "d9c02e9758e27394fd825506eaff1ad397876741",
+        "version" : "1.19.0"
       }
     },
     {
@@ -137,6 +182,15 @@
       }
     },
     {
+      "identity" : "jsonsafeencoding-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/segmentio/jsonsafeencoding-swift.git",
+      "state" : {
+        "revision" : "af6a8b360984085e36c6341b21ecb35c12f47ebd",
+        "version" : "2.0.0"
+      }
+    },
+    {
       "identity" : "kakao-ios-sdk",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kakao/kakao-ios-sdk",
@@ -179,6 +233,15 @@
       "state" : {
         "revision" : "540318ecedd63d883069ae7f1ed811a2df00b6ac",
         "version" : "2.4.0"
+      }
+    },
+    {
+      "identity" : "sovran-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/segmentio/sovran-swift.git",
+      "state" : {
+        "revision" : "24867f3e4ac62027db9827112135e6531b6f4051",
+        "version" : "1.1.2"
       }
     },
     {

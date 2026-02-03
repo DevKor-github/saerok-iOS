@@ -24,7 +24,7 @@ struct AppEnvironment {
         let mainRepository = configuredRepositories(modelContainer: modelContainer, networkService: networkService)
         let interactors = configuredInteractors(repositories: mainRepository)
         let diContainer = DIContainer(appState: appState, interactors: interactors, networkService: networkService)
-        UserManager.shared.configure(with: ModelContext(modelContainer))
+        UserManager.shared.configure(with: interactors.user)
         Task { try? await interactors.fieldGuide.refreshFieldGuide() }
         
         return AppEnvironment(modelContainer: modelContainer, diContainer: diContainer)

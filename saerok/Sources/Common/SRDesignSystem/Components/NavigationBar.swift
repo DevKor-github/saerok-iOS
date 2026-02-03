@@ -50,10 +50,3 @@ struct NavigationBar<Center: View, Leading: View, Trailing: View>: View {
         .frame(height: 62)
     }
 }
-
-
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
-}

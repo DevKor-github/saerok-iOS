@@ -5,29 +5,50 @@
 //  Created by HanSeung on 9/14/25.
 //
 
-
 import SwiftUI
 
-struct CollectionLikerSheet: View {
-    @Environment(\.injected) private var injected: DIContainer
-    
-    let collectionID: Int
-    let onDismiss: () -> Void
-    @State private var likers: [Local.UserSummary] = []
-    @State private var isLoading: Bool = true
-    
-    @Binding var path: NavigationPath
-    
-    var body: some View {
-        content
-            .task {
-                await reloadData()
+extension CollectionLikerSheet {
+    @Observable
+    final class ViewModel {
+        private(set) var likers: [Local.UserSummary] = []
+        
+        private let interactor: CollectionInteractor
+        private let collectionID: Int
+        
+        init(collectionID: Int, interactor: CollectionInteractor) {
+            self.likers = .init()
+            self.interactor = interactor
+            self.collectionID = collectionID
+        }
+        
+        @MainActor
+        func refresh() async {
+            do {
+                likers = try await interactor.fetchLikeUsers(collectionID)
+            } catch {
+                
             }
+        }
     }
 }
 
-// MARK: - Subviews
-
+struct CollectionLikerSheet: View {
+    typealias Route = CollectionDetailRoute
+    
+    @EnvironmentObject private var coordinator: AppCoordinator
+    @State private var viewModel: ViewModel
+    let onDismiss: () -> Void
+    
+    init(viewModel: ViewModel, onDismiss: @escaping () -> Void) {
+        self.viewModel = viewModel
+        self.onDismiss = onDismiss
+    }
+    
+    var body: some View {
+        content
+            .task { await viewModel.refresh() }
+    }
+}
 
 private extension CollectionLikerSheet {
     var content: some View {
@@ -36,17 +57,16 @@ private extension CollectionLikerSheet {
             likerList
         }
         .srbottomSheetStyle(presentationDetent: [.fraction(0.7)])
-        .shimmer(when: $isLoading)
     }
     
     var header: some View {
         ZStack(alignment: .top) {
             HStack {
                 Text("좋아요")
-                Text("\(likers.count)")
+                Text("\(viewModel.likers.count)")
                     .foregroundStyle(.splash)
                 Spacer()
-                Button(action: { onDismiss() }) {
+                Button(action: onDismiss) {
                     Image.SRIconSet.delete
                         .frame(.defaultIconSizeSmall, tintColor: .srGray)
                         .padding(.leading, 20)
@@ -65,10 +85,10 @@ private extension CollectionLikerSheet {
     var likerList: some View {
         ScrollView {
             VStack(spacing: 7) {
-                ForEach(likers) { item in
+                ForEach(viewModel.likers) { item in
                     Button {
                         onDismiss()
-                        path.append(CollectionDetailView.Route.other(item.id))
+                        coordinator.push(Route.other(item.id))
                     } label: {
                         CollectionLikerCell(item: item)
                     }
@@ -79,21 +99,6 @@ private extension CollectionLikerSheet {
                     .frame(height: UIScreen.main.bounds.height * 0.3)
             }
         }
-        .refreshable {
-            await reloadData()
-        }
-    }
-}
-
-// MARK: - Helpers
-
-private extension CollectionLikerSheet {
-    func reloadData() async {
-        do {
-            likers = try await injected.interactors.collection.fetchLikeUsers(collectionID)
-            isLoading = false
-        } catch {
-            isLoading = false
-        }
+        .refreshable { await viewModel.refresh() }
     }
 }

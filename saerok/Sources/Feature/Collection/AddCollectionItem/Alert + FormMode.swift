@@ -60,7 +60,7 @@ extension CollectionFormView {
                 title: "나가기",
                 action: {
                     activePopup = .addModeExitConfirm
-                    path.removeLast()
+                    coordinator.pop()
                 },
                 style: .bordered
             ),

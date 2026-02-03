@@ -9,9 +9,8 @@
 import Foundation
 import Security
 
-final class TokenManager {
+actor TokenManager {
     static let shared = TokenManager()
-
     private init() {}
 
     // MARK: - 저장
@@ -30,15 +29,15 @@ final class TokenManager {
 
     // MARK: - 불러오기
 
-    func getAccessToken() -> String? {
+    nonisolated func getAccessToken() -> String? {
         return try? KeyChain.read(key: .accessToken)
     }
 
-    func getRefreshToken() -> String? {
+    nonisolated func getRefreshToken() -> String? {
         return try? KeyChain.read(key: .refreshToken)
     }
     
-    func getDeviceId() -> String {
+    nonisolated func getDeviceId() -> String {
         if let existing = try? KeyChain.read(key: .deviceId) {
             return existing
         } else {
@@ -64,13 +63,11 @@ final class TokenManager {
     }
 
     // MARK: - 쿠키에서 Refresh Token 추출
-
     func extractRefreshTokenFromCookies() -> String? {
         HTTPCookieStorage.shared.cookies?.first(where: { $0.name == "refreshToken" })?.value
     }
 
     // MARK: - 자동 로그인
-    
     func tryAutoLogin() async -> AppState.AuthStatus {
         guard let refreshToken = getRefreshToken() else {
             return .notDetermined
@@ -97,20 +94,12 @@ final class TokenManager {
         saveTokens(accessToken: accessToken, refreshToken: newRefreshToken)
     }
     
-    func syncUserData() {
+    private func syncUserData() {
         Task {
-            do {
-                let endpoint = SREndpoint.me
-                let userResponse: DTO.MeResponse = try await SRNetworkServiceImpl().performSRRequest(endpoint)
-                
-                await UserManager.shared.syncUser(from: userResponse)
-            } catch {
-                print("⚠️ 유저 동기화 실패: \(error)")
-            }
+            await UserManager.shared.refreshUser()
         }
     }
 }
-
 
 fileprivate final class KeyChain {
     enum KeyInfo: String {

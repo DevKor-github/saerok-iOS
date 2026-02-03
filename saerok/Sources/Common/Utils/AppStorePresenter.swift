@@ -28,7 +28,6 @@ final class AppVersionChecker: ObservableObject {
     var appStoreURL = "https://apps.apple.com/us/app/%EC%83%88%EB%A1%9D-%EC%9D%BC%EC%83%81-%EC%86%8D%EC%9D%98-%ED%83%90%EC%A1%B0-%EC%9D%BC%EC%A7%80/id6744866662"
     
     func checkVersion() async {
-        guard let bundleId = Bundle.main.bundleIdentifier else { return }
         let lookupURL = "https://itunes.apple.com/lookup?bundleId=com.apu.saerok&country=kr"
         
         do {

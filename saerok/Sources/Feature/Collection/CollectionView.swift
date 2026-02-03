@@ -10,72 +10,67 @@ import Combine
 import SwiftData
 import SwiftUI
 
+enum CollectionRoute: AppRoute {
+    case collectionDetail(Int)
+    case addCollection
+    case notification
+}
+
 struct CollectionView: Routable {
-    enum Route: Hashable {
-        case collectionDetail(Int)
-        case addCollection
-        case notification
-    }
+    typealias Route = CollectionRoute
     
     // MARK: - Dependencies
-    
     @Environment(\.injected) private var injected: DIContainer
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var coordinator: AppCoordinator
     
     // MARK: - Routing
-    
     @State var routingState: Routing = .init()
-    @Binding var path: NavigationPath
     
     // MARK: - View State
-    
-    @State private var collectionSummaries: [Local.CollectionSummary] = []
-    @State private var loadingState: Loadable<Void> = .notRequested
     @State private var offsetY: CGFloat = 0
     @State private var showPopup: Bool = false
-    @State private var hasUnread: Bool = false
-
-    private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
-    private let birdQuote: String = BirdQuote.random()
+    @State private var viewModel: ViewModel
     
     // MARK: - Init
-    
-    init(path: Binding<NavigationPath>) {
-        self._path = path
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
-    
+
     // MARK: - Body
-    
     var body: some View {
         content
+            .task { await viewModel.loadPosts() }
             .onReceive(routingUpdate) { routingState = $0 }
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .collectionDetail(let id):
-                    CollectionDetailView(collectionID: id, path: $path)
+                    CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
                 case .addCollection:
-                    CollectionFormView(mode: .add, path: $path)
+                    CollectionFormView(mode: .add)
                 case .notification:
-                    NotificationView(path: $path)
+                    NotificationView(viewModel: coordinator.makeNotificationViewModel())
                 }
             }
             .onChange(of: routingState.collectionID, initial: true) { _, id in
                 guard let id else { return }
-                path.append(Route.collectionDetail(id))
+                coordinator.push(Route.collectionDetail(id))
             }
             .onChange(of: routingState.addCollection, initial: true) { _, isTrue in
-                if isTrue { path.append(Route.addCollection) }
+                if isTrue { coordinator.push(Route.addCollection) }
             }
             .onChange(of: routingState.refreshCollections) { _, newID in
                 guard newID != nil else { return }
-                loadMyCollections()
+                Task {
+                    await viewModel.loadPosts()
+                }
             }
             .onChange(of: routingState.scrollToTop) { _, newID in
                 guard let _ = newID else { return }
                 offsetY = 0
                 self.routingState.scrollToTop = nil
             }
-            .onChange(of: path) { _, path in
+            .onChange(of: coordinator.path) { _, path in
                 if !path.isEmpty {
                     routingBinding.wrappedValue.collectionID = nil
                 }
@@ -85,11 +80,11 @@ struct CollectionView: Routable {
     
     @ViewBuilder
     private var content: some View {
-        switch loadingState {
+        switch viewModel.loadingState {
         case .notRequested: defaultView()
-        case .isLoading: loadingView()
-        case .loaded: loadedView()
-        case .failed(let error): failedView(error)
+        case .loading: loadingView()
+        case .success(let collections): loadedView(collections)
+        case .failure(let error): failedView(error)
         }
     }
 }
@@ -104,16 +99,16 @@ private extension CollectionView {
     }
     
     @ViewBuilder
-    func loadedView() -> some View {
+    func loadedView(_ collections: [Local.CollectionSummary]) -> some View {
         ZStack(alignment: .topLeading) {
             headerBackgroundColor
-        
+            
             VStack(spacing: 0) {
-                scrollableSection
+                scrollableSection(collections)
             }
         }
         .ignoresSafeArea(.all)
-        .onAppear { loadUnreadNotification() }
+        .onAppear { viewModel.loadUnreadNotification() }
     }
     
     @ViewBuilder
@@ -131,9 +126,9 @@ private extension CollectionView {
             NavigationBar(
                 trailing: {
                     Button {
-                        path.append(Route.notification)
+                        coordinator.push(Route.notification)
                     } label: {
-                        (hasUnread ? Image.SRIconSet.bellOn : Image.SRIconSet.bell)
+                        (viewModel.hasUnread ? Image.SRIconSet.bellOn : Image.SRIconSet.bell)
                             .frame(.defaultIconSizeLarge)
                     }
                     .buttonStyle(.icon)
@@ -141,7 +136,7 @@ private extension CollectionView {
                 backgroundColor: .clear
             )
             
-            Text(birdQuote)
+            Text(viewModel.birdQuote)
                 .font(.SRFontSet.headline1)
                 .padding(.horizontal, SRDesignConstant.defaultPadding)
                 .padding(.top, 12)
@@ -149,11 +144,11 @@ private extension CollectionView {
     }
     
     @ViewBuilder
-    var scrollableSection: some View {
+    func scrollableSection(_ collectionSummaries: [Local.CollectionSummary]) -> some View {
         if collectionSummaries.isEmpty {
             Color.clear.frame(height: Constants.navBarSpacerHeight)
             navigationBar
-            CollectionEmptyStateView(isGuest: isGuestMode, addButtonTapped: addButtonTapped)
+            CollectionEmptyStateView(isGuest: viewModel.isGuestMode, addButtonTapped: addButtonTapped)
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -176,7 +171,7 @@ private extension CollectionView {
                         )
                     }
                 }
-                .refreshable { loadMyCollections() }
+                .refreshable { await viewModel.loadPosts() }
                 .onChange(of: offsetY) { _, newValue in
                     if newValue == 0 {
                         withAnimation {
@@ -248,46 +243,22 @@ private extension CollectionView {
             VStack(spacing: 0) {
                 Color.clear.frame(height: Constants.navBarSpacerHeight)
                 navigationBar
-                CollectionEmptyStateView(isGuest: isGuestMode, addButtonTapped: {
+                CollectionEmptyStateView(isGuest: viewModel.isGuestMode, addButtonTapped: {
                     showPopup.toggle()
                 })
             }
         }
         .customPopup(isPresented: $showPopup) { alertView }
-        .onAppear { loadMyCollections() }
     }
     
     func loadingView() -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
-            .onDisappear { loadingState.cancelLoading() }
     }
     
     func failedView(_ error: Error) -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
-    }
-}
-
-// MARK: - Side Effects
-
-private extension CollectionView {
-    func loadMyCollections() {
-        if !isGuestMode {
-            $loadingState.load {
-                collectionSummaries = try await injected.interactors.collection.fetchMyCollections()
-            }
-        }
-    }
-    
-    func loadUnreadNotification() {
-        if !isGuestMode {
-            Task {
-                if let unread = try? await injected.interactors.user.hasUnreadNotifications() {
-                    self.hasUnread = unread
-                }
-            }
-        }
     }
 }
 
@@ -298,7 +269,7 @@ extension CollectionView {
         var collectionID: Int?
         var addCollection: Bool = false
         var scrollToTop: UUID?
-        var refreshCollections: UUID?   
+        var refreshCollections: UUID?
     }
     
     var routingUpdate: AnyPublisher<Routing, Never> {
@@ -309,4 +280,3 @@ extension CollectionView {
         $routingState.dispatched(to: injected.appState, \.routing.collectionView)
     }
 }
-

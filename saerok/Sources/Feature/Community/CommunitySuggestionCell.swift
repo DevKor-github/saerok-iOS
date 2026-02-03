@@ -5,13 +5,10 @@
 //  Created by HanSeung on 9/23/25.
 //
 
-
 import SwiftUI
 
-struct CommunitySuggestionCell: View {
-    typealias Item = Local.CommunityItemSummary
-    
-    let item: Item
+struct CommunitySuggestionCell: View {    
+    let item: Local.CommunityItemSummary
     
     var body: some View {
         VStack(spacing: 0) {

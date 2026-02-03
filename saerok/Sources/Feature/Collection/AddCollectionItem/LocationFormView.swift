@@ -10,8 +10,8 @@ import SwiftUI
 
 extension CollectionFormView {
     struct LocationFormView: View {
+        @EnvironmentObject private var coordinator: AppCoordinator
         @Binding var selectedCoord: (Double, Double)
-        @Binding var path: NavigationPath
         @FocusState var isFocused: Bool
         var address: String
 
@@ -36,7 +36,7 @@ extension CollectionFormView {
                 .srStyled(.textField(isFocused: $isFocused))
             }
             .onTapGesture {
-                path.append(Route.findLocation)
+                coordinator.push(Route.findLocation)
             }
         }
     }

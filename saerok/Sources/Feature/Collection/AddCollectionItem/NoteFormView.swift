@@ -10,7 +10,7 @@ import SwiftUI
 
 extension CollectionFormView {
     struct NoteFormView: View {
-        @ObservedObject var draft: Local.CollectionDraft
+        @Binding var draft: Local.CollectionDraft
         @FocusState var isFocused: Bool
 
         var body: some View {

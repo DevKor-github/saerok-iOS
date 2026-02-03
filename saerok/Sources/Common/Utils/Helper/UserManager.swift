@@ -13,60 +13,39 @@ final class UserManager: ObservableObject {
     static let shared = UserManager()
     
     @Published private(set) var user: User? = nil
-    private var context: ModelContext?
+    private var interactor: UserInteractor?
 
-    func configure(with context: ModelContext) {
-        self.context = context
+    func configure(with interactor: UserInteractor) {
+        self.interactor = interactor
         loadUser()
     }
 
-    func syncUser(from dto: DTO.MeResponse) {
-        guard let context else { return }
-
-        if let existing = user {
-            context.delete(existing)
-        }
-
-        let newUser = User(dto: dto)
-        context.insert(newUser)
-        self.user = newUser
+    func refreshUser() async {
+        guard let user = try? await interactor?.getUser() else { return }
+        syncUser(from: user)
     }
     
-    func updateNickname(to newNickname: String, networkService: SRNetworkService) async throws {
-        let updatedUser: DTO.MeResponse = try await networkService.performSRRequest(.updateMe(nickname: newNickname))
-
-        guard let user = fetchUser() else { return }
-
-        user.nickname = updatedUser.nickname
-
-        try context?.save()
+    func syncUser(from user: User) {
         self.user = user
     }
     
-    func deleteUser() {
-        guard let user = fetchUser() else { return }
-        
-        context?.delete(user)
+    func updateNickname(to newNickname: String) async throws {
+        try await interactor?.updateNickname(newNickname)
+        self.user?.nickname = newNickname
+    }
+    
+    func deleteUser() async throws {
+        try await interactor?.deleteUser()
         self.user = nil
     }
 
     private func loadUser() {
-        guard let context else { return }
-        do {
-            let users = try context.fetch(FetchDescriptor<User>())
-            self.user = users.first
-        } catch {
-            print("❌ User 로드 실패: \(error)")
-        }
-    }
-    
-    private func fetchUser() -> User? {
-        guard let context else { return nil }
-        do {
-            return try context.fetch(FetchDescriptor<User>()).first
-        } catch {
-            print("❌ User fetch 실패: \(error)")
-            return nil
+        Task {
+            do {
+                self.user = try await interactor?.getUser()
+            } catch {
+                print("❌ User 로드 실패: \(error)")
+            }
         }
     }
 }

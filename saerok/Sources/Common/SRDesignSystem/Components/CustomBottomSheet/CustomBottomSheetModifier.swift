@@ -67,7 +67,7 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     @State private var dragOffset: CGFloat = 0
     @State var currentDetent: BottomSheetDetent
     @State private var bottomSheetSize: CGSize = .zero
-    @ObservedObject var keyboard: KeyboardObserver
+    @State var keyboard: KeyboardObserver
     let isExtendable: Bool
 
     private var actualOffset: CGFloat {

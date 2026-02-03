@@ -15,6 +15,7 @@ struct CollectionSearchView: View {
     
     @Environment(\.injected) private var injected
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var coordinator: AppCoordinator
     
     // MARK: View State
         
@@ -25,17 +26,10 @@ struct CollectionSearchView: View {
     @State private var searchDebounceTask: Task<Void, Never>? = nil
 
     @FocusState private var isSearchBarFocused: Bool
-    
-    // MARK: Navigation
-    
-    @Binding var path: NavigationPath
-    
-    // MARK:  Init
-    
+        
     let onSelect: (Local.Bird) -> Void
 
-    init(path: Binding<NavigationPath>, onSelect: @escaping (Local.Bird) -> Void) {
-        self._path = path
+    init(onSelect: @escaping (Local.Bird) -> Void) {
         self.fieldGuide = []
         self.hangulFinder = .init(items: [], keySelector: { $0.name })
         self.onSelect = onSelect
@@ -90,7 +84,7 @@ private extension CollectionSearchView {
                 .font(.SRFontSet.subtitle2)
         }, leading: {
             Button {
-                path.removeLast()
+                coordinator.pop()
             } label: {
                 Image.SRIconSet.chevronLeft.frame(.defaultIconSizeSmall)
             }
@@ -142,8 +136,6 @@ private extension CollectionSearchView {
             .frame(width: 24)
             
             Button {
-//                injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
-//                path.removeLast()
                 onSelect(bird)
             } label: {
                 HStack {

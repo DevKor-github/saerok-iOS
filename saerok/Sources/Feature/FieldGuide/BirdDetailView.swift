@@ -5,47 +5,27 @@
 //  Created by HanSeung on 4/12/25.
 //
 
-
 import Combine
 import SwiftUI
 
+
 struct BirdDetailView: View {
-    @Environment(\.injected) var injected
-    @Environment(\.modelContext) private var modelContext
-
-    @State private var birdID: Int? = nil
-    @State private var bird: Local.Bird? = nil
+    @EnvironmentObject private var coordinator: AppCoordinator
     @State private var showPopup: Bool = false
-    @Binding var path: NavigationPath
-    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
-
+    @State private var viewModel: ViewModel
     
-    // MARK: - 초기화: birdID로 받는 경우
-    
-    init(birdID: Int, path: Binding<NavigationPath>) {
-        self._path = path
-        self._bird = State(initialValue: nil)
-        self._birdID = State(initialValue: birdID)
-    }
-    
-    // MARK: - 초기화: Local.Bird로 받는 경우
-    
-    init(bird: Local.Bird, path: Binding<NavigationPath>) {
-        self._path = path
-        self._bird = State(initialValue: bird)
-        self._birdID = State(initialValue: nil)
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
     
     var body: some View {
         Group {
-            if let bird = bird {
+            if let bird = viewModel.bird {
                 contentView(bird: bird)
             } else {
                 ProgressView("로딩 중...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .onAppear {
-                        loadBirdIfNeeded()
-                    }
+                    .onAppear { viewModel.loadBirdIfNeeded() }
             }
         }
         .regainSwipeBack()
@@ -96,20 +76,7 @@ struct BirdDetailView: View {
     }
 }
 
-private extension BirdDetailView {
-    func loadBirdIfNeeded() {
-        guard bird == nil, let birdID = birdID else { return }
-        
-        Task { @MainActor in
-            if let foundBird = try? await injected.interactors.fieldGuide.loadBirdDetails(birdID: birdID) {
-                self.bird = foundBird
-            }
-        }
-    }
-}
-
 // MARK: - UI Components
-
 private extension BirdDetailView {
     func birdImageWithTag(bird: Local.Bird) -> some View {
         VStack(alignment: .leading, spacing: Constants.birdImageSpacing) {
@@ -243,17 +210,16 @@ private extension BirdDetailView {
 }
 
 // MARK: - Button Actions
-
 private extension BirdDetailView {
     func backButtonTapped() {
-        path.removeLast()
+        coordinator.pop()
     }
     
     func bookmarkButtonTapped(bird: Local.Bird) {
         Task {
-            if !isGuest {
+            if !viewModel.isGuest {
                 HapticManager.shared.trigger(.light)
-                self.bird?.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                await viewModel.toggleBookmark(bird.id)
                 HapticManager.shared.trigger(.success)
             } else {
                 HapticManager.shared.trigger(.error)
@@ -263,10 +229,8 @@ private extension BirdDetailView {
     }
     
     func saerokButtonTapped(bird: Local.Bird) {
-        if !isGuest {
-            injected.appState[\.routing.contentView.tabSelection] = .collection
-            injected.appState[\.routing.collectionView.addCollection] = true
-            injected.appState[\.routing.addCollectionItemView.selectedBird] = bird
+        if !viewModel.isGuest {
+            viewModel.addSaerok(for: bird)
         } else {
             HapticManager.shared.trigger(.error)
             showPopup.toggle()
@@ -279,12 +243,11 @@ private extension BirdDetailView {
     
     func alertConfirmTapped() {
         showPopup = false
-        injected.appState[\.authStatus] = .notDetermined
+        viewModel.changeStatusToLogout()
     }
 }
 
 // MARK: - Constants
-
 private extension BirdDetailView {
     enum Constants {
         static let mainSpacing: CGFloat = 11
@@ -301,14 +264,7 @@ private extension BirdDetailView {
         static let penIconHeight: CGFloat = 26
         static let penIconTopPadding: CGFloat = 3
         
-        // ChipList
         static let chipHorizontalPadding: CGFloat = 13
         static let chipVerticalPadding: CGFloat = 7
     }
-}
-
-#Preview {
-    @Previewable @State var path: NavigationPath = .init()
-    
-    BirdDetailView(bird: .mockData[0], path: $path)
 }

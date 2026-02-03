@@ -101,7 +101,7 @@ extension Image {
             case defaultIconSizeLarge
             case defaultIconSizeVeryLarge
             case floatingButton
-            case custom(width: CGFloat, height: CGFloat)
+            case custom(_ size: CGSize)
             
             func toCGSize() -> CGSize {
                 switch self {
@@ -115,8 +115,8 @@ extension Image {
                     return CGSize(width: 40, height: 40)
                 case .floatingButton:
                     return CGSize(width: 61, height: 61)
-                case let .custom(width, height):
-                    return CGSize(width: width, height: height)
+                case let .custom(size):
+                    return size
                 }
             }
         }
@@ -238,3 +238,8 @@ extension Image.SRIconSet {
     }
 }
 
+extension Image.SRIconSet.Metric {
+    static func custom(width: CGFloat, height: CGFloat) -> Self {
+        .custom(.init(width: width, height: height))
+    }
+}

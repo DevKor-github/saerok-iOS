@@ -5,7 +5,6 @@
 //  Created by HanSeung on 10/8/25.
 //
 
-
 import SwiftUI
 
 struct FullImageOverlayModifier: ViewModifier {
@@ -19,31 +18,12 @@ struct FullImageOverlayModifier: ViewModifier {
                     ZStack {
                         Color.black.opacity(0.95)
                             .ignoresSafeArea()
-                            .onTapGesture {
-                                close()
-                            }
-
-                        ZoomableImageView(image: image) {
-                            close()
-                        }
-                        .ignoresSafeArea()
-                    
-                        VStack {
-                            HStack {
-                                NavigationBar(
-                                    leading: {
-                                        Button(action: close) {
-                                            Image.SRIconSet.xmark
-                                                .frame(.defaultIconSize)
-                                        }
-                                        .buttonStyle(.icon)
-                                },
-                                    backgroundColor: .clear
-                                )
-                                Spacer()
-                            }
-                            Spacer()
-                        }
+                            .onTapGesture { close() }
+                        
+                        ZoomableImageView(image: image) { close() }
+                            .ignoresSafeArea()
+                        
+                        navigationButton
                     }
                     .transition(.opacity)
                     .zIndex(100)
@@ -51,6 +31,25 @@ struct FullImageOverlayModifier: ViewModifier {
             }
     }
 
+    private var navigationButton: some View {
+        VStack {
+            HStack {
+                NavigationBar(
+                    leading: {
+                        Button(action: close) {
+                            Image.SRIconSet.xmark
+                                .frame(.defaultIconSize)
+                        }
+                        .buttonStyle(.icon)
+                    },
+                    backgroundColor: .clear
+                )
+                Spacer()
+            }
+            Spacer()
+        }
+    }
+    
     private func close() {
         withAnimation(.easeInOut(duration: 0.25)) {
             isPresented = false

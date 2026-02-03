@@ -59,8 +59,3 @@ struct TabbarView: View {
         .cornerRadius(.infinity)
     }
 }
-
-#Preview {
-    ContentView()
-}
-

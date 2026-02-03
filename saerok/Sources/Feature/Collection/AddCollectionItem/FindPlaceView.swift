@@ -18,12 +18,11 @@ struct FindPlaceView: View {
     // MARK:  Dependencies
     
     @Environment(\.injected) var injected
+    @EnvironmentObject private var coordinator: AppCoordinator
     
     // MARK: - View State
     
-    @ObservedObject var collectionDraft: Local.CollectionDraft
-    @Binding var path: NavigationPath
-    
+    @Binding var collectionDraft: Local.CollectionDraft
     @State private var mode: Mode = .idle
     @State private var response: [Local.KakaoPlace] = []
     
@@ -58,7 +57,7 @@ private extension FindPlaceView {
                 .font(.SRFontSet.subtitle2)
         }, leading: {
             Button {
-                path.removeLast()
+                coordinator.pop()
             } label: {
                 Image.SRIconSet.chevronLeft.frame(.defaultIconSizeSmall)
             }
@@ -186,7 +185,7 @@ private extension FindPlaceView {
     func submitButtonTapped() {
         injected.appState[\.routing.addCollectionItemView.locationSelected] = true
         showingSheet = false
-        path.removeLast()
+        coordinator.pop()
     }
     
     func selectButtonTapped() {

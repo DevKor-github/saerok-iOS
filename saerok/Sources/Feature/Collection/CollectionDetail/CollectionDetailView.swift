@@ -5,29 +5,20 @@
 //  Created by HanSeung on 4/12/25.
 //
 
-
 import SwiftUI
 
-struct CollectionDetailView: View {
-    
-    // MARK:  Route
+enum CollectionDetailRoute: AppRoute {
+    case edit
+    case findBird
+    case preview
+    case bird(_ id: Int)
+    case other(_ id: Int)
+}
 
-    enum Route: Hashable {
-        case edit
-        case findBird
-        case preview
-        case bird(_ id: Int)
-        case other(_ id: Int)
-    }
-    
-    enum LoadState {
-        case loading
-        case loaded
-        case invalid
-    }
+struct CollectionDetailView: View {
+    typealias Route = CollectionDetailRoute
     
     struct CollectionUIState: Equatable {
-        var loadState: LoadState = .loading
         var showPopup: Bool = false
         var showSuggestPopup: Bool = false
         var showAdoptPopup: Bool = false
@@ -37,44 +28,26 @@ struct CollectionDetailView: View {
         var showLikerSheet: Bool = false
         var showFullImage = false
         var text: String = ""
+        var collectionImage: UIImage?
     }
-    
-    // MARK: - Properties
-
-    let collectionID: Int
-    
-    @State private var collection: Local.CollectionDetail = .mockData[0]
-    @State private var collectionImage: UIImage?
-    @State private var comments: [Local.CollectionComment] = []
-    @State private var suggestions: [Local.BirdSuggestion] = Local.BirdSuggestion.mockData
-    @State private var newSuggesting: Local.Bird? = nil
-    @State private var selectedPreview: Local.BirdSuggestion? = nil
-    @State private var selectedAdopting: Local.BirdSuggestion? = nil
-    
+        
     // MARK:  View State
-
+    @State var viewModel: ViewModel
     @State private var uiState = CollectionUIState()
     @State private var error: Error? = nil
     @FocusState private var isFocused
-    @StateObject private var keyboard = KeyboardObserver()
+    @State private var keyboard = KeyboardObserver()
     
     // MARK: - Environment
-    
     @Environment(\.injected) private var injected: DIContainer
-    
-    // MARK: - Navigation
-    
-    var path: Binding<NavigationPath>?
+    @EnvironmentObject private var coordinator: AppCoordinator
     
     // MARK: - Init
-    
-    init(collectionID: Int, path: Binding<NavigationPath>? = nil) {
-        self.collectionID = collectionID
-        self.path = path
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
     
     // MARK: - Body
-    
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             content
@@ -94,52 +67,46 @@ struct CollectionDetailView: View {
                 shareButton
             }
             
-            if uiState.loadState == .invalid {
-                InvalidAlertView(action: { path?.wrappedValue.removeLast() })
+            if viewModel.loadState == .invalid {
+                InvalidAlertView(action: { coordinator.pop() })
                     .ignoresSafeArea(.all)
             }
         }
         .regainSwipeBack()
-        .onAppear {
-            uiState.loadState = .loading
-            if uiState.loadState == .loaded { return }
-            loadData()
+        .task {
+            await viewModel.loadInitial()
+            downloadImage(from: viewModel.collection.imageURL)
         }
-        .navigationDestination(for: CollectionDetailView.Route.self) { route in
-            switch route {
-            case .edit:
-                if let path = path {
-                    CollectionFormView(mode: .edit(collection), path: path)
-                }
-            case .bird(let id):
-                if let path = path {
-                    BirdDetailView(birdID: id, path: path)
-                }
-            case .findBird:
-                if let path = path {
-                    CollectionSearchView(
-                        path: path,
-                        onSelect: { bird in
-                            newSuggesting = bird
-                            path.wrappedValue.removeLast()
-                        })
-                }
-            case .preview:
-                if let bindingPath = path,
-                   let suggestion = selectedPreview
-                {
-                    BirdDetailView(birdID: suggestion.bird.id, path: bindingPath)
-                }
-            case .other(let id):
-                if let path = path {
-                    UserSummaryView(path: path, userID: id)
-                }
-            }
+        .navigationDestination(for: Route.self) { route in
+            routeView(for: route)
         }
     }
 }
 
-// MARK: - Subviews
+// MARK: - Navigation
+private extension CollectionDetailView {
+    @ViewBuilder
+    func routeView(for route: Route) -> some View {
+        switch route {
+        case .edit:
+            CollectionFormView(mode: .edit(viewModel.collection))
+        case .bird(let id):
+            BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: id))
+        case .findBird:
+            CollectionSearchView(
+                onSelect: { bird in
+                    viewModel.selectSuggestingBird(bird)
+                    coordinator.pop()
+                })
+        case .preview:
+            if let suggestion = viewModel.selectedPreview {
+                BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: suggestion.bird.id))
+            }
+        case .other(let id):
+            UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
+        }
+    }
+}
 
 private extension CollectionDetailView {
     var content: some View {
@@ -148,8 +115,9 @@ private extension CollectionDetailView {
                 VStack(alignment: .center, spacing: 0) {
                     Color.clear
                         .frame(height: 57)
+                    
                     imageSection
-                        .shimmerIfLoading(uiState.loadState != .loaded)
+                        .shimmerIfLoading(viewModel.loadState != .loaded)
                     
                     descriptionSection
                         .padding(.horizontal, SRDesignConstant.defaultPadding)
@@ -166,17 +134,20 @@ private extension CollectionDetailView {
         .background(Color.srLightGray)
         .bottomSheet(isShowing: $uiState.showCommentSheet, isFocused: _isFocused, keyboard: keyboard) {
             CollectionCommentSheet(
-                collectionId: collectionID,
-                isMyCollection: collection.isMine,
-                nickname: collection.user.nickname,
-                comments: comments,
+                collectionId: viewModel.collectionID,
+                isMyCollection: viewModel.collection.isMine,
+                nickname: viewModel.collection.user.nickname,
+                comments: viewModel.comments,
                 onTap: navigateToOther(_:),
-                onDelete: deleteComment,
+                onDelete: viewModel.deleteComment,
                 onDismiss: { uiState.showCommentSheet.toggle() },
             )
         }
         .sheet(isPresented: $uiState.showLikerSheet) {
-            CollectionLikerSheet(collectionID: collectionID, onDismiss: { uiState.showLikerSheet.toggle() }, path: path ?? .constant(.init()))
+            CollectionLikerSheet(
+                viewModel: .init(collectionID: viewModel.collectionID, interactor: injected.interactors.collection),
+                onDismiss: { uiState.showLikerSheet.toggle() }
+            )
         }
         .onTapGesture {
             isFocused = false
@@ -185,42 +156,42 @@ private extension CollectionDetailView {
             CollectionCommentInputBar(
                 text: $uiState.text,
                 isFocused: _isFocused,
-                nickname: collection.user.nickname,
-                onSubmit: postComment,
+                nickname: viewModel.collection.user.nickname,
+                onSubmit: viewModel.postComment,
                 keyboard: keyboard
             )
         }
         .bottomSheet(isShowing: $uiState.showSuggestionSheet, keyboard: keyboard, isExtendable: false) {
             SuggestionSheet(
-                isMine: collection.isMine,
-                collectionID: collection.id,
-                nickname: collection.user.nickname,
-                suggestions: $suggestions,
-                selectedBird: $newSuggesting,
-                selectedPreview: $selectedPreview,
-                selectedAdopting: $selectedAdopting,
+                isMine: viewModel.collection.isMine,
+                collectionID: viewModel.collection.id,
+                nickname: viewModel.collection.user.nickname,
+                suggestions: $viewModel.suggestions,
+                selectedBird: $viewModel.newSuggesting,
+                selectedPreview: $viewModel.selectedPreview,
+                selectedAdopting: $viewModel.selectedAdopting,
+                opinionFlow: $viewModel.opinionFlow,
                 showSuggestPopup: $uiState.showSuggestPopup,
                 showAdoptPopup: $uiState.showAdoptPopup,
                 onDismiss: { uiState.showSuggestionSheet.toggle() },
-                onFindBird: findBird
+                onFindBird: {
+                    coordinator.push(Route.findBird)
+                    viewModel.sendFindBirdLog()
+                }
             )
         }
-        .topOverlay(observed: selectedPreview?.bird.id) { birdPreview }
+        .topOverlay(observed: viewModel.selectedPreview?.bird.id) { birdPreview }
         .ignoresSafeArea(.all)
         .fullImageOverlay(
             isPresented: $uiState.showFullImage,
-            image: collectionImage,
+            image: uiState.collectionImage,
         )
     }
     
     var navigationBar: some View {
         NavigationBar(
-            leading: {
-                leadingButton
-            },
-            trailing: {
-                trailingProfileImage
-            },
+            leading: { leadingButton },
+            trailing: { trailingProfileImage },
             backgroundColor: .clear
         )
         .padding(.top, 60)
@@ -228,10 +199,8 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var leadingButton: some View {
-        if path != nil {
-            Button(action: {
-                path?.wrappedValue.removeLast()
-            }) {
+        if !coordinator.path.isEmpty {
+            Button { coordinator.pop() } label: {
                 Image.SRIconSet.chevronLeft
                     .frame(.defaultIconSize)
             }
@@ -241,13 +210,13 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var trailingProfileImage: some View {
-        if !collection.isMine {
+        if !viewModel.collection.isMine {
             Button {
-                navigateToOther(collection.user.id)
+                navigateToOther(viewModel.collection.user.id)
             } label: {
                 HStack {
                     ReactiveAsyncImage(
-                        url: collection.user.profileImageUrl,
+                        url: viewModel.collection.user.profileImageUrl,
                         scale: .small,
                         size: .init(width: 25, height: 25),
                         downsampling: true
@@ -259,9 +228,9 @@ private extension CollectionDetailView {
                             .inset(by: 0.8)
                             .stroke(.srLightGray, lineWidth: 2)
                     )
-                    .id(collection.id)
+                    .id(viewModel.collection.id)
                     
-                    Text(collection.user.nickname)
+                    Text(viewModel.collection.user.nickname)
                         .font(.SRFontSet.body4)
                 }
                 .padding(.vertical, 7)
@@ -274,16 +243,16 @@ private extension CollectionDetailView {
             EmptyView()
         }
     }
-
+    
     @ViewBuilder
     var imageSection: some View {
         let image = ReactiveAsyncImageWithMetadata(
-            url: collection.imageURL,
+            url: viewModel.collection.imageURL,
             scale: .medium,
             downsampling: true,
             isCachingEnabled: true
         )
-
+        
         image
             .scaledToFill()
             .cornerRadius(35)
@@ -299,28 +268,53 @@ private extension CollectionDetailView {
     
     var descriptionSection: some View {
         CollectionDescriptionSection(
-            collection: collection,
-            path: path,
-            onLikeToggle: { toggleLike() },
-            onLikeCountTap: { uiState.showLikerSheet.toggle() },
-            onCommentTap: { uiState.showCommentSheet.toggle() },
-            onReportTap: { uiState.showPopup.toggle() },
-            onSuggestTap: { uiState.showSuggestionSheet.toggle() }
-        )
+            collection: viewModel.collection,
+        ) { action in
+            switch action {
+            case .likeToggle:
+                Task {
+                    HapticManager.shared.trigger(.light)
+                    await viewModel.toggleLike()
+                }
+        
+            case .likeCountTap:
+                uiState.showLikerSheet.toggle()
+        
+            case .commentTap:
+                uiState.showCommentSheet.toggle()
+                
+            case .reportTap:
+                uiState.showPopup.toggle()
+                
+            case .suggestTap:
+                uiState.showSuggestionSheet.toggle()
+                viewModel.startOpinionFlow()
+                
+            case .navigateToFieldGuide:
+                viewModel.navigateToFieldGuide()
+                
+            case .navigateToMap:
+                viewModel.navigateToMap()
+            }
+        }
     }
-
+    
     @ViewBuilder
     var shareSheetSection: some View {
-        if let image = collectionImage,
-            uiState.showShareSheet
+        if let image = uiState.collectionImage,
+           uiState.showShareSheet
         {
-            CollectionShareView(collection: collection, isPresented: $uiState.showShareSheet, image: image)
+            CollectionShareView(
+                collection: viewModel.collection,
+                isPresented: $uiState.showShareSheet,
+                image: image
+            )
         }
     }
     
     @ViewBuilder
     var shareButton: some View {
-        if collection.isMine {
+        if viewModel.collection.isMine {
             Button(action: { uiState.showShareSheet.toggle() }) {
                 Image.SRIconSet.airplane
                     .frame(.floatingButton)
@@ -333,7 +327,7 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var birdPreview: some View {
-        if let suggestion = selectedPreview,
+        if let suggestion = viewModel.selectedPreview,
            uiState.showSuggestionSheet
         {
             ZStack(alignment: .bottomTrailing) {
@@ -347,10 +341,10 @@ private extension CollectionDetailView {
                 .frame(width: 220, height: 227)
                 .cornerRadius(23)
                 .padding(.top, 66)
-
-                if let bindingPath = path {
+                
+                if !coordinator.path.isEmpty {
                     Button {
-                        bindingPath.wrappedValue.append(Route.preview)
+                        coordinator.push(Route.preview)
                     } label: {
                         Image.SRIconSet.chevronRight
                             .frame(.defaultIconSize)
@@ -370,9 +364,9 @@ private extension CollectionDetailView {
                 title: "신고하기",
                 action: {
                     Task {
-                        try await injected.interactors.collection.reportCollection(collectionID)
+                        await viewModel.reportCollection()
+                        uiState.showPopup = false
                     }
-                    uiState.showPopup = false
                 },
                 style: .delete
             ),
@@ -387,22 +381,23 @@ private extension CollectionDetailView {
     
     var suggestAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
-            title: "'\(newSuggesting?.name ?? "딱새")'가 맞나요?",
+            title: "'\(viewModel.newSuggesting?.name ?? "딱새")'가 맞나요?",
             message: "정확하지 않은 이름의 제안은 사용자들에게\n혼란을 일으킬 수 있어요.",
             leading: .init(
                 title: "취소",
                 action: {
                     uiState.showSuggestPopup = false
-                    newSuggesting = nil
+                    viewModel.suggestingCancel()
                 },
                 style: .bordered
             ),
             trailing: .init(
                 title: "동정돕기",
                 action: {
-                    suggestBird(birdID: newSuggesting?.id ?? 0)
-                    uiState.showSuggestPopup = false
-                    newSuggesting = nil
+                    Task {
+                        await viewModel.suggestingComplete()
+                        uiState.showSuggestPopup = false
+                    }
                 },
                 style: .confirm
             ),
@@ -412,7 +407,7 @@ private extension CollectionDetailView {
     
     var adoptAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
-            title: "'\(selectedAdopting?.bird.name ?? "딱새")'로 채택하시겠어요?",
+            title: "'\(viewModel.selectedAdopting?.bird.name ?? "딱새")'로 채택하시겠어요?",
             message: "채택된 이후 동정 돕기 창은 사라지며,\n다시 이름 모를 새로 전환하면\n보이게 할 수 있어요.",
             leading: .init(
                 title: "취소",
@@ -424,8 +419,10 @@ private extension CollectionDetailView {
             trailing: .init(
                 title: "채택하기",
                 action: {
-                    adoptBird(birdId: selectedAdopting?.bird.id ?? 0)
-                    uiState.showAdoptPopup = false
+                    Task {
+                        await viewModel.adoptBird()
+                        uiState.showAdoptPopup = false
+                    }
                 },
                 style: .confirm
             ),
@@ -433,116 +430,8 @@ private extension CollectionDetailView {
         )
     }
     
-    
-}
-
-// MARK: - Networking
-
-private extension CollectionDetailView {
-    func loadData() {
-        Task {
-            await withTaskGroup(of: Void.self) { group in
-                group.addTask { await fetchCollectionDetail() }
-                group.addTask { await fetchCollectionComments() }
-                group.addTask { await fetchSuggestion() }
-                await group.waitForAll()
-            }
-        }
-    }
-    
-    func fetchCollectionDetail() async {
-        do {
-            let collectionBird = try await injected.interactors.collection.fetchCollectionDetail(id: collectionID)
-            self.collection = collectionBird
-            downloadImage(from: collectionBird.imageURL)
-            uiState.loadState = .loaded
-        } catch {
-            uiState.loadState = .invalid
-        }
-    }
-    
-    func fetchCollectionComments() async {
-        do {
-            comments = try await injected.interactors.collection.fetchComments(collectionID)
-        } catch {
-            print(error.localizedDescription)
-        }
-    }
-    
-    func fetchSuggestion() async {
-        guard let result = try? await injected.interactors.collection.fetchBirdSuggestions(collectionID) else { return }
-        suggestions = result
-        if !result.isEmpty { selectedPreview = suggestions[0] }
-    }
-    
-    func postComment() {
-        Task {
-            do {
-                try await injected.interactors.collection.createComments(id: collectionID, uiState.text)
-                comments = try await injected.interactors.collection.fetchComments(collectionID)
-                collection.commentCount += 1
-            } catch {
-                
-            }
-            uiState.text = ""
-        }
-    }
-    
-    func deleteComment(_ id: Int) {
-        Task {
-            do {
-                try await injected.interactors.collection.deleteComment(collectionId: collectionID, commentId: id)
-                comments = try await injected.interactors.collection.fetchComments(collectionID)
-                collection.commentCount -= 1
-            } catch {
-                print(error.localizedDescription)
-            }
-        }
-    }
-    
-    func toggleLike() {
-        Task {
-            do {
-                HapticManager.shared.trigger(.light)
-                let isLiked = try await injected.interactors.collection.toggleLike(collectionID)
-                collection.likeToggle(isLiked)
-            } catch {
-                print(error.localizedDescription)
-            }
-        }
-    }
-    
-    func findBird() {
-        if let path = path {
-            path.wrappedValue.append(CollectionDetailView.Route.findBird)
-        }
-    }
-    
-    func suggestBird(birdID: Int) {
-        Task {
-            do {
-                var result = try await injected.interactors.collection.suggestBird(collectionID, birdId: birdID)
-                let bird = try await injected.interactors.fieldGuide.loadBirdDetails(birdID: birdID)
-                result.bird = bird
-                
-                suggestions.append(result)
-            } catch {
-                print(error.localizedDescription)
-            }
-        }
-    }
-    
-    func adoptBird(birdId: Int) {
-        Task {
-            try await injected.interactors.collection.adoptSuggestion(collectionID, birdId: birdId)
-            uiState.showAdoptPopup = false
-            uiState.showSuggestionSheet = false
-            await fetchCollectionDetail()
-        }
-    }
-    
     func navigateToOther(_ userId: Int) {
-        path?.wrappedValue.append(Route.other(userId))
+        coordinator.push(Route.other(userId))
     }
     
     func downloadImage(from urlString: String) {
@@ -550,8 +439,8 @@ private extension CollectionDetailView {
         
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data, let image = UIImage(data: data) else { return }
-            DispatchQueue.main.async {
-                collectionImage = image
+            Task { @MainActor in
+                uiState.collectionImage = image
             }
         }.resume()
     }

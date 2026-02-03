@@ -11,6 +11,7 @@ import Combine
 
 struct RootSelectorView: View {
     @Environment(\.injected) private var injected
+    @Environment(\.scenePhase) private var scenePhase
     
     @State private var authStatus: AppState.AuthStatus = .notDetermined
     @State private var showSplash = true
@@ -32,6 +33,13 @@ struct RootSelectorView: View {
         .ignoresSafeArea()
         .animation(.spring(), value: networkMonitor.isConnected)
         .onReceive(authStatusUpdate) { authStatus = $0 }
+        .onChange(of: scenePhase, initial: false) {
+            if scenePhase == .active {
+                Task { @MainActor in
+                   injected.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
+                }
+            }
+        }
     }
 }
 

@@ -9,18 +9,21 @@
 import SwiftUI
 
 struct CollectionDescriptionSection: View {
-    var collection: Local.CollectionDetail
-    var path: Binding<NavigationPath>?
-
-    var onLikeToggle: () -> Void
-    var onLikeCountTap: () -> Void
-    var onCommentTap: () -> Void
-    var onReportTap: () -> Void
-    var onSuggestTap: (() -> Void)?
-        
-    // MARK: - Environment
+    typealias Route = CollectionDetailRoute
     
-    @Environment(\.injected) private var injected: DIContainer
+    enum Action {
+        case likeToggle
+        case likeCountTap
+        case commentTap
+        case reportTap
+        case suggestTap
+        case navigateToFieldGuide
+        case navigateToMap
+    }
+    
+    @EnvironmentObject private var coordinator: AppCoordinator
+    let collection: Local.CollectionDetail
+    let onAction: (Action) -> Void
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -76,8 +79,8 @@ private extension CollectionDescriptionSection {
                 noteButton(
                     image: (collection.isLiked ? Image.SRIconSet.heartFilled : .heart),
                     index: collection.likeCount,
-                    onTap: onLikeToggle,
-                    additionalTap: onLikeCountTap
+                    onTap: { onAction(.likeToggle) },
+                    additionalTap: { onAction(.likeCountTap) }
                 )
                 
                 Divider()
@@ -88,7 +91,7 @@ private extension CollectionDescriptionSection {
                 noteButton(
                     image: .comment,
                     index: collection.commentCount,
-                    onTap: onCommentTap
+                    onTap: { onAction(.commentTap) }
                 )
             }
         }
@@ -107,12 +110,10 @@ private extension CollectionDescriptionSection {
                 .frame(.defaultIconSizeLarge)
                 .padding(8)
                 .contentShape(Rectangle())
-                .onTapGesture {
-                    onTap()
-                }
-
+                .onTapGesture(perform: onTap)
+            
             Spacer()
-
+            
             Text("\(index)")
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -136,14 +137,8 @@ private extension CollectionDescriptionSection {
                     .frame(.defaultIconSize, tintColor: .pointtext)
                 
                 Button(action: {
-                    if let path = path {
-                        path.wrappedValue = .init()
-                    }
-                    injected.appState[\.routing.contentView.tabSelection] = .map
-                    injected.appState[\.routing.mapView.navigation] = .init(
-                        latitude: collection.coordinate.latitude,
-                        longitude: collection.coordinate.longitude
-                    )
+                    coordinator.clear()
+                    onAction(.navigateToMap)
                 }) {
                     HStack(alignment: .top, spacing: 0) {
                         VStack(alignment: .leading, spacing: 3) {
@@ -200,24 +195,21 @@ private extension CollectionDescriptionSection {
     @ViewBuilder
     var toDogamButton: some View {
         if let birdID = collection.birdID {
-            if let path = path {
+            if !coordinator.path.isEmpty {
                 Button {
-                    path.wrappedValue.append(CollectionDetailView.Route.bird(birdID))
+                    coordinator.push(Route.bird(birdID))
                 } label: {
                     Image.SRIconSet.toDogam
                         .frame(.defaultIconSizeVeryLarge)
                 }
             } else {
-                Button {
-                    injected.appState[\.routing.contentView.tabSelection] = .fieldGuide
-                    injected.appState[\.routing.fieldGuideView.birdName] = collection.birdName
-                } label: {
+                Button { onAction(.navigateToFieldGuide) } label: {
                     Image.SRIconSet.toDogam
                         .frame(.defaultIconSizeVeryLarge)
                 }
             }
         } else {
-            Button(action: onSuggestTap ?? {}) {
+            Button { onAction(.suggestTap) } label: {
                 Image.SRIconSet.unknown
                     .frame(.defaultIconSizeLarge, tintColor: .srWhite)
                     .padding(8)
@@ -231,16 +223,14 @@ private extension CollectionDescriptionSection {
     var additionalButton: some View {
         if collection.isMine {
             Button {
-                if let path = path {
-                    path.wrappedValue.append(CollectionDetailView.Route.edit)
-                }
+                coordinator.push(Route.edit)
             } label: {
                 Image.SRIconSet.edit.frame(.defaultIconSizeLarge)
             }
             .srStyled(.iconButton)
         } else {
             Menu {
-                Button(action: onReportTap) {
+                Button { onAction(.reportTap) } label: {
                     Label("신고하기", systemImage: "light.beacon.max")
                 }
             } label: {

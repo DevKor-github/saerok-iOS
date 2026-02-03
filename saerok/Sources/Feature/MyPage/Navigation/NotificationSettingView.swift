@@ -9,10 +9,9 @@
 import SwiftUI
 
 struct NotificationSettingView: View {
+    @EnvironmentObject private var coordinator: AppCoordinator
     @Environment(\.injected) private var injected
-    
-    @Binding var path: NavigationPath
-    
+        
     @State private var settings: Local.NotificationSettings = .init()
     
     var body: some View {
@@ -49,7 +48,7 @@ struct NotificationSettingView: View {
                     .font(.SRFontSet.subtitle2)
             }, leading: {
                 Button {
-                    path.removeLast()
+                    coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)

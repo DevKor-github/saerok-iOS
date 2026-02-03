@@ -73,8 +73,7 @@ private extension KakaoLoginView {
                 .networkService
                 .performSRRequest(.kakaoLogin(accessCode: token.accessToken))
             
-            TokenManager.shared.trySocialLogin(accessToken: response.accessToken)
-
+            await TokenManager.shared.trySocialLogin(accessToken: response.accessToken)
             await MainActor.run {
                 user.id = kakaoInfo.id
                 user.email = kakaoInfo.email

@@ -32,22 +32,3 @@ struct SRTextFieldStyle: ViewModifier {
             )
     }
 }
-
-#Preview {
-    @Previewable @FocusState var isFocused: Bool
-    @Previewable @State var text = ""
-    @Previewable @State var password: String = ""
-
-    VStack {
-        TextField(text: $text, label: {
-            
-        })
-        .srStyled(.textField(isFocused: $isFocused))
-        .textFieldDeletable(text: $text)
-        
-
-        PasswordField(password: $password)
-            .srStyled(.textField(isFocused: $isFocused))
-    }
-    .padding()
-}

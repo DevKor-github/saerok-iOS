@@ -10,25 +10,26 @@ import UIKit
 import Foundation
 
 extension Local {
-    final class CollectionDraft: ObservableObject, Equatable {
-        @Published var bird: Local.Bird?
-        @Published var isUnknownBird: Bool
-        @Published var image: UIImage?
-        @Published var discoveredDate: Date
-        @Published var coordinate: (Double, Double)
-        @Published var address: String
-        @Published var locationAlias: String
-        @Published var note: String
-        @Published var isVisible: Bool
-        @Published var collectionID: Int?
-        @Published private(set) var originalBirdId: Int?
+    @Observable
+    final class CollectionDraft: Equatable {
+        var bird: Local.Bird?
+        var isUnknownBird: Bool
+        var image: UIImage?
+        var discoveredDate: Date
+        var coordinate: (Double, Double)
+        var address: String
+        var locationAlias: String
+        var note: String
+        var isVisible: Bool
+        var collectionID: Int?
+        private(set) var originalBirdId: Int?
         
         var submittable: Bool {
-            (bird != nil || isUnknownBird)
-            && image != nil
-            && !note.isEmpty
-            && !locationAlias.isEmpty
-            && coordinate != (0, 0)
+            (bird != nil || isUnknownBird) &&
+            image != nil &&
+            !note.isEmpty &&
+            !locationAlias.isEmpty &&
+            coordinate != (0, 0)
         }
 
         init(

@@ -7,10 +7,8 @@
 
 
 import AppTrackingTransparency
-
 import SwiftUI
 import UIKit
-
 import KakaoSDKCommon
 import KakaoSDKAuth
 import KakaoSDKUser
@@ -23,6 +21,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     var rootView: some View {
         environment.rootView
     }
+    
 }
 
 // MARK: - Lifecycle
@@ -34,13 +33,9 @@ extension AppDelegate {
     ) -> Bool {
         FirebaseApp.configure()
         PushNotificationManager.shared.configurePush(application: application, diContainer: environment.diContainer)
-//        KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
+        //        KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
         KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
-        
-        Task { @MainActor in
-            environment.diContainer.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
-        }
-        
+       
         NotificationCenter.default.addObserver(
             forName: UIApplication.didBecomeActiveNotification,
             object: nil,
@@ -52,6 +47,14 @@ extension AppDelegate {
         return true
     }
     
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        if let unreadCount = userInfo["unreadCount"] as? Int {
+            UNUserNotificationCenter.current().setBadgeCount(unreadCount)
+        }
+        
+        completionHandler(.newData)
+    }
+
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -65,4 +68,3 @@ extension AppDelegate {
         }
     }
 }
-

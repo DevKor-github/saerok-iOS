@@ -47,12 +47,22 @@ struct CommunityInteractorImpl: CommunityInteractor {
 
     private func searchUsers(_ query: String, page: Int?, size: Int?) async throws -> Local.CommunitySearchMainItems {
         let dto = try await repository.searchUsers(query: query, page: page, size: size)
-        return .init(collections: [], users: dto.items.map { .from(dto: $0) })
+        return .init(
+            collections: [],
+            users: dto.items.map {.from(dto: $0) },
+            collectionsCount: 0,
+            usersCount: dto.items.count
+        )
     }
 
     private func searchCollections(_ query: String, page: Int?, size: Int?) async throws -> Local.CommunitySearchMainItems {
         let dto = try await repository.searchCollections(query: query, page: page, size: size)
-        return .init(collections: dto.items.map { .from(dto: $0) }, users: [])
+        return .init(
+            collections: dto.items.map { .from(dto: $0) },
+            users: [],
+            collectionsCount: dto.items.count,
+            usersCount: 0
+        )
     }
 }
 

@@ -24,9 +24,3 @@ extension Local {
         }
     }
 }
-
-// MARK: - Mock Data
-
-extension Local.FieldGuide {
-    @MainActor static let mockData: Local.FieldGuide = .init(Local.Bird.mockData)
-}

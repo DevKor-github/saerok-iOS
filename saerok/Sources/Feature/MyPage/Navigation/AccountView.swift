@@ -10,18 +10,47 @@ import SwiftData
 import SwiftUI
 import KakaoSDKUser
 
+extension AccountView {
+    @Observable
+    final class ViewModel {
+        private let appState: Store<AppState>
+        private let interactor: UserInteractor
+        private let userManager: UserManager
+        private let tokenmanager: TokenManager
+        
+        var user: User? { userManager.user }
+        
+        init(appState: Store<AppState>, interactor: UserInteractor) {
+            self.appState = appState
+            self.interactor = interactor
+            self.userManager = .shared
+            self.tokenmanager = .shared
+        }
+        
+        func logout() async throws {
+            await tokenmanager.clearTokens()
+            try await userManager.deleteUser()
+            appState[\.authStatus] = .notDetermined
+        }
+        
+        func deleteAccount() async throws {
+            try await interactor.deleteAccount()
+            appState[\.authStatus] = .notDetermined
+        }
+    }
+}
+
 struct AccountView: View {
-    @Environment(\.injected) private var injected
-    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var coordinator: AppCoordinator
+        
+    @State private var viewModel: ViewModel
+    @State private var showPopup: Bool = false
+    @State private var showDeletePopup: Bool = false
+    @State private var isDeleting: Bool = false
     
-    @Binding var path: NavigationPath
-    
-    @ObservedObject var userManager = UserManager.shared
-    private var user: User? { userManager.user }
-    
-    @State var showPopup: Bool = false
-    @State var showDeletePopup: Bool = false
-    @State var isDeleting: Bool = false
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
@@ -46,7 +75,7 @@ struct AccountView: View {
     
     @ViewBuilder
     private var userInfoSection: some View {
-        if let user = user {
+        if let user = viewModel.user {
             VStack(spacing: 28) {
                 HStack {
                     Text("연결된 소셜로그인 계정")
@@ -114,7 +143,7 @@ struct AccountView: View {
                     .font(.SRFontSet.subtitle2)
             }, leading: {
                 Button {
-                    path.removeLast()
+                    coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
@@ -168,17 +197,14 @@ struct AccountView: View {
     
     func logout() {        
         Task { @MainActor in
-            TokenManager.shared.clearTokens()
-            userManager.deleteUser()
-            injected.appState[\.authStatus] = .notDetermined
+            try await viewModel.logout()
         }
     }
     
     func deleteAccount() {
         Task {
             isDeleting = true
-            try await injected.interactors.user.deleteAccount()
-            injected.appState[\.authStatus] = .notDetermined
+            try await viewModel.deleteAccount()
             showDeletePopup = false
             isDeleting = false
         }

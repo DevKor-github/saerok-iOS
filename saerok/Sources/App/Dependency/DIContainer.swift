@@ -21,7 +21,11 @@ struct DIContainer {
     }
 
     init(appState: AppState, interactors: Interactors, networkSevice: SRNetworkService) {
-        self.init(appState: Store<AppState>(appState), interactors: interactors, networkService: networkSevice)
+        self.init(
+            appState: Store<AppState>(appState),
+            interactors: interactors,
+            networkService: networkSevice
+        )
     }
 }
 
@@ -72,5 +76,6 @@ extension View {
     func inject(_ container: DIContainer) -> some View {
         return self
             .environment(\.injected, container)
+            .environmentObject(AppCoordinator(container: container))
     }
 }

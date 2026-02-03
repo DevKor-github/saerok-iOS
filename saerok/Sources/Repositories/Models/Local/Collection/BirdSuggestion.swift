@@ -18,7 +18,7 @@ extension Local {
         static func from(dto: DTO.SuggestionListResponse, existingBirds: [Local.Bird]) -> [Local.BirdSuggestion] {
             return dto.items.compactMap { item in
                 return Local.BirdSuggestion(
-                    bird: existingBirds.first(where: { $0.id == item.birdId }) ?? .mockData[0],
+                    bird: existingBirds.first(where: { $0.id == item.birdId }) ?? .mockData,
                     agreeCount: item.agreeCount,
                     disagreeCount: item.disagreeCount,
                     isAgreed: item.isAgreedByMe,

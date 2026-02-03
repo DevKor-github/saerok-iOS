@@ -9,9 +9,12 @@
 import UIKit
 
 protocol UserInteractor {
+    func getUser() async throws -> User
+    func deleteUser() async throws
     func createAccount(nickname: String) async throws
     func deleteAccount() async throws
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse
+    func updateNickname(_ nickname: String) async throws
     func deleteProfileImage() async throws
     func fetchNotifications() async throws -> [Local.NotificationItem]
     func fetchNotificationSetting() async throws -> Local.NotificationSettings
@@ -27,13 +30,23 @@ protocol UserInteractor {
 
 enum UserInteractorError: Error {
     case invalidImageData
+    case invalidUser
 }
 
 struct UserInteractorImpl: UserInteractor {
+    typealias Error = UserInteractorError
     
     let repository: UserRepository
     
     private var deviceID: String { TokenManager.shared.getDeviceId() }
+    
+    func getUser() async throws -> User {
+        try await repository.getMeResponse()
+    }
+    
+    func deleteUser() async throws {
+        try await repository.deleteUser(nil)
+    }
     
     func createAccount(nickname: String) async throws {
         try await repository.createNewUser(nickname: nickname)
@@ -43,7 +56,7 @@ struct UserInteractorImpl: UserInteractor {
         try await repository.deleteAccount()
         if let user = try await repository.getUser() {
             try await repository.deleteUser(user)
-            TokenManager.shared.clearTokens()
+            await TokenManager.shared.clearTokens()
         }
     }
     
@@ -62,6 +75,14 @@ struct UserInteractorImpl: UserInteractor {
         )
         
         return try await repository.updateProfileImage(registerRequest)
+    }
+    
+    func updateNickname(_ nickname: String) async throws {
+        try await repository.updateNickname(nickname)
+        guard let user = try await repository.getUser() else { throw Error.invalidUser }
+        
+        user.nickname = nickname
+        try await repository.updateUser(to: user)
     }
     
     func deleteProfileImage() async throws {
@@ -116,6 +137,14 @@ struct UserInteractorImpl: UserInteractor {
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func deleteUser() async throws { }
+    
+    func getUser() async throws -> User { .init() }
+    
+    func updateUser(to user: User) async throws { }
+    
+    func updateNickname(_ nickname: String) async throws { }
+    
     func deleteProfileImage() async throws { }
     
     func createAccount(nickname: String) async throws { }

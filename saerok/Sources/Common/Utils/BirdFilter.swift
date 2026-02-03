@@ -18,7 +18,6 @@ struct BirdFilter: Equatable {
     
     func build() -> Predicate<Local.Bird> {
         let predicates: [Predicate<Local.Bird>] = [
-//            nameFilter(),
             bookmarkFilter(),
             seasonFilter(),
             habitatFilter(),

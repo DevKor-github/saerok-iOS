@@ -10,15 +10,17 @@ import Combine
 import SwiftUI
 import SwiftData
 
+enum MapRoute: AppRoute {
+    case detail(_ collectionID: Int)
+}
+
 struct MapView: Routable {
-    
-    enum Route: Hashable {
-        case detail(_ collectionID: Int)
-    }
+    typealias Route = MapRoute
     
     // MARK: - Dependencies
     
     @Environment(\.injected) var injected
+    @EnvironmentObject private var coordinator: AppCoordinator
     private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     
     // MARK: - Routable
@@ -30,7 +32,7 @@ struct MapView: Routable {
     private var locationManager: LocationManager { LocationManager.shared }
     @StateObject private var mapController: MapController
     
-    @State private var mapViewState: Loadable<Void>
+    @State private var mapViewState: LoadState<Void> = .notRequested
     @State private var position: (Double, Double) = (37.59080, 127.0278)
     @State private var address: String = ""
     @State private var text: String = ""
@@ -41,16 +43,12 @@ struct MapView: Routable {
     @State private var item: [Local.NearbyCollectionSummary] = []
     @State private var searchDebounceTask: Task<Void, Error>? = nil
     @State private var isNavigating = false
-
-    @Binding private var path: NavigationPath
     
     private var isModeIdle: Bool { mode == .idle }
     private var networkService: SRNetworkService { injected.networkService }
     
-    init(state: Loadable<Void> = .notRequested, path: Binding<NavigationPath>) {
-        self._mapViewState = .init(initialValue: state)
-        self._path = path
-        let mapController = MapController(locationManager: LocationManager.shared)
+    init(locationManager: LocationManager = .shared) {
+        let mapController = MapController(locationManager: locationManager)
         self._mapController = .init(wrappedValue: mapController)
     }
         
@@ -62,15 +60,15 @@ struct MapView: Routable {
                 reloadAddress()
             }
             .onReceive(routingUpdate) { self.routingState = $0 }
-            .navigationDestination(for: MapView.Route.self) { route in
+            .navigationDestination(for: Route.self) { route in
                 switch route  {
                 case .detail(let id):
-                    CollectionDetailView(collectionID: id, path: $path)
+                    CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
                 }
             }
             .onChange(of: mapController.selectedBird) { _, newBird in
                 if let newBird = newBird {
-                    path.append(MapView.Route.detail(newBird.collectionId))
+                    coordinator.push(MapRoute.detail(newBird.collectionId))
                 }
             }
             .onChange(of: routingState.navigation) { _, update in
@@ -93,18 +91,17 @@ struct MapView: Routable {
         switch mapViewState {
         case .notRequested:
             Text("")
-            .task {
-                if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
-                    Task {
+                .task {
+                    if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
+                        mapViewState = .loading
                         position = (location.latitude, location.longitude)
                         try? await fetchNearby(mineOnly: isMineOnly)
-                        mapViewState = .loaded(())
+                        mapViewState = .success(())
+                    } else {
+                        mapViewState = .notRequested
                     }
-                } else {
-                    mapViewState = .loaded(())
                 }
-            }
-        case .loaded:
+        case .success:
             loadedContent
         default:
             Text("")
@@ -125,7 +122,7 @@ private extension MapView {
                 Text("")
                     .bottomSheet(alwaysOnDisplay: true, keyboard: KeyboardObserver()) {
                         NearbySheet(address: address, item: item) { item in
-                            path.append(Route.detail(item.collectionId))
+                            coordinator.push(Route.detail(item.collectionId))
                         }
                     }
                     .ignoresSafeArea(.keyboard, edges: .bottom)
@@ -372,7 +369,6 @@ struct SearchInputBar: View {
         HStack {
             Button {
                 text = ""
-
                 if mode == .idle {
                     mode = .searching
                 } else {

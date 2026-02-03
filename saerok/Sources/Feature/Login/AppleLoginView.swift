@@ -79,8 +79,7 @@ private extension AppleLoginView {
                 .networkService
                 .performSRRequest(.appleLogin(authorizationCode: authorizationCode))
             
-            TokenManager.shared.trySocialLogin(accessToken: response.accessToken)
-            
+            await TokenManager.shared.trySocialLogin(accessToken: response.accessToken)
             await MainActor.run {
                 user.id = id
                 user.email = email ?? "Unknown"

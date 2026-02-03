@@ -54,9 +54,3 @@ struct FilterButton<T: Hashable & RawRepresentable & CaseIterable>: View where T
         )
     }
 }
-
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
-}

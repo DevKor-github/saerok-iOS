@@ -13,8 +13,8 @@ struct CollectionCommentInputBar: View {
     @Binding var text: String
     @FocusState var isFocused: Bool
     let nickname: String
-    let onSubmit: () -> Void
-    @ObservedObject var keyboard: KeyboardObserver
+    let onSubmit: (String) async -> Void
+    @State var keyboard: KeyboardObserver
 
     private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
     private var isInputValid: Bool {
@@ -36,7 +36,9 @@ struct CollectionCommentInputBar: View {
                 Spacer()
                 
                 Button(action: {
-                    onSubmit()
+                    Task {
+                        await onSubmit(text)
+                    }
                 }) {
                     Image.SRIconSet.upperArrow
                         .frame(.defaultIconSizeLarge)

@@ -10,20 +10,16 @@ import Combine
 import SwiftUI
 
 struct ContentView: Routable {
-    
-    // MARK: Dependencies
-    
-    @Environment(\.injected) var injected
-    
-    // MARK: Routing
-    
-    @State var routingState = Routing()
-    
     // MARK: View State
-    
     @State private var selectedTab: TabbedItems = SRConstant.mainTab
     @State private var isTabbarHidden: Bool = false
-    @State private var path = NavigationPath()
+    
+    // MARK: Dependencies
+    @Environment(\.injected) private var injected
+    @EnvironmentObject private var coordinator: AppCoordinator
+    
+    // MARK: Routing
+    @State var routingState = Routing()
     
     var body: some View {
         content
@@ -38,9 +34,9 @@ struct ContentView: Routable {
     }
     
     private var content: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $coordinator.path) {
             ZStack {
-                CachedTabContainer(selectedTab: selectedTab, path: $path)
+                CachedTabContainer(selectedTab: selectedTab)
                 
                 TabbarView(selectedTab: selectedTab)
                     .opacity(routingState.isTabbarHidden ? 0 : 1)
@@ -80,8 +76,9 @@ extension ContentView {
 }
 
 struct CachedTabContainer: View {
+    @EnvironmentObject private var coordinator: AppCoordinator
+
     let selectedTab: TabbedItems
-    @Binding var path: NavigationPath
     @State private var cache: [TabbedItems: AnyView] = [:]
 
     var body: some View {
@@ -91,7 +88,7 @@ struct CachedTabContainer: View {
                 Group {
                     if tab == .map {
                         if isSelected {
-                            MapView(path: $path)
+                            MapView()
                         } else {
                             EmptyView()
                         }
@@ -99,7 +96,7 @@ struct CachedTabContainer: View {
                         if let cached = cache[tab] {
                             cached
                         } else if isSelected {
-                            let built = AnyView(TabContent(tab: tab, path: $path))
+                            let built = AnyView(TabContent(tab: tab))
                             built
                                 .onAppear {
                                     cache[tab] = built
@@ -120,8 +117,10 @@ struct CachedTabContainer: View {
 
 private struct TabContent: View {
     let tab: TabbedItems
-    @Binding var path: NavigationPath
-
+    
+    @Environment(\.injected) var injected: DIContainer
+    @EnvironmentObject private var coordinator: AppCoordinator
+    
     var body: some View {
         content
     }
@@ -132,13 +131,13 @@ private struct TabContent: View {
         case .map:
             EmptyView()
         case .fieldGuide:
-            FieldGuideView(path: $path)
+            FieldGuideView(viewModel: coordinator.makeFieldGuideViewModel())
         case .collection:
-            CollectionView(path: $path)
+            CollectionView(viewModel: coordinator.makeCollectionViewModel())
         case .community:
-            CommunityView(path: $path)
+            CommunityView(viewModel: coordinator.makeCommunityViewModel())
         case .profile:
-            MyPageView(path: $path)
+            MyPageView(viewModel: coordinator.makeMyPageViewModel())
         }
     }
 }

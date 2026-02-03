@@ -10,19 +10,30 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+
+extension FieldGuideSearchView {
+    @Observable
+    final class ViewModel {
+        private let appState: Store<AppState>
+        private let interactor: FieldGuideInteractor
+        var isGuest: Bool {appState[\.authStatus] == .guest }
+
+        init(appState: Store<AppState>, interactor: FieldGuideInteractor) {
+            self.appState = appState
+            self.interactor = interactor
+        }
+
+        func toggleBookmark(birdId: Int) async throws -> Bool {
+            try await interactor.toggleBookmark(birdID: birdId)
+        }
+    }
+}
+
 struct FieldGuideSearchView: View {
-    
-    // MARK:  Dependencies
-    
-    @Environment(\.injected) private var injected
-    @Environment(\.modelContext) private var modelContext
-    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
-    
     // MARK: View State
-    
+    @State private var viewModel: ViewModel
     @Query(sort: \Local.RecentSearchEntity.createdAt, order: .reverse)
     private var recentSearchItems: [Local.RecentSearchEntity]
-    
     @State private var filterKey: BirdFilter = .init()
     @State private var fieldGuide: [Local.Bird]
     @State private var filteredBirds: [Local.Bird] = []
@@ -31,15 +42,14 @@ struct FieldGuideSearchView: View {
     @State private var showHabitatSheet = false
     @State private var showSizeSheet = false
     @FocusState private var isSearchBarFocused: Bool
-
-    // MARK: Navigation
     
-    @Binding var path: NavigationPath
+    // MARK:  Dependencies
+    @EnvironmentObject private var coordinator: AppCoordinator
+    @Environment(\.modelContext) var modelContext
     
     // MARK: Init
-    
-    init(path: Binding<NavigationPath>) {
-        self._path = path
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
         self.fieldGuide = []
         self.hangulFinder = .init(items: [], keySelector: { $0.name })
     }
@@ -64,7 +74,11 @@ struct FieldGuideSearchView: View {
             filteredBirds = hangulFinder.search(filterKey.searchText)
         }
         .regainSwipeBack()
-        .onAppear { isSearchBarFocused = true }
+        .onAppear {
+            if filterKey.searchText.isEmpty {
+                isSearchBarFocused = true
+            }
+        }
     }
 }
 
@@ -224,14 +238,14 @@ private extension FieldGuideSearchView {
 
 private extension FieldGuideSearchView {
     func backButtonTapped() {
-        path.removeLast()
+        coordinator.pop()
     }
     
     func bookmarkButtonTapped(_ bird: Local.Bird) {
         Task {
-            if !isGuest {
+            if !viewModel.isGuest {
                 HapticManager.shared.trigger(.light)
-                bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                bird.isBookmarked = try await viewModel.toggleBookmark(birdId: bird.id)
                 HapticManager.shared.trigger(.success)
             } else {
                 HapticManager.shared.trigger(.error)
@@ -240,12 +254,12 @@ private extension FieldGuideSearchView {
     }
     
     func searchItemTapped(_ bird: Local.Bird) {
-        path.append(FieldGuideView.Route.birdDetail(bird))
+        coordinator.push(FieldGuideView.Route.birdDetail(bird))
         updateRecentItem(bird)
     }
     
     func recentItemTapped(_ search: Local.RecentSearchEntity) {
-        path.append(FieldGuideView.Route.birdDetail(search.bird))
+        coordinator.push(FieldGuideView.Route.birdDetail(search.bird))
     }
     
     func deleteRecentTapped(_ search: Local.RecentSearchEntity) {
@@ -265,10 +279,4 @@ private extension FieldGuideSearchView {
             modelContext.insert(Local.RecentSearchEntity(bird: bird))
         }
     }
-}
-
-#Preview {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    appDelegate.rootView
 }

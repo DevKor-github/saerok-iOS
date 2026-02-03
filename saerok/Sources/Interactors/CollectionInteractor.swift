@@ -127,7 +127,7 @@ struct CollectionInteractorImpl: CollectionInteractor {
         try await repository.suggestBird(collectionId: id, birdId: birdId)
         
         return Local.BirdSuggestion(
-            bird: .mockData[0],
+            bird: .mockData,
             agreeCount: 1,
             disagreeCount: 0,
             isAgreed: true,

@@ -5,20 +5,12 @@
 //  Created by HanSeung on 4/10/25.
 //
 
-
 import SwiftUI
 
 struct BirdCardView: View {
-    private let bird: Local.Bird
+    let bird: Local.Bird
+    let bookmarkTapped: (Local.Bird) async throws -> Void
     @Binding var showPopup: Bool
-    
-    @Environment(\.injected) var injected
-    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
-    
-    init(_ bird: Local.Bird, showPopup: Binding<Bool>) {
-        self.bird = bird
-        self._showPopup = showPopup
-    }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -26,7 +18,7 @@ struct BirdCardView: View {
                 if let url = bird.imageURL {
                     AsyncImage(
                         url: url,
-                        size: Constants.imageSize,
+                        size: Const.imageSize,
                         scale: .small,
                         downsampling: true
                     )
@@ -41,7 +33,7 @@ struct BirdCardView: View {
             }
             bookmarkButton
         }
-        .frame(height: Constants.cardHeight)
+        .frame(height: Const.cardHeight)
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 0)
@@ -50,23 +42,23 @@ struct BirdCardView: View {
 }
 
 // MARK: - UI Components
-
 private extension BirdCardView {
     var nameSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
             Text(bird.name)
                 .font(.SRFontSet.body3)
+                .foregroundStyle(.black)
 
             Text(bird.scientificName)
                 .lineLimit(1)
                 .font(.SRFontSet.caption1)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.srGray)
         }
-        .padding(.horizontal, Constants.nameSectionPaddingH)
-        .padding(.vertical, Constants.nameSectionPaddingV)
+        .padding(.horizontal, Const.nameSectionPaddingH)
+        .padding(.vertical, Const.nameSectionPaddingV)
         .padding(.bottom, 8)
-        .frame(height: Constants.nameSectionHeight)
+        .frame(height: Const.nameSectionHeight)
         .frame(maxWidth: .infinity, alignment: .bottomLeading)
         .background(nameGradientBackground)
     }
@@ -74,7 +66,7 @@ private extension BirdCardView {
     var nameGradientBackground: some View {
         VStack(spacing: 0) {
             Rectangle()
-                .frame(height: Constants.gradientHeight)
+                .frame(height: Const.gradientHeight)
                 .foregroundColor(.clear)
                 .background(
                     LinearGradient(
@@ -86,49 +78,43 @@ private extension BirdCardView {
                         endPoint: UnitPoint(x: 0.5, y: 0.96)
                     )
                 )
-
+            
             Color.srWhite
         }
     }
-
+    
     var bookmarkButton: some View {
         Button {
             Task {
-                if !isGuest {
+                do {
                     HapticManager.shared.trigger(.light)
-                    self.bird.isBookmarked = try await injected.interactors.fieldGuide.toggleBookmark(birdID: bird.id)
+                    try await bookmarkTapped(bird)
                     HapticManager.shared.trigger(.success)
-                } else {
+                }  catch {
                     HapticManager.shared.trigger(.error)
                     showPopup.toggle()
                 }
             }
         } label: {
             (bird.isBookmarked ? Image.SRIconSet.scrapFilled : Image.SRIconSet.scrap)
-                .frame(.custom(width: 28, height: 28))
-                .padding(.top, Constants.bookmarkPaddingTop)
-                .padding(.trailing, Constants.bookmarkPaddingTrailing)
+                .frame(.custom(Const.bookmarkButtonSize))
+                .padding(.top, Const.bookmarkPaddingTop)
+                .padding(.trailing, Const.bookmarkPaddingTrailing)
         }
     }
 }
 
 // MARK: - Constants
-
 private extension BirdCardView {
-    enum Constants {
+    enum Const {
         static let imageSize = CGSize(width: 184, height: 189)
         static let gradientHeight: CGFloat = 18
         static let cardHeight: CGFloat = 221
         static let nameSectionHeight: CGFloat = 50
         static let nameSectionPaddingH: CGFloat = 13
         static let nameSectionPaddingV: CGFloat = 10
+        static let bookmarkButtonSize: CGSize = .init(width: 28, height: 28)
         static let bookmarkPaddingTop: CGFloat = 8
         static let bookmarkPaddingTrailing: CGFloat = 8
     }
-}
-
-#Preview {
-    @Previewable @State var showPopup = false
-    BirdGridView(birds: Local.Bird.mockData, onTap: {_ in }, showPopup: $showPopup)
-    .frame(maxWidth: .infinity)
 }

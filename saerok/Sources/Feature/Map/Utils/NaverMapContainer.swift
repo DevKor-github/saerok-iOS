@@ -66,7 +66,7 @@ extension NaverMapContainer: UIViewRepresentable {
 // MARK: - Coordinator Class
 
 extension NaverMapContainer {
-    class Coordinator: NSObject, @preconcurrency NMFMapViewCameraDelegate, NMFMapViewTouchDelegate {
+    class Coordinator: NSObject, NMFMapViewCameraDelegate, NMFMapViewTouchDelegate {
         var parent: NaverMapContainer
         var mapView: NMFMapView?
         let birdClusterMarkerManager = BirdClusterManager()

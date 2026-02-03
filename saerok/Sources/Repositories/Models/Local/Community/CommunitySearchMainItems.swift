@@ -10,13 +10,19 @@ extension Local {
     struct CommunitySearchMainItems {
         let collections: [Local.CommunityItemSummary]
         let users: [Local.UserSummary]
-        var collectionsCount: Int { collections.count }
-        var usersCount: Int { users.count }
+        var collectionsCount: Int
+        var usersCount: Int
         var isEmpty: Bool { collections.isEmpty && users.isEmpty }
         
-        init(collections: [Local.CommunityItemSummary], users: [Local.UserSummary]) {
+        init(collections: [Local.CommunityItemSummary], users: [Local.UserSummary], collectionsCount: Int, usersCount: Int) {
             self.collections = collections
             self.users = users
+            self.collectionsCount = collectionsCount
+            self.usersCount = usersCount
+        }
+        
+        init() {
+            self.init(collections: [], users: [], collectionsCount: 0, usersCount: 0)
         }
     }
 }
@@ -25,7 +31,9 @@ extension Local.CommunitySearchMainItems {
     static func from(dto: DTO.CommunitySearchResponse) -> Self {
         return .init(
             collections: dto.collections.map { Local.CommunityItemSummary.from(dto: $0) },
-            users: dto.users.map { Local.UserSummary.from(dto: $0) }
+            users: dto.users.map { Local.UserSummary.from(dto: $0) },
+            collectionsCount: dto.collectionsCount,
+            usersCount: dto.usersCount
         )
     }
 }

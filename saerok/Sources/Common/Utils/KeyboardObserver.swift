@@ -5,12 +5,12 @@
 //  Created by HanSeung on 7/14/25.
 //
 
-
 import Combine
 import SwiftUI
 
-final class KeyboardObserver: ObservableObject {
-    @Published var keyboardHeight: CGFloat = 0
+@Observable
+final class KeyboardObserver {
+    var keyboardHeight: CGFloat = 0
     
     private var cancellables = Set<AnyCancellable>()
     

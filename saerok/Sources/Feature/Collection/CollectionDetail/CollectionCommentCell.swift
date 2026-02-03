@@ -11,7 +11,7 @@ struct CollectionCommentCell: View {
     let isMyCollection: Bool
     let item: Local.CollectionComment
     let onTap: () -> Void
-    let onDelete: (Int) -> Void
+    let onDelete: (Int) async -> Void
     let onReport: () -> Void
 
     var body: some View {
@@ -50,7 +50,9 @@ struct CollectionCommentCell: View {
                     Menu {
                         if item.isMine || isMyCollection {
                             Button {
-                                onDelete(item.id)
+                                Task {
+                                    await onDelete(item.id)
+                                }
                             } label: {
                                 Label("삭제하기", systemImage: "trash")
                             }

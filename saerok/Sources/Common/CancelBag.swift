@@ -9,7 +9,7 @@
 import Combine
 
 final class CancelBag {
-    fileprivate(set) var cancellables = [any Cancellable]()
+    fileprivate(set) var subscriptions = Set<AnyCancellable>()
     private let equalToAny: Bool
     
     init(equalToAny: Bool = false) {
@@ -17,18 +17,38 @@ final class CancelBag {
     }
  
     func cancel() {
-        cancellables.removeAll()
+        subscriptions.removeAll()
     }
     
     func isEqual(to other: CancelBag) -> Bool {
         return other === self || other.equalToAny || self.equalToAny
     }
-}
-
-extension Cancellable {
-    func store(in cancelBag: CancelBag) {
-        cancelBag.cancellables.append(self)
+    
+    func collect(@Builder _ cancellables: () -> [AnyCancellable]) {
+        subscriptions.formUnion(cancellables())
     }
 }
 
-extension Task: @retroactive Cancellable { }
+extension CancelBag {
+    @resultBuilder
+    struct Builder {
+        static func buildBlock(_ cancellables: AnyCancellable...) -> [AnyCancellable] {
+            cancellables
+        }
+    }
+}
+
+extension AnyCancellable {
+    func store(in cancelBag: CancelBag) {
+        cancelBag.subscriptions.insert(self)
+    }
+}
+
+extension Task {
+    func store(in cancelBag: CancelBag) {
+        AnyCancellable {
+            self.cancel()
+        }
+        .store(in: cancelBag)
+    }
+}

@@ -1,0 +1,118 @@
+//
+//  AppRoute.swift
+//  saerok
+//
+//  Created by HanSeung on 1/12/26.
+//
+
+import Foundation
+import SwiftUI
+
+protocol AppRoute: Hashable {}
+
+@MainActor
+final class AppCoordinator: ObservableObject {
+    private let container: DIContainer
+    @Published var path = NavigationPath()
+    
+    init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {
+        self.container = container
+        self.path = navigationPath
+    }
+    
+    func push(_ route: any AppRoute) {
+        path.append(route)
+    }
+    
+    func pop() {
+        if !path.isEmpty {
+            path.removeLast()
+        }
+    }
+    
+    func clear() {
+        path = .init()
+    }
+}
+
+// MARK: - ViewModel Factory
+extension AppCoordinator {
+    func makeCollectionDetailViewModel(id: Int) -> CollectionDetailView.ViewModel {
+        .init(
+            collectionID: id,
+            appState: container.appState,
+            collectionInteractor: container.interactors.collection,
+            fieldGuideInteractor: container.interactors.fieldGuide
+        )
+    }
+    
+    func makeNotificationViewModel() -> NotificationView.ViewModel {
+        .init(interactor: container.interactors.user)
+    }
+    
+    func makeUserSummaryViewModel(_ id: Int) -> UserSummaryView.ViewModel {
+        .init(
+            userID: id,
+            interactor: container.interactors.user
+        )
+    }
+    
+    func makeBirdDetailViewModel(birdID: Int? = nil, bird: Local.Bird? = nil) -> BirdDetailView.ViewModel {
+        .init(
+            birdID: birdID,
+            bird: bird,
+            appState: container.appState,
+            interactor: container.interactors.fieldGuide
+        )
+    }
+    
+    func makeCommunityViewModel() -> CommunityView.ViewModel {
+        .init(
+            appState: container.appState,
+            interactor: container.interactors.community
+        )
+    }
+    
+    func makeCommunityDetailViewModel(for type: CommunityType) -> CommunityDetailView.ViewModel {
+        .init(
+            type: type,
+            interactor: container.interactors.community
+        )
+    }
+    
+    func makeCollectionViewModel() -> CollectionView.ViewModel {
+        .init(
+            appState: container.appState,
+            collectionInteractor: container.interactors.collection,
+            userInteractor: container.interactors.user
+        )
+    }
+    
+    func makeFieldGuideViewModel() -> FieldGuideView.ViewModel {
+        .init(
+            appState: container.appState,
+            interactor: container.interactors.fieldGuide
+        )
+    }
+    
+    func makeFieldGuideSearchViewModel() -> FieldGuideSearchView.ViewModel {
+        .init(
+            appState: container.appState,
+            interactor: container.interactors.fieldGuide
+        )
+    }
+    
+    func makeMyPageViewModel() -> MyPageView.ViewModel {
+        .init(
+            appState: container.appState,
+            interactor: container.interactors.user
+        )
+    }
+    
+    func makeAccountViewModel() -> AccountView.ViewModel {
+        .init(
+            appState: container.appState,
+            interactor: container.interactors.user
+        )
+    }
+}

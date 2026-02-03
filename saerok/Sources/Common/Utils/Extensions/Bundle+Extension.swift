@@ -28,4 +28,8 @@ extension Bundle {
     var kakaoTestAppID: String {
         return infoDictionary?["KAKAO_NATIVE_APP_KEY_TEST"] as? String ?? ""
     }
+    
+    var amplitudeApiKey: String {
+        return infoDictionary?["AMPLITUDE_API_KEY"] as? String ?? ""
+    }
 }

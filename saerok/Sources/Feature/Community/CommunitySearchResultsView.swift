@@ -1,16 +1,20 @@
+
 import SwiftUI
 
 struct CommunitySearchResultsView: View {
-    let text: String
+    typealias Route = CommunityRoute
+    
+    @EnvironmentObject private var coordinator: AppCoordinator
+    
+    let searchText: String
     let searchMainItems: Local.CommunitySearchMainItems
-    @Binding var path: NavigationPath
-    @Binding var mode: SearchInputBar.Mode
+    var mode: SearchInputBar.Mode
     @Binding var searchCase: CommunitySearchCase
     
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
-                if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     VStack(spacing: 8) {
                         Text("검색어를 입력해보세요")
                             .font(.SRFontSet.caption1)
@@ -57,12 +61,12 @@ struct CommunitySearchResultsView: View {
     }
     
     private var collectionResult: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             ForEach(searchMainItems.collections) { item in
                 Button {
-                    path.append(CommunityView.Route.detail(id: item.id))
+                    coordinator.push(Route.detail(id: item.id))
                 } label: {
-                    CommunityCell(item: item, type: .search(text))
+                    CommunityCell(item: item, type: .search(searchText))
                 }
                 .buttonStyle(.plain)
             }
@@ -70,12 +74,12 @@ struct CommunitySearchResultsView: View {
     }
     
     private var userResult: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             ForEach(searchMainItems.users, id: \.id) { user in
                 Button {
-                    path.append(CommunityView.Route.other(id: user.id))
+                    coordinator.push(Route.other(id: user.id))
                 } label: {
-                    CommunityUserCell(item: user, keyword: text)
+                    CommunityUserCell(item: user, keyword: searchText)
                 }
                 .buttonStyle(.plain)
             }
@@ -91,9 +95,7 @@ struct CommunitySearchResultsView: View {
                 .font(.SRFontSet.subtitle1_4)
                 .foregroundStyle(.splash)
             Spacer()
-            Button {
-                searchCase = type
-            } label: {
+            Button { searchCase = type } label: {
                 HStack(spacing: 8) {
                     Text("더보기")
                         .font(.SRFontSet.caption1)

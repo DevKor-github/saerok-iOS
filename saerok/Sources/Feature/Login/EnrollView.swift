@@ -67,9 +67,3 @@ extension EnrollView {
         static let stepCircleSize: CGFloat = 38
     }
 }
-
-#Preview {
-    @Previewable @State var user: User = .init()
-    
-    EnrollView(user: $user)
-}

@@ -11,21 +11,8 @@ import SwiftUI
 struct BirdGridView: View {
     let birds: [Local.Bird]
     let onTap: (Local.Bird) -> Void
+    let onBookmarkTap: (Local.Bird) async throws -> Void
     @Binding var showPopup: Bool
-
-    init(birds: [Local.Bird], onTap: @escaping (Local.Bird) -> Void, showPopup: Binding<Bool>) {
-        self.birds = birds
-        self.onTap = onTap
-        self._showPopup = showPopup
-    }
-
-    struct PressScaleStyle: ButtonStyle {
-        func makeBody(configuration: Configuration) -> some View {
-            configuration.label
-                .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
-        }
-    }
 
     var body: some View {
         LazyVGrid(
@@ -39,26 +26,33 @@ struct BirdGridView: View {
                 Button {
                     onTap(bird)
                 } label: {
-                    BirdCardView(bird, showPopup: $showPopup)
+                    BirdCardView(bird: bird, bookmarkTapped: onBookmarkTap, showPopup: $showPopup)
+                        .buttonStyle(PressScaleStyle())
                 }
-                .buttonStyle(PressScaleStyle())
             }
-
-            Group {
-                Rectangle()
-                Rectangle()
-                Rectangle()
-                Rectangle()
-            }
-            .foregroundStyle(.clear)
-            .frame(height: 198)
+            spacer
+            
         }
         .padding(.horizontal ,9)
         .background(Color.srLightGray)
     }
-}
-
-#Preview {
-    @Previewable @State var showPopup = false
-    return BirdGridView(birds: Local.Bird.mockData, onTap: {_ in }, showPopup: $showPopup)
+    
+    private struct PressScaleStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+        }
+    }
+    
+    private let spacer: some View = {
+        Group {
+            Rectangle()
+            Rectangle()
+            Rectangle()
+            Rectangle()
+        }
+        .foregroundStyle(.clear)
+        .frame(height: 198)
+    }()
 }

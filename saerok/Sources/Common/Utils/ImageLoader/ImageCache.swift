@@ -22,7 +22,7 @@ final class ImageCache {
     }
     
     public func set(_ image: UIImage, forKey key: String) {
-        let pixels = image.size.width * image.size.height * image.scale * image.scale
+        _ = image.size.width * image.size.height * image.scale * image.scale
         cache.setObject(image, forKey: key as NSString)
     }
 }

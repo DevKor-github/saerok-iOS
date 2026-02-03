@@ -11,10 +11,14 @@ import SwiftData
 import KakaoSDKAuth
 import KakaoSDKUser
 
+enum LoginRoute: AppRoute {
+    case enroll
+}
+
 struct LoginView: View {
-    enum Route: Hashable {
-        case enroll
-    }
+//    enum Route: Hashable {
+//        case enroll
+//    }
     
     @Environment(\.injected) var injected
     @State var showingAlert: Bool = false

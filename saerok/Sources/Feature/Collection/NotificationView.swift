@@ -5,47 +5,33 @@
 //  Created by HanSeung on 8/14/25.
 //
 
-
 import SwiftUI
 
 struct NotificationView: View {
-    @Environment(\.injected) private var injected: DIContainer
+    @EnvironmentObject private var coordinator: AppCoordinator
+    @State private var viewModel: ViewModel
     
-    private var interactor: UserInteractor { injected.interactors.user }
-    
-    @Binding var path: NavigationPath
-    
-    @State var notificationItems: [Local.NotificationItem] = []
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             navigationBar
-            
             toggleSection
             
             Spacer()
         }
         .regainSwipeBack()
-        .onAppear {
-            Task { @MainActor in
-                do {
-                    notificationItems = try await interactor.fetchNotifications()
-                } catch {
-                    print(error.localizedDescription)
-                }
-            }
-        }
+        .task { await viewModel.loadNotifications() }
     }
     
     private var toggleSection: some View {
         List {
-            ForEach($notificationItems, id: \.notificationId) { $item in
+            ForEach(viewModel.notificationItems, id: \.notificationId) { item in
                 NotificationCell(item: item, onTap: {
-                    path.append(CollectionView.Route.collectionDetail(item.collectionId))
-                    Task {
-                        try await injected.interactors.user.readNotification(item.notificationId)
-                        item.isRead = true
-                    }
+                    coordinator.push(CollectionRoute.collectionDetail(item.collectionId))
+                    viewModel.readNotification(item)
                 })
                 .listRowSeparator(.hidden)
                 .listRowInsets(.init(top: 3.5, leading: 9, bottom: 3.5, trailing: 9))
@@ -53,12 +39,7 @@ struct NotificationView: View {
                 .padding(0)
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                     Button(role: .destructive) {
-                        Task {
-                            try? await injected.interactors.user.deleteNotification(item.notificationId)
-                            if let index = notificationItems.firstIndex(where: { $0.notificationId == item.notificationId }) {
-                                notificationItems.remove(at: index)
-                            }
-                        }
+                        viewModel.deleteNotification(item)
                     } label: {
                         Image(systemName: "trash")
                     }
@@ -76,7 +57,7 @@ struct NotificationView: View {
                     .font(.SRFontSet.subtitle2)
             }, leading: {
                 Button {
-                    path.removeLast()
+                    coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
@@ -85,21 +66,13 @@ struct NotificationView: View {
             }, trailing: {
                 Menu {
                     Button {
-                        Task {
-                            try await interactor.readAllNotification()
-                            for notification in $notificationItems {
-                                notification.isRead.wrappedValue = true
-                            }
-                        }
+                        viewModel.readAllNotification()
                     } label: {
                         Label("모두 읽음", systemImage: "envelope.open")
                     }
                     
                     Button {
-                        Task {
-                            try await interactor.deleteAllNotification()
-                            notificationItems.removeAll()
-                        }
+                        viewModel.deleteAllNotification()
                     } label: {
                         Label("모두 삭제", systemImage: "trash")
                     }

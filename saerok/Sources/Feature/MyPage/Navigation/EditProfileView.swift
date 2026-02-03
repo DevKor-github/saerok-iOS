@@ -9,11 +9,10 @@ import SwiftData
 import SwiftUI
 
 struct EditProfileView: View {
+    @EnvironmentObject private var coordinator: AppCoordinator
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.injected) var injected
-    
-    @Binding var path: NavigationPath
     
     @ObservedObject var userManager = UserManager.shared
     private var user: User? { userManager.user }
@@ -109,7 +108,7 @@ struct EditProfileView: View {
                     .font(.SRFontSet.subtitle2)
             }, leading: {
                 Button {
-                    path.removeLast()
+                    coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
@@ -233,8 +232,8 @@ struct EditProfileView: View {
     private func saveButtonTapped() {
         Task {
             do {
-                try await UserManager.shared.updateNickname(to: nickname, networkService: injected.networkService)
-                path.removeLast()
+                try await UserManager.shared.updateNickname(to: nickname)
+                coordinator.pop()
             } catch {
                 nicknameStatus = .invalid("닉네임 변경에 실패했어요.")
             }
@@ -270,8 +269,8 @@ struct EditProfileView: View {
         if let image = profileImage {
             Task {
                 do {
-                    let response = try await injected.interactors.user.updateProfileImage(image)
-                    userManager.syncUser(from: response)
+                    let _ = try await injected.interactors.user.updateProfileImage(image)
+                    await userManager.refreshUser()
                     imageReloadKey = UUID()
                 } catch {
                     print("이미지 업데이트 실패: \(error)")
@@ -279,9 +278,4 @@ struct EditProfileView: View {
             }
         }
     }
-}
-
-#Preview {
-    @Previewable @State var path = NavigationPath()
-    EditProfileView(path: $path)
 }

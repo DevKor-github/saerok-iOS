@@ -17,7 +17,6 @@ protocol BirdsRepository {
     func checkIsBirdsEmpty() throws -> Bool
     func syncBookmarks() async throws
     func toggleBookmark(for id: Int) async throws -> Bool
-    func storeMockData() async
 }
 
 enum BirdsRepositoryError: Error {
@@ -80,12 +79,6 @@ extension MainRepository: @preconcurrency BirdsRepository {
     func toggleBookmark(for id: Int) async throws -> Bool {
         let result: DTO.ToggleBookmarkResponse = try await networkService.performSRRequest(.toggleBookmark(birdId: id))
         return result.bookmarked
-    }
-    
-    func storeMockData() {
-        Local.Bird.mockData.forEach {
-            modelContext.insert($0)
-        }
     }
 }
 

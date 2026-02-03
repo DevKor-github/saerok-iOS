@@ -5,70 +5,63 @@
 //  Created by HanSeung on 10/10/25.
 //
 
-
 import SwiftUI
 
 struct UserSummaryView: View {
-    @Environment(\.injected) private var injected: DIContainer
-    private var interactor: UserInteractor { injected.interactors.user }
-    
-    @Binding var path: NavigationPath
-    let userID: Int
+    @EnvironmentObject private var coordinator: AppCoordinator
+    @State private var viewModel: ViewModel
 
-    @State private var summaryState: Loadable<Void> = .notRequested
-    @State private var user: Local.UserProfileSummary?
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         content
             .regainSwipeBack()
-            .onAppear {
-                $summaryState.load {
-                    do {
-                        user = try await interactor.fetchUserSummary(userID: userID)
-                    } catch {
-                        print(error.localizedDescription)
-                    }
-                }
-            }
+            .task { await viewModel.loadSummary() }
     }
     
     @ViewBuilder
     private var content: some View {
-        switch summaryState {
+        switch viewModel.summaryState {
         case .notRequested: loadingView
-        case .isLoading: loadingView
-        case .loaded: loadedView
-        case .failed: loadingView
+        case .loading: loadingView
+        case .success: loadedView
+        case .failure: loadingView
         }
     }
 }
 
 private extension UserSummaryView {
     private var loadingView: some View {
-        Text("로딩중")
+        ProgressView()
+            .progressViewStyle(.circular)
     }
     
     @ViewBuilder
     private var loadedView: some View {
         ZStack(alignment: .topLeading) {
             ScrollView(showsIndicators: true) {
-                Color.clear.frame(height: 70)
+                Color.clear
+                    .frame(height: 70)
+                
                 UserInfoView(
                     type: .other,
-                    user: user?.userSummary ?? .init(),
-                    joinedDate: user?.joinedDate ?? .now,
+                    user: viewModel.summaryState.value?.userSummary ?? .init(),
+                    joinedDate: viewModel.summaryState.value?.joinedDate ?? .now,
                     onTap: {}
                 )
                 .padding(.leading, 15)
+                
                 StaggeredGrid(
-                    items: user?.collections.reversed() ?? [],
+                    items: viewModel.summaryState.value?.collections.reversed() ?? [],
                     columns: 2,
                     header: { countView }
                 ) { bird in
                     CollectionItemView(
                         bird: bird,
                         tapped: {
-                            path.append( CommunityView.Route.detail(id: bird.id))
+                            coordinator.push(CommunityView.Route.detail(id: bird.id))
                         })
                 }
                 .padding(.horizontal, 9)
@@ -81,7 +74,7 @@ private extension UserSummaryView {
         NavigationBar(
             leading: {
                 Button {
-                    path.removeLast()
+                    coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
@@ -94,7 +87,7 @@ private extension UserSummaryView {
     
     private var countView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("\(user?.collectionCount ?? 0)")
+            Text("\(viewModel.summaryState.value?.collectionCount ?? 0)")
                 .font(.SRFontSet.heavy)
                 .fontWeight(.semibold)
                 .foregroundStyle(.splash)

@@ -80,7 +80,7 @@ struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
     
     func refreshFieldGuide() async throws { }
     
-    func loadBirdDetails(birdID: Int) throws -> Local.Bird { Local.Bird.mockData[0] }
+    func loadBirdDetails(birdID: Int) throws -> Local.Bird { throw FieldGuideInteractorError.birdNotFound }
     
     func toggleBookmark(birdID: Int) async throws -> Bool { true }
 }

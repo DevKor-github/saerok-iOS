@@ -14,7 +14,7 @@ struct CollectionCommentSheet: View {
     let nickname: String
     let comments: [Local.CollectionComment]
     let onTap: (_ userId: Int) -> Void
-    let onDelete: (Int) -> Void
+    let onDelete: (Int) async -> Void
     let onDismiss: () -> Void
 
     @State var showReportCommentPopup: Bool = false

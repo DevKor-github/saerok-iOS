@@ -13,6 +13,7 @@ protocol UserRepository {
     func deleteAccount() async throws
     func getProfilePresignedURL(_ contentType: String) async throws -> DTO.PresignedURLResponse
     func updateProfileImage(_ request: DTO.ProfileRegisterImageRequest) async throws -> DTO.MeResponse
+    func updateNickname(_ nickname: String) async throws
     func deleteProfileImage() async throws -> EmptyResponse
     func fetchNotifications() async throws -> DTO.NotificationResponse
     func fetchNotificationSetting(_ deviceID: String) async throws -> DTO.GetNotificationSettingsResponse
@@ -23,11 +24,25 @@ protocol UserRepository {
     func deleteNotification(_ id: Int) async throws
     func getUnreadCount() async throws -> Int
     func getUserSummary(_ id: Int) async throws -> DTO.ProfileResponse
+    func getMeResponse() async throws -> User
     func getUser() async throws -> User?
-    func deleteUser(_ user: User) async throws
+    func updateUser(to user: User) async throws 
+    func deleteUser(_ user: User?) async throws 
 }
 
 extension MainRepository: UserRepository {
+    func getMeResponse() async throws -> User {
+        let userDTO: DTO.MeResponse = try await networkService.performSRRequest(.me)
+
+        if let existing = try await getUser() {
+            try await deleteUser(existing)
+        }
+
+        let newUser = User(dto: userDTO)
+        modelContext.insert(newUser)
+        return newUser
+    }
+    
     func createNewUser(nickname: String) async throws {
         let me: DTO.MeResponse = try await networkService.performSRRequest(
             .updateMe(nickname: nickname, registerImage: nil)
@@ -59,6 +74,10 @@ extension MainRepository: UserRepository {
         )
     }
     
+    func updateNickname(_ nickname: String) async throws {
+        let _: DTO.MeResponse = try await networkService.performSRRequest(.updateMe(nickname: nickname))
+    }
+    
     func deleteProfileImage() async throws -> EmptyResponse {
         try await networkService.performSRRequest(
             .deleteProfileImage
@@ -70,7 +89,6 @@ extension MainRepository: UserRepository {
             .notifications
         )
     }
-
     
     func fetchNotificationSetting(_ deviceID: String) async throws -> DTO.GetNotificationSettingsResponse {
         try await networkService.performSRRequest(
@@ -122,12 +140,23 @@ extension MainRepository: UserRepository {
         return response
     }
     
+    func updateUser(to user: User) async throws {
+        if let existing = try await getUser() {
+            existing.update(to: user)
+            try modelContext.save()
+        }
+    }
+    
     func getUser() async throws -> User? {
         let descriptor = FetchDescriptor<User>()
         return try modelContext.fetch(descriptor).first
     }
     
-    func deleteUser(_ user: User) async throws {
-        modelContext.delete(user)
+    func deleteUser(_ user: User? = nil) async throws {
+        if let user = user {
+            modelContext.delete(user)
+        } else if let user = try await getUser() {
+            modelContext.delete(user)
+        }
     }
 }

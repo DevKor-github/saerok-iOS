@@ -28,4 +28,18 @@ extension Task where Failure == Never {
         debounceTasks[id] = task
         return task
     }
+    
+    static func debounce(
+        delay: UInt64 = 800_000_000,
+        task: Task?,
+        action: @escaping () async throws -> Void
+    ) -> Task<Void, Never> {
+        task?.cancel()
+        
+        let newTask = Task<Void, Never> {
+            try? await Task<Never, Never>.sleep(nanoseconds: delay)
+            try? await action()
+        }
+        return newTask
+    }
 }

@@ -10,7 +10,7 @@ import SwiftData
 import Foundation
 
 @Model
-class User {
+final class User {
     @Attribute(.unique) var id: String
     var provider: SocialLoginProvider?
     var nickname: String
@@ -38,6 +38,14 @@ class User {
         self.email = dto.email
         self.joinedDate = Date.fromSimpleDateString(dto.joinedDate ?? "2025-06-25") ?? .now
         self.imageURL = dto.profileImageUrl
+    }
+    
+    func update(to user: User) {
+        self.provider = user.provider
+        self.nickname = user.nickname
+        self.email = user.email
+        self.joinedDate = user.joinedDate
+        self.imageURL = user.imageURL
     }
 }
 

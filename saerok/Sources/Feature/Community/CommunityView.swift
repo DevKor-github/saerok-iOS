@@ -8,206 +8,162 @@
 import Combine
 import SwiftUI
 
-struct CommunityView: Routable {
-    enum Route: Hashable {
-        case communityType(type: CommunityType)
-        case detail(id: Int)
-        case other(id: Int)
-        case addCollection
-    }
-    
-    // MARK: - Dependencies
-    
-    @Environment(\.injected) private var injected
-    
-    // MARK: - Routable
-    
-    @State var routingState: Routing = .init()
-    
-    // MARK: - Navigation
-    
-    @Binding var path: NavigationPath
-    
-    // MARK: - View State
-    
-    @State private var mainItems: Local.CommunityMainItems = .init()
-    @State private var searchMainItems: Local.CommunitySearchMainItems = .init(collections: [], users: [])
-    
-    @State private var loadingState: Loadable<Void> = .notRequested
+enum CommunityRoute: AppRoute {
+    case communityType(type: CommunityType)
+    case detail(id: Int)
+    case other(id: Int)
+    case addCollection
+}
+
+struct CommunityView: View {
+    typealias Route = CommunityRoute
+
+    // MARK: Dependency
+    @EnvironmentObject private var coordinator: AppCoordinator
+
+    // MARK: ViewModel
+    @State private var viewModel: ViewModel
+
+    // MARK: UI State
     @State private var showLoginPopup: Bool = false
     @State private var offsetY: CGFloat = 0
-    @State private var hasLoadedOnce = false
-    
-    @State private var text: String = ""
-    @State var searchCase: CommunitySearchCase = .all
-    @State private var mode: SearchInputBar.Mode = .idle
-    private var isModeIdle: Bool { mode == .idle }
-    private var isGuestMode: Bool { injected.appState[\.authStatus] == .guest }
-
     @FocusState private var isFocused: Bool
-    @State private var searchDebounceTask: Task<Void, Error>? = nil
-
-    // MARK: - Init
-    init(path: Binding<NavigationPath>) {
-        self._path = path
+    
+    // MARK: Init
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
     
     var body: some View {
         content
-            .onReceive(routingUpdate) { routingState = $0 }
-            .navigationDestination(for: CommunityView.Route.self) { route in
-                switch route {
-                case .communityType(let type):
-                    CommunityDetailView(type: type, path: $path)
-                case .detail(let id):
-                    CollectionDetailView(collectionID: id, path: $path)
-                case .other(let id):
-                    UserSummaryView(path: $path, userID: id)
-                case .addCollection:
-                    CollectionFormView(mode: .add, path: $path)
-                }
-            }
-            .onChange(of: path) { _, path in
-                if !path.isEmpty {
-                    routingBinding.wrappedValue.scrollToTop = nil
-                }
-            }
-            .onChange(of: searchCase) { _, _ in
-                Task {
-                    await performSearch()
-                }
-            }
-            .onPreferenceChange(ScrollPreferenceKey.self) { value in
-                self.offsetY = value
-            }
+            .task { await viewModel.loadPosts() }
+            .navigationDestination(for: Route.self) { route in routeView(for: route) }
             .customPopup(isPresented: $showLoginPopup) { alertView }
+            .onPreferenceChange(ScrollPreferenceKey.self) { self.offsetY = $0 }
     }
-    
+
     @ViewBuilder
     private var content: some View {
-        switch loadingState {
+        switch viewModel.loadState {
         case .notRequested:
-            defaultView()
-        case .isLoading:
-            loadingView()
-        case .loaded:
-            loadedView()
-        case .failed:
-            failedView()
+            defaultView
+        case .loading:
+            ProgressView()
+        case .success:
+            loadedView
+        case .failure:
+            failedView
         }
     }
 }
 
-// MARK: - Loaded Content
+// MARK: - Navigation
+private extension CommunityView {
+    @ViewBuilder
+    func routeView(for route: Route) -> some View {
+        switch route {
+        case .communityType(let type):
+            CommunityDetailView(viewModel: coordinator.makeCommunityDetailViewModel(for: type))
+        case .detail(let id):
+            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
+        case .other(let id):
+            UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
+        case .addCollection:
+            CollectionFormView(mode: .add)
+        }
+    }
+}
+
+// MARK: - Loaded View
 private extension CommunityView {
     enum Constants {
         static let navBarSpacerHeight: CGFloat = 64
-        static let headerTopPadding: CGFloat = 16
-        static let listSpacing: CGFloat = 10
-        static let scrollableID: String = "community-scrollable"
         static let bottomPadding: CGFloat = 114
     }
-    
-    func loadedView() -> some View {
+
+    var loadedView: some View {
         ZStack(alignment: .bottomTrailing) {
             Color.srWhite
-            
+
             LinearGradient.srPointGradient
                 .opacity(opacityForScroll(offset: offsetY))
-                .opacity(isModeIdle ? 1 : 0)
-            
+                .opacity(viewModel.isModeIdle ? 1 : 0)
+
             VStack(spacing: 0) {
                 Color.clear.frame(height: Constants.navBarSpacerHeight)
                 searchBarSection
+
                 ZStack(alignment: .top) {
                     scrollableSection
-                        .opacity(isModeIdle ? 1 : 0)
-                        .allowsHitTesting(isModeIdle)
-                    
+                        .opacity(viewModel.isModeIdle ? 1 : 0)
+                        .allowsHitTesting(viewModel.isModeIdle)
+
                     CommunitySearchResultsView(
-                        text: text,
-                        searchMainItems: searchMainItems,
-                        path: $path,
-                        mode: $mode,
-                        searchCase: $searchCase
+                        searchText: viewModel.text,
+                        searchMainItems: viewModel.searchMainItems,
+                        mode: viewModel.mode,
+                        searchCase: $viewModel.searchCase,
                     )
-                    .opacity(isModeIdle ? 0 : 1)
-                    .allowsHitTesting(!isModeIdle)
+                    .opacity(viewModel.isModeIdle ? 0 : 1)
+                    .allowsHitTesting(!viewModel.isModeIdle)
                 }
             }
-            
+
             addButton
                 .padding(.bottom, 106)
                 .padding(.trailing, 24)
         }
         .ignoresSafeArea(.all)
         .onTapGesture {
-            if !isModeIdle { isFocused = false }
+            if !viewModel.isModeIdle { isFocused = false }
         }
-        .onAppear {
-            if hasLoadedOnce {
-                Task { await refreshPosts() }
-            } else {
-                hasLoadedOnce = true
-            }
-        }
+        .refreshable { await viewModel.loadPosts() }
     }
-    
+
+    // MARK: Search Bar
     var searchBarSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             SearchInputBar(
                 tintColor: .pointtext,
                 placeHolder: "사용자, 새 이름을 검색해보세요!",
-                isModeIdle: isModeIdle,
-                text: $text,
+                isModeIdle: viewModel.mode == .idle,
+                text: $viewModel.text,
                 isFocused: $isFocused,
-                mode: $mode,
-                onTap: {
-                    mode = .searching
-                },
-                onTextChange: { _ in
-                    debounceTask {
-                        await performSearch()
-                    }
-                }
+                mode: $viewModel.mode,
+                onTap: { viewModel.mode = .searching },
+                onTextChange: { viewModel.updateSearchText($0) }
             )
-            .padding(.bottom, isModeIdle ? 20 : 0)
+            .padding(.bottom, viewModel.isModeIdle ? 20 : 0)
 
-            if !isModeIdle {
-                CommunityFilterBar(selected: $searchCase)
+            if !viewModel.isModeIdle {
+                CommunityFilterBar(selected: $viewModel.searchCase)
             }
         }
         .overlay(alignment: .bottom) {
             Divider()
                 .background(Color.whiteGray)
                 .frame(height: 1)
-                .opacity(1 -  opacityForScroll(offset: offsetY))
+                .opacity(1 - opacityForScroll(offset: offsetY))
         }
-        .background(Color.srWhite
-            .opacity(1 - opacityForScroll(offset: offsetY))
+        .background(
+            Color.srWhite
+                .opacity(1 - opacityForScroll(offset: offsetY))
         )
-        .onChange(of: isFocused) { _, new in
-            if new {
-                mode = .searching
-            }
-        }
-        .onChange(of: mode) { _, new in
-            if new == .idle {
-                isFocused = false
-            }
-        }
+        .onChange(of: isFocused) { _, new in if new { viewModel.mode = .searching } }
+        .onChange(of: viewModel.mode) { _, new in if new == .idle { isFocused = false } }
+        .onChange(of: viewModel.searchCase) { viewModel.perfomrSearch() }
     }
-    
+
+    // MARK: - Scrollable Content
     var scrollableSection: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
-                    OffsetReaderView()
-                        .id(Constants.scrollableID)
-                    
+                    OffsetReaderView().id("community-scrollable")
+
                     suggestionListSection
                         .padding(.bottom, 26)
-                    
+
                     VStack(spacing: 44) {
                         VStack(spacing: 15) {
                             boardSection
@@ -220,43 +176,33 @@ private extension CommunityView {
                     .background(Color.srWhite)
                 }
             }
-            .refreshable { await refreshPosts() }
-            .onChange(of: offsetY) { _, newValue in
-                if newValue == 0 && routingState.scrollToTop != nil {
-                    withAnimation {
-                        proxy.scrollTo(Constants.scrollableID, anchor: .top)
-                    }
-                }
-            }
         }
     }
-    
+
+    // MARK: Sections
     var boardSection: some View {
-        VStack(alignment: .leading, spacing:13) {
+        VStack(alignment: .leading, spacing: 13) {
             iconButton(type: .recent, icon: .commentCommunity, background: .accent)
             iconButton(type: .popular, icon: .fire, background: .fire)
             iconButton(type: .suggestion, icon: .unknown, background: .pointtext)
         }
         .padding(15)
         .cornerRadius(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .inset(by: 0.5)
-                .stroke(Color.srLightGray, lineWidth: 1)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.srLightGray, lineWidth: 1))
         .padding(.horizontal, 24)
         .padding(.top, 13)
     }
-    
+
     var suggestionListSection: some View {
         VStack(spacing: 15) {
             headerWithButton(type: .suggestion)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 7) {
-                    Color.clear.frame(width: 17)
-                    ForEach(mainItems.pendingCollections) { item in
+                    Color.clear
+                        .frame(width: 17)
+                    ForEach(viewModel.mainItems.pendingCollections) { item in
                         Button {
-                            path.append(Route.detail(id: item.id))
+                            coordinator.push(Route.detail(id: item.id))
                         } label: {
                             CommunitySuggestionCell(item: item)
                         }
@@ -271,18 +217,18 @@ private extension CommunityView {
     func listSection(_ type: CommunityType) -> some View {
         let items: [Local.CommunityItemSummary] = {
             switch type {
-            case .popular: mainItems.popularCollections
-            case .recent: mainItems.recentCollections
-            default: mainItems.popularCollections
+            case .popular: viewModel.mainItems.popularCollections
+            case .recent: viewModel.mainItems.recentCollections
+            default: []
             }
         }()
-        
+
         return VStack(spacing: 18) {
             headerWithButton(type: type)
             VStack(spacing: 0) {
                 ForEach(items) { item in
                     Button {
-                        path.append(Route.detail(id: item.id))
+                        coordinator.push(Route.detail(id: item.id))
                     } label: {
                         CommunityCell(item: item, type: type)
                     }
@@ -291,51 +237,40 @@ private extension CommunityView {
             }
         }
     }
-    
+
     var addButton: some View {
         Button {
-            if isGuestMode {
-                showLoginPopup.toggle()
+            if viewModel.isGuestMode {
+                showLoginPopup = true
             } else {
-                path.append(Route.addCollection)
+                coordinator.push(Route.addCollection)
             }
         } label: {
-            Image(isGuestMode ? .floatingButtonInactive : .floatingButton)
+            Image(viewModel.isGuestMode ? .floatingButtonInactive : .floatingButton)
                 .resizable()
                 .frame(width: 61, height: 61)
-                .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 0)
+                .shadow(color: .black.opacity(0.25), radius: 5)
         }
     }
-    
+
     var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "로그인이 필요한 기능이에요",
             message: "로그인하고 더 많은 기능을 사용해보세요!",
-            leading: .init(
-                title: "취소",
-                action: { showLoginPopup = false },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "로그인",
-                action: {
-                    showLoginPopup = false
-                    injected.appState[\.authStatus] = .notDetermined
-                },
-                style: .confirm
-            ),
+            leading: .init(title: "취소", action: { showLoginPopup = false }, style: .bordered),
+            trailing: .init(title: "로그인", action: {
+                showLoginPopup = false
+                viewModel.initLoginStatus()
+            }, style: .confirm),
             center: nil
         )
     }
-    
+
     private func headerWithButton(type: CommunityType) -> some View {
         HStack {
-            Text(type.title)
-                .font(.SRFontSet.subtitle1_3)
+            Text(type.title).font(.SRFontSet.subtitle1_3)
             Spacer()
-            Button {
-                path.append(Route.communityType(type: type))
-            } label: {
+            Button { coordinator.push(Route.communityType(type: type)) } label: {
                 HStack(spacing: 8) {
                     Text("더보기")
                         .font(.SRFontSet.caption0)
@@ -347,52 +282,40 @@ private extension CommunityView {
         }
         .padding(.horizontal, 24)
     }
-    
+
     private func iconButton(type: CommunityType, icon: Image.SRIconSet, background: Color) -> some View {
-        Button {
-            path.append(Route.communityType(type: type))
-        } label: {
+        Button { coordinator.push(Route.communityType(type: type)) } label: {
             HStack(spacing: 9) {
                 icon
                     .frame(.defaultIconSize, tintColor: icon == .unknown ? .srWhite : nil)
                     .padding(4)
                     .background(background)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-                
                 Text(type.title)
                     .font(.SRFontSet.body2_3)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - Loading/Failed
 private extension CommunityView {
-    func defaultView() -> some View {
+    var defaultView: some View {
         ZStack(alignment: .bottomTrailing) {
             Color.srWhite
-            
             LinearGradient.srPointGradient
                 .opacity(opacityForScroll(offset: offsetY))
-            
-            VStack(spacing: 0) {
-                Color.clear.frame(height: Constants.navBarSpacerHeight)
+            VStack {
+                Color.clear
+                    .frame(height: Constants.navBarSpacerHeight)
                 Spacer()
             }
         }
         .ignoresSafeArea(.all)
-        .onAppear(perform: loadPosts)
     }
-    
-    func loadingView() -> some View {
-        ProgressView()
-            .onDisappear { loadingState.cancelLoading() }
-    }
-    
-    func failedView() -> some View {
+
+    var failedView: some View {
         Text("불러오기에 실패했어요")
             .font(.SRFontSet.body0)
             .bold()
@@ -400,72 +323,3 @@ private extension CommunityView {
             .background(Color.srWhite)
     }
 }
-
-// MARK: - Side Effects & Helpers
-private extension CommunityView {
-    func loadPosts() {
-        $loadingState.load {
-            let items = try await injected.interactors.community.fetchMain()
-            self.mainItems = items
-        }
-    }
-    
-    func refreshPosts() async {
-        guard let items = try? await injected.interactors.community.fetchMain() else { return }
-        
-        await MainActor.run { self.mainItems = items }
-    }
-    
-    func debounceTask(delay: UInt64 = 600_000_000, action: @escaping @Sendable () async throws -> Void) {
-        searchDebounceTask?.cancel()
-        searchDebounceTask = Task {
-            try await Task.sleep(nanoseconds: delay)
-            try Task.checkCancellation()
-            try await action()
-        }
-    }
-    
-    func performSearch() async {
-        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else {
-            await MainActor.run {
-                self.searchMainItems = .init(collections: [], users: [])
-            }
-            
-            return
-        }
-        do {
-            self.searchMainItems = try await injected.interactors.community.search(query, searchCase: searchCase)
-            self.mode = .resultShown
-        } catch {
-            await MainActor.run {
-                self.searchMainItems = .init(collections: [], users: [])
-                self.mode = .searching
-            }
-        }
-    }
-}
-
-// MARK: - Routable
-extension CommunityView {
-    struct Routing: Equatable {
-        var scrollToTop: UUID?
-    }
-    
-    var routingUpdate: AnyPublisher<Routing, Never> {
-        injected.appState.updates(for: \.routing.communityView)
-    }
-    
-    var routingBinding: Binding<Routing> {
-        $routingState.dispatched(to: injected.appState, \.routing.communityView)
-    }
-}
-
-// MARK: - UI Components
-
-// MARK: - Preview
-#Preview {
-    @Previewable @State var path: NavigationPath = .init()
-    CommunityView(path: $path)
-}
-

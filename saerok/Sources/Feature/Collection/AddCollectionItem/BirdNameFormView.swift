@@ -10,9 +10,9 @@ import SwiftUI
 
 extension CollectionFormView {
     struct BirdNameFormView: View {
+        @EnvironmentObject private var coordinator: AppCoordinator
         @Environment(\.injected) var injected
-        @ObservedObject var draft: Local.CollectionDraft
-        @Binding var path: NavigationPath
+        @Binding var draft: Local.CollectionDraft
         @FocusState var isFocused: Bool
         
         var body: some View {
@@ -46,7 +46,7 @@ extension CollectionFormView {
             .srStyled(.textField(isFocused: $isFocused))
             .opacity(draft.isUnknownBird ? 0.4 : 1)
             .onTapGesture {
-                path.append(CollectionFormView.Route.findBird)
+                coordinator.push(CollectionFormView.Route.findBird)
             }
         }
         
