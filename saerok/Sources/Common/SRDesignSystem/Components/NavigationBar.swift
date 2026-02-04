@@ -48,5 +48,6 @@ struct NavigationBar<Center: View, Leading: View, Trailing: View>: View {
         }
         .foregroundStyle(Color.black)
         .frame(height: 62)
+        .background(Color.clear)
     }
 }

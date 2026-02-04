@@ -14,8 +14,9 @@ enum KakaoEndpoint: Endpoint {
 }
 
 extension KakaoEndpoint {
-    private var apiKey: String { Bundle.main.kakaoAPIKey }
-//    private var apiKey: String { Bundle.main.kakaoTestAPIKey }
+//    private var apiKey: String { Bundle.main.kakaoAPIKey }
+    // MARK: - forDevelopingServer
+    private var apiKey: String { Bundle.main.kakaoTestAPIKey }
 
     var baseURL: String {
         return "https://dapi.kakao.com/v2/"

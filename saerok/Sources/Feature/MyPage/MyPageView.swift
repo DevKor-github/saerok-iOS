@@ -14,6 +14,8 @@ enum MyPageRoute: AppRoute {
     case account
     case editProfile
     case notification
+    case board
+    case boardDetail(id: Int)
 }
 
 extension MyPageView {
@@ -76,6 +78,10 @@ struct MyPageView: View {
                     NotificationSettingView()
                 case .editProfile:
                     EditProfileView()
+                case .board:
+                    BoardView(viewModel: coordinator.makeBoardViewModel())
+                case .boardDetail(id: let id):
+                    BoardDetailView(id: id, viewModel: coordinator.makeBoardViewModel())
                 }
             }
             .task(id: viewModel.isGuest ? "guest" : "user") {
@@ -121,11 +127,13 @@ private extension MyPageView {
             )
             .disabled(viewModel.user == nil)
             
-            SettingItemView(title: "알림 설정", icon: .bell, onTap: { coordinator.push(Route.notification) })
+            SettingItemView(title: "공지사항", icon: .megaphone) { coordinator.push(Route.board) }
+            SettingItemView(title: "알림 설정", icon: .bell) { coordinator.push(Route.notification) }
                 .disabled(viewModel.user == nil)
-            SettingItemView(title: "새록 소식 및 이용 가이드", icon: .board, onTap: { openURL(.instagram) })
-            SettingItemView(title: "개인정보 처리 방침", icon: .locker, onTap: { openURL(.개인정보) })
-            SettingItemView(title: "의견 보내기", icon: .plane, onTap: { openURL(.feedback) })
+            
+            SettingItemView(title: "새록 소식 및 이용 가이드", icon: .board) { openURL(.instagram) }
+            SettingItemView(title: "개인정보 처리 방침", icon: .locker) { openURL(.개인정보) }
+            SettingItemView(title: "의견 보내기", icon: .plane) { openURL(.feedback) }
             SettingItemView(
                 title: "버전 정보",
                 icon: .info,

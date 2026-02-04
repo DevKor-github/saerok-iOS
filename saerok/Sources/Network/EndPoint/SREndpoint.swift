@@ -11,12 +11,10 @@ import Foundation
 enum SREndpoint: Endpoint {
     
     // MARK: Birds API
-    
     case fullSync
     case birdChanges(since: Date)
     
     // MARK: Collections API
-    
     case myCollections
     case collectionDetail(collectionId: Int)
     case nearbyCollections(lat: Double, lng: Double, radius: Double, isMineOnly: Bool, isGuest: Bool = false)
@@ -34,7 +32,6 @@ enum SREndpoint: Endpoint {
     case collectionLikeUsers(collectionId: Int)
     
     // MARK: Bird ID Suggestions API
-    
     case getSuggestions(collectionId: Int)
     case suggestBird(collectionId: Int, birdId: Int)
     case adoptSuggestion(collectionId: Int, birdId: Int)
@@ -43,12 +40,10 @@ enum SREndpoint: Endpoint {
     case resetSuggestion(collectionId: Int)
     
     // MARK: Bookmark API
-    
     case myBookmarks
     case toggleBookmark(birdId: Int)
     
     // MARK: Community API
-    
     case communityMain
     case communityPendingBirdId(page: Int? = nil, size: Int? = nil)
     case communityPopular(page: Int? = nil, size: Int? = nil)
@@ -58,13 +53,11 @@ enum SREndpoint: Endpoint {
     case communitySearchCollections(query: String, page: Int? = nil, size: Int? = nil)
     
     // MARK: Auth API
-    
     case appleLogin(authorizationCode: String)
     case kakaoLogin(accessCode: String)
     case refreshToken(refreshToken: String)
     
     // MARK: User API
-    
     case checkNickname(_ nickname: String)
     case me
     case deleteMe
@@ -74,7 +67,6 @@ enum SREndpoint: Endpoint {
     case profile(userId: Int)
     
     // MARK: Notifications API
-    
     case registerDeviceToken(body: DTO.RegisterDeviceTokenRequest)
     case getNotificationSettings(deviceId: String)
     case toggleNotificationSetting(body: DTO.ToggleNotificationRequest)
@@ -84,16 +76,20 @@ enum SREndpoint: Endpoint {
     case deleteAllNotifications
     case deleteNotification(_ notificationId: Int)
     case notificationsUnreadCount
+    
+    // MARK: Announcements API
+    case announcements
+    case announcementDetail(id: Int)
 }
 
 extension SREndpoint {
-//    var baseURL: String {
-//        return "http://dev-api.saerok.app/api/v1/"
-//    }
-    
     var baseURL: String {
-        return "https://api.saerok.app/api/v1/"
+        return "http://dev-api.saerok.app/api/v1/"
     }
+    
+//    var baseURL: String {
+//        return "https://api.saerok.app/api/v1/"
+//    }
     
     var path: String {
         switch self {
@@ -145,12 +141,14 @@ extension SREndpoint {
         case .communitySearch: "community/search"
         case .communitySearchUsers: "community/search/users"
         case .communitySearchCollections: "community/search/collections"
+        case .announcements: "announcements"
+        case .announcementDetail(id: let id): "announcements/\(id)"
         }
     }
     
     var method: String {
         switch self {
-        case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections: "GET"
+        case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections, .announcements, .announcementDetail: "GET"
         case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteMe, .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification, .deleteProfileImage: "DELETE"
@@ -392,6 +390,10 @@ extension SREndpoint {
             return DTO.CommunitySearchUsersResponse.self
         case .communitySearchCollections:
             return DTO.CommunitySearchCollectionsResponse.self
+        case .announcements:
+            return DTO.Announcements.self
+        case .announcementDetail:
+            return DTO.AnnouncementDetail.self
         default:
             return EmptyResponse.self
         }

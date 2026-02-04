@@ -10,15 +10,15 @@ import Foundation
 
 extension DTO {
     struct NotificationResponse: Codable {
-        let items: [NotificationItem]
+        let items: [Notification]
     }
     
-    struct NotificationItem: Codable, Identifiable {
+    struct Notification: Codable, Identifiable {
         let id: Int
         let type: NotificationType
-        let actorId: Int
+        let actorId: Int?
         let actorNickname: String?
-        let actorProfileImageUrl: String
+        let actorProfileImageUrl: String?
         let payload: NotificationPayload
         let isRead: Bool
         let createdAt: String
@@ -28,12 +28,20 @@ extension DTO {
         case suggestedBirdIdOnCollection = "SUGGESTED_BIRD_ID_ON_COLLECTION"
         case likedOnCollection = "LIKED_ON_COLLECTION"
         case commentedOnCollection = "COMMENTED_ON_COLLECTION"
+        case systemPublishedAnnouncement = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
     }
     
     struct NotificationPayload: Codable {
-        let collectionId: Int
+        // 새록
+        let collectionId: Int?
         let suggestedName: String?
         let collectionImageUrl: String?
         let comment: String?
+        
+        // 공지사항
+        let announcementId: Int?
+        let body: String?
+        let title: String?
+        let inAppBody: String?
     }
 }

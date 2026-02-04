@@ -16,7 +16,7 @@ protocol UserInteractor {
     func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse
     func updateNickname(_ nickname: String) async throws
     func deleteProfileImage() async throws
-    func fetchNotifications() async throws -> [Local.NotificationItem]
+    func fetchNotifications() async throws -> [Local.Notification]
     func fetchNotificationSetting() async throws -> Local.NotificationSettings
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool
     func toggleAllNotificationSetting() async throws
@@ -26,6 +26,8 @@ protocol UserInteractor {
     func deleteAllNotification() async throws
     func hasUnreadNotifications() async throws -> Bool
     func fetchUserSummary(userID: Int) async throws -> Local.UserProfileSummary
+    func getAnnouncements() async throws -> [DTO.Announcement]
+    func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail
 }
 
 enum UserInteractorError: Error {
@@ -89,7 +91,7 @@ struct UserInteractorImpl: UserInteractor {
         _ = try await repository.deleteProfileImage()
     }
 
-    func fetchNotifications() async throws -> [Local.NotificationItem] {
+    func fetchNotifications() async throws -> [Local.Notification] {
         return try await .init(from: repository.fetchNotifications())
     }
  
@@ -128,15 +130,29 @@ struct UserInteractorImpl: UserInteractor {
     }
     
     func hasUnreadNotifications() async throws -> Bool {
-        return try await repository.getUnreadCount() == 0 ? false : true
+        try await repository.getUnreadCount() == 0 ? false : true
     }
     
     func fetchUserSummary(userID: Int) async throws -> Local.UserProfileSummary {
-        return try await .from(repository.getUserSummary(userID))
+        try await .from(repository.getUserSummary(userID))
+    }
+    
+    func getAnnouncements() async throws -> [DTO.Announcement] {
+        try await repository.getAnnouncements().announcements
+    }
+    
+    func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail {
+        try await repository.getAnnouncementDetail(id)
     }
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func getAnnouncements() async throws -> [DTO.Announcement] { [] }
+    
+    func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail {
+        .init(id: 0, title: "", content: "", publishedAt: .now)
+    }
+    
     func deleteUser() async throws { }
     
     func getUser() async throws -> User { .init() }
@@ -155,7 +171,7 @@ struct MockUserInteractorImpl: UserInteractor {
     
     func deleteNotification(_ id: Int) async throws { }
     
-    func fetchNotifications() async throws -> [Local.NotificationItem] { [] }
+    func fetchNotifications() async throws -> [Local.Notification] { [] }
     
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool { true }
     

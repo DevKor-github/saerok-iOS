@@ -27,7 +27,9 @@ protocol UserRepository {
     func getMeResponse() async throws -> User
     func getUser() async throws -> User?
     func updateUser(to user: User) async throws 
-    func deleteUser(_ user: User?) async throws 
+    func deleteUser(_ user: User?) async throws
+    func getAnnouncements() async throws -> DTO.Announcements
+    func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail
 }
 
 extension MainRepository: UserRepository {
@@ -158,5 +160,19 @@ extension MainRepository: UserRepository {
         } else if let user = try await getUser() {
             modelContext.delete(user)
         }
+    }
+    
+    func getAnnouncements() async throws -> DTO.Announcements {
+        let response: DTO.Announcements = try await networkService.performSRRequest(
+            .announcements
+        )
+        return response
+    }
+    
+    func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail {
+        let response: DTO.AnnouncementDetail = try await networkService.performSRRequest(
+            .announcementDetail(id: id)
+        )
+        return response
     }
 }

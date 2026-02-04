@@ -5,7 +5,6 @@
 //  Created by HanSeung on 6/14/25.
 //
 
-
 import SwiftUI
 
 extension MyPageView {
@@ -15,7 +14,13 @@ extension MyPageView {
         var trailing: AnyView?
         var onTap: () -> Void
         
-        init(title: String, icon: Image.SRIconSet, trailing: AnyView? = nil, onTap: @escaping () -> Void, isDisabled: Bool = false) {
+        init(
+            title: String,
+            icon: Image.SRIconSet,
+            trailing: AnyView? = nil,
+            onTap: @escaping () -> Void,
+            isDisabled: Bool = false
+        ) {
             self.title = title
             self.icon = icon
             self.trailing = trailing

@@ -11,9 +11,7 @@ struct EmptyResponse: Decodable {}
 
 final class Provider {
     private let defaultURLSession = URLSession(configuration: .default)
-    private let decoder = JSONDecoder()
-    
-    init() { decoder.dateDecodingStrategy = .iso8601 }
+    private let decoder: JSONDecoder = .withFlexibleISO8601()
     
     func request<T: Decodable>(_ request: URLRequest) async throws -> T {
         let (data, response) = try await defaultURLSession.data(for: request)

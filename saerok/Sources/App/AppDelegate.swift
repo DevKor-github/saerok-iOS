@@ -33,8 +33,9 @@ extension AppDelegate {
     ) -> Bool {
         FirebaseApp.configure()
         PushNotificationManager.shared.configurePush(application: application, diContainer: environment.diContainer)
-        //        KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
-        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
+        // MARK: - forDevelopingServer
+                KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
+//        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
        
         NotificationCenter.default.addObserver(
             forName: UIApplication.didBecomeActiveNotification,

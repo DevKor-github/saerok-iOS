@@ -5,13 +5,12 @@
 //  Created by HanSeung on 8/12/25.
 //
 
-
 extension Local {
     enum NotificationType: String, Codable, CaseIterable {
         case like = "LIKED_ON_COLLECTION"
         case comment = "COMMENTED_ON_COLLECTION"
         case birdIdSuggestion = "SUGGESTED_BIRD_ID_ON_COLLECTION"
-//        case system = "SYSTEM"
+        case system = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
         
         var title: String {
             switch self {
@@ -21,8 +20,8 @@ extension Local {
                 return "댓글 알림"
             case .birdIdSuggestion:
                 return "동정 의견 알림"
-//            case .system:
-//                return "새 기능 공지 알림"
+            case .system:
+                return "공지사항 알림"
             }
         }
     }
@@ -52,6 +51,8 @@ extension Local {
                     dict[.comment] = item.enabled
                 case .suggestedBirdIdOnCollection:
                     dict[.birdIdSuggestion] = item.enabled
+                case .systemPublishedAnnouncement:
+                    dict[.system] = item.enabled
                 }
             }
             

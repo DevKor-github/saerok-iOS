@@ -115,4 +115,8 @@ extension AppCoordinator {
             interactor: container.interactors.user
         )
     }
+    
+    func makeBoardViewModel() -> BoardView.ViewModel {
+        .init(interactor: container.interactors.user)
+    }
 }
