@@ -38,6 +38,7 @@ struct CollectionCommentInputBar: View {
                 Button(action: {
                     Task {
                         await onSubmit(text)
+                        text = .init()
                     }
                 }) {
                     Image.SRIconSet.upperArrow

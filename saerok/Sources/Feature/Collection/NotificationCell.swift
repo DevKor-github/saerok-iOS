@@ -45,7 +45,7 @@ struct NotificationCell: View {
             case .like:
                 Text(payload.actorNickname).font(.SRFontSet.body2_3)
                 + Text("님이 나의 새록을 좋아해요.").font(.SRFontSet.body4)
-            case .comment:
+            case .comment, .replied:
                 Text(payload.actorNickname).font(.SRFontSet.body2_3)
                 + Text("님이 나의 새록에 댓글을 남겼어요. ").font(.SRFontSet.body4)
                 + Text("“\(payload.comment ?? "")”").font(.SRFontSet.body4)

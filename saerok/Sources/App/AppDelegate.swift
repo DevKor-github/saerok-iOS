@@ -5,7 +5,6 @@
 //  Created by HanSeung on 4/8/25.
 //
 
-
 import AppTrackingTransparency
 import SwiftUI
 import UIKit
@@ -21,7 +20,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     var rootView: some View {
         environment.rootView
     }
-    
 }
 
 // MARK: - Lifecycle
@@ -32,11 +30,15 @@ extension AppDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
-        PushNotificationManager.shared.configurePush(application: application, diContainer: environment.diContainer)
         // MARK: - forDevelopingServer
                 KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
 //        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
        
+        PushNotificationManager.shared.configurePush(
+            application: application,
+            diContainer: environment.diContainer
+        )
+        
         NotificationCenter.default.addObserver(
             forName: UIApplication.didBecomeActiveNotification,
             object: nil,

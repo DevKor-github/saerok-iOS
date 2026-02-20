@@ -5,7 +5,6 @@
 //  Created by HanSeung on 3/20/25.
 //
 
-
 import Foundation
 
 enum SREndpoint: Endpoint {
@@ -213,7 +212,6 @@ extension SREndpoint {
                 let body = ["nickname": nickname]
                 return try? JSONSerialization.data(withJSONObject: body)
             } else if let registerImage = registerImage {
-                print(registerImage)
                 return try? JSONEncoder().encode(registerImage)
             } else {
                 return nil
@@ -247,7 +245,7 @@ extension SREndpoint {
                 "isMineOnly": "\(isMineOnly)"
             ]
         case .getNotificationSettings(let deviceId):
-            return ["deviceId": deviceId]
+            return ["deviceId": deviceId, "platform": "IOS"]
         case .birdChanges(let since):
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withInternetDateTime, .withColonSeparatorInTimeZone]

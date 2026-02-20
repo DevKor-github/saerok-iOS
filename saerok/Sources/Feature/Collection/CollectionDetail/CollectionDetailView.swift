@@ -89,7 +89,7 @@ private extension CollectionDetailView {
     func routeView(for route: Route) -> some View {
         switch route {
         case .edit:
-            CollectionFormView(mode: .edit(viewModel.collection))
+            CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .edit(viewModel.collection)))
         case .bird(let id):
             BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: id))
         case .findBird:

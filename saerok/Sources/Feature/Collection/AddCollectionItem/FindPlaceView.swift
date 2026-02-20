@@ -22,7 +22,7 @@ struct FindPlaceView: View {
     
     // MARK: - View State
     
-    @Binding var collectionDraft: Local.CollectionDraft
+    @Bindable var collectionDraft: Local.CollectionDraft
     @State private var mode: Mode = .idle
     @State private var response: [Local.KakaoPlace] = []
     

@@ -15,6 +15,7 @@ struct BoardDetailView: View {
     private let postId: Int
     @State var viewModel: BoardView.ViewModel
     @State private var item: DTO.AnnouncementDetail?
+    @State private var showPopup: Bool = false
     
     init(id: Int, viewModel: BoardView.ViewModel) {
         self.postId = id
@@ -24,7 +25,10 @@ struct BoardDetailView: View {
     var body: some View {
         content
             .regainSwipeBack()
-            .task { await loadDetail() }
+            .task {
+                await loadDetail()
+            }
+            .customPopup(isPresented: $showPopup) { popup }
     }
     
     @ViewBuilder
@@ -73,8 +77,27 @@ struct BoardDetailView: View {
         )
     }
     
+    private var popup: CustomPopup<ConfirmButtonStyle, ConfirmButtonStyle, ConfirmButtonStyle> {
+        CustomPopup(
+            title: "오류가 발생했어요",
+            message: "삭제된 공지사항입니다.",
+            leading: nil,
+            trailing: nil,
+            center: .init(
+                title: "확인",
+                action: {
+                    coordinator.pop()
+                },
+                style: .confirm)
+        )
+    }
+    
     private func loadDetail() async {
-        self.item = try? await viewModel.loadAnnouncementDetail(id: postId)
+        do {
+            self.item = try await viewModel.loadAnnouncementDetail(id: postId)
+        } catch {
+            showPopup = true
+        }
     }
 }
 

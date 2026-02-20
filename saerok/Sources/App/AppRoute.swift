@@ -15,6 +15,11 @@ final class AppCoordinator: ObservableObject {
     private let container: DIContainer
     @Published var path = NavigationPath()
     
+    lazy var fieldGuideViewModel = makeFieldGuideViewModel()
+    lazy var collectionViewModel = makeCollectionViewModel()
+    lazy var communityViewModel = makeCommunityViewModel()
+    lazy var myPageViewModel = makeMyPageViewModel()
+    
     init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {
         self.container = container
         self.path = navigationPath
@@ -118,5 +123,15 @@ extension AppCoordinator {
     
     func makeBoardViewModel() -> BoardView.ViewModel {
         .init(interactor: container.interactors.user)
+    }
+    
+    func makeCollectionFormViewModel(mode: CollectionFormMode, bird: Local.Bird? = nil) -> CollectionFormView.ViewModel {
+        .init(
+            appState: container.appState,
+            fieldguideInteractor: container.interactors.fieldGuide,
+            collectionInteractor: container.interactors.collection,
+            mode: mode,
+            bird: bird
+        )
     }
 }

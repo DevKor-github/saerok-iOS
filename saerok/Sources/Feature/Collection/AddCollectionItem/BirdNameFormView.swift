@@ -5,15 +5,21 @@
 //  Created by HanSeung on 5/13/25.
 //
 
-
 import SwiftUI
 
 extension CollectionFormView {
     struct BirdNameFormView: View {
-        @EnvironmentObject private var coordinator: AppCoordinator
-        @Environment(\.injected) var injected
-        @Binding var draft: Local.CollectionDraft
-        @FocusState var isFocused: Bool
+        @Bindable private var draft: Local.CollectionDraft
+        @FocusState private var isFocused: Bool
+        
+        private let onTapFindBird: () -> Void
+        private let onToggleUnknownBird: () -> Void
+        
+        init(draft: Local.CollectionDraft, onTapFindBird: @escaping () -> Void, onToggleUnknownBird: @escaping () -> Void) {
+            self.draft = draft
+            self.onTapFindBird = onTapFindBird
+            self.onToggleUnknownBird = onToggleUnknownBird
+        }
         
         var body: some View {
             VStack(alignment: .leading, spacing: 7) {
@@ -45,16 +51,15 @@ extension CollectionFormView {
             .frame(height: Constants.formHeight)
             .srStyled(.textField(isFocused: $isFocused))
             .opacity(draft.isUnknownBird ? 0.4 : 1)
-            .onTapGesture {
-                coordinator.push(CollectionFormView.Route.findBird)
-            }
+            .onTapGesture(perform: onTapFindBird)
+            // coordinator.push(CollectionFormView.Route.findBird)
         }
         
         private var unknownBirdButtonRow: some View {
             HStack {
                 Spacer()
                 Button {
-                    injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
+                    onToggleUnknownBird()
                     draft.isUnknownBird.toggle()
                     draft.bird = nil
                 } label: {

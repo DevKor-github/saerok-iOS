@@ -13,16 +13,18 @@ import SwiftUI
 enum FieldGuideRoute: AppRoute {
     case search
     case birdDetail(Local.Bird)
+    case addSaerok(Local.Bird)
 }
 
 struct FieldGuideView: View {
     typealias Route = FieldGuideRoute
 
     @EnvironmentObject private var coordinator: AppCoordinator
-    @State private var viewModel: ViewModel
+    @Bindable private var viewModel: ViewModel
 
     @State var showPopup: Bool = false
     @State var offsetY: CGFloat = 0
+    @State private var scrollToTopTrigger = false
     
     @State var showSeasonSheet = false
     @State var showHabitatSheet = false
@@ -48,26 +50,21 @@ struct FieldGuideView: View {
                     FieldGuideSearchView(viewModel: coordinator.makeFieldGuideSearchViewModel())
                 case .birdDetail(let bird):
                     BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(bird: bird))
+                case .addSaerok(let bird):
+                    CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .add, bird: bird))
                 }
             }
-            .onChange(of: viewModel.routingState.birdName, initial: true, { _, name in
-                guard let name,
-                      let bird = viewModel.fieldGuide.first(where: { $0.name == name })
-                else { return }
-                coordinator.push(Route.birdDetail(bird))
-            })
-            .onChange(of: viewModel.routingState.scrollToTop) { oldId, newId in
-                guard newId != nil, oldId != newId else { return }
-                offsetY = 0
-            }
-            .onChange(of: coordinator.path) { _, path in
-                if !path.isEmpty {
-                    viewModel.routingState.birdName = nil
+            .onChange(of: viewModel.output) { _, output in
+                guard let output = output else { return }
+
+                switch output {
+                case .showBirdDetail(let bird):
+                    coordinator.push(Route.birdDetail(bird))
+                case .scrollToTop:
+                    scrollToTopTrigger.toggle()
                 }
             }
-            .onPreferenceChange(ScrollPreferenceKey.self) { value in
-                offsetY = value
-            }
+            .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
     }
 
     @ViewBuilder
@@ -86,9 +83,7 @@ struct FieldGuideView: View {
 }
 
 // MARK: - Loaded Content
-
 private extension FieldGuideView {
-
     enum Constants {
         static let headerHeight: CGFloat = 100
         static let headerTopPadding: CGFloat = 16
@@ -183,12 +178,8 @@ private extension FieldGuideView {
                     )
                 }
             }
-            .onChange(of: offsetY) { _, newValue in
-                if newValue == 0 && viewModel.routingState.scrollToTop != nil {
-                    withAnimation {
-                        proxy.scrollTo(Constants.scrollableID, anchor: .top)
-                    }
-                }
+            .onChange(of: scrollToTopTrigger) { _, _ in
+                withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
             }
         }
     }
@@ -205,9 +196,7 @@ private extension FieldGuideView {
     }
 
     var scrollToTopButton: some View {
-        Button {
-            viewModel.routingState.scrollToTop = UUID()
-        } label: {
+        Button { scrollToTopTrigger.toggle() } label: {
             Image.SRIconSet.upper
                 .frame(.defaultIconSizeLarge)
         }
@@ -242,7 +231,6 @@ private extension FieldGuideView {
 // MARK: - Loading Content
 
 private extension FieldGuideView {
-
     var defaultView: some View {
         ZStack(alignment: .bottomTrailing) {
             Color.srWhite

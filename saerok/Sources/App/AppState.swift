@@ -5,10 +5,6 @@
 //  Created by HanSeung on 4/8/25.
 //
 
-
-import SwiftUI
-import Combine
-
 struct AppState: Equatable {
     var routing = ViewRouting()
     var system = System()
@@ -22,6 +18,7 @@ extension AppState {
         var collectionView = CollectionView.Routing()
         var addCollectionItemView = CollectionFormView.Routing()
         var mapView = MapView.Routing()
+        var myPageView = MyPageView.Routing()
     }
 }
 

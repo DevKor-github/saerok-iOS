@@ -30,6 +30,7 @@ protocol UserRepository {
     func deleteUser(_ user: User?) async throws
     func getAnnouncements() async throws -> DTO.Announcements
     func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail
+    func registerDeviceToken(deviceID: String, fcmToken: String) async throws 
 }
 
 extension MainRepository: UserRepository {
@@ -174,5 +175,11 @@ extension MainRepository: UserRepository {
             .announcementDetail(id: id)
         )
         return response
+    }
+    
+    func registerDeviceToken(deviceID: String, fcmToken: String) async throws {
+        let _: DTO.RegisterDeviceTokenResponse = try await networkService.performSRRequest(
+            .registerDeviceToken(body: .init(deviceId: deviceID, token: fcmToken, platform: "IOS"))
+        )
     }
 }

@@ -14,7 +14,7 @@ enum MapRoute: AppRoute {
     case detail(_ collectionID: Int)
 }
 
-struct MapView: Routable {
+struct MapView: View {
     typealias Route = MapRoute
     
     // MARK: - Dependencies

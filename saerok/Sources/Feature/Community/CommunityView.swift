@@ -22,7 +22,7 @@ struct CommunityView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
 
     // MARK: ViewModel
-    @State private var viewModel: ViewModel
+    @Bindable private var viewModel: ViewModel
 
     // MARK: UI State
     @State private var showLoginPopup: Bool = false
@@ -36,10 +36,11 @@ struct CommunityView: View {
     
     var body: some View {
         content
-            .task { await viewModel.loadPosts() }
+            .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
             .customPopup(isPresented: $showLoginPopup) { alertView }
             .onPreferenceChange(ScrollPreferenceKey.self) { self.offsetY = $0 }
+            .refreshable { Task { await viewModel.refreshPosts() } }
     }
 
     @ViewBuilder
@@ -69,7 +70,7 @@ private extension CommunityView {
         case .other(let id):
             UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
         case .addCollection:
-            CollectionFormView(mode: .add)
+            CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .add))
         }
     }
 }
@@ -117,7 +118,6 @@ private extension CommunityView {
         .onTapGesture {
             if !viewModel.isModeIdle { isFocused = false }
         }
-        .refreshable { await viewModel.loadPosts() }
     }
 
     // MARK: Search Bar
@@ -316,10 +316,7 @@ private extension CommunityView {
     }
 
     var failedView: some View {
-        Text("불러오기에 실패했어요")
-            .font(.SRFontSet.body0)
-            .bold()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        ProgressView()
             .background(Color.srWhite)
     }
 }

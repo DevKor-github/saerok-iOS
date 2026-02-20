@@ -28,6 +28,7 @@ protocol UserInteractor {
     func fetchUserSummary(userID: Int) async throws -> Local.UserProfileSummary
     func getAnnouncements() async throws -> [DTO.Announcement]
     func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail
+    func registerDeviceToken(deviceID: String, fcmToken: String) async throws
 }
 
 enum UserInteractorError: Error {
@@ -104,12 +105,14 @@ struct UserInteractorImpl: UserInteractor {
         async let bird = toggleNotificationSetting(.birdIdSuggestion)
         async let comment = toggleNotificationSetting(.comment)
         async let like = toggleNotificationSetting(.like)
+        async let reply = toggleNotificationSetting(.replied)
+        async let system = toggleNotificationSetting(.system)
 
-        let _ = try await (bird, comment, like)
+        let _ = try await (bird, comment, like, reply, system)
     }
 
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool {
-        let request: DTO.ToggleNotificationRequest = .init(deviceId: deviceID, type: type.rawValue)
+        let request: DTO.ToggleNotificationRequest = .init(deviceId: deviceID, type: type.rawValue, platform: "IOS")
         return try await repository.toggleNotification(request).enabled
     }
     
@@ -144,9 +147,15 @@ struct UserInteractorImpl: UserInteractor {
     func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail {
         try await repository.getAnnouncementDetail(id)
     }
+    
+    func registerDeviceToken(deviceID: String, fcmToken: String) async throws {
+        try await repository.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
+    }
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func registerDeviceToken(deviceID: String, fcmToken: String) async throws { }
+    
     func getAnnouncements() async throws -> [DTO.Announcement] { [] }
     
     func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail {

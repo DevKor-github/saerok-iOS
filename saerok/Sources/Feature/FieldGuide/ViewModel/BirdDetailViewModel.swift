@@ -31,7 +31,11 @@ extension BirdDetailView {
         }
         
         func toggleBookmark(_ id: Int) async {
-            self.bird?.isBookmarked = ((try? await interactor.toggleBookmark(birdID: id)) != nil)
+            guard let bird = bird else { return }
+            
+            do {
+                bird.isBookmarked = try await interactor.toggleBookmark(birdID: id)
+            } catch { }
         }
         
         func loadBirdIfNeeded() {
@@ -46,14 +50,6 @@ extension BirdDetailView {
             }
         }
 
-        func addSaerok(for bird: Local.Bird) {
-            appState.bulkUpdate {
-                $0.routing.contentView.tabSelection = .collection
-                $0.routing.collectionView.addCollection = true
-                $0.routing.addCollectionItemView.selectedBird = bird
-            }
-        }
-        
         func changeStatusToLogout() {
             appState[\.authStatus] = .notDetermined
         }

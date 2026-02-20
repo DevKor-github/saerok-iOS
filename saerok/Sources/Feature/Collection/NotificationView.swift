@@ -28,31 +28,16 @@ struct NotificationView: View {
     
     private var toggleSection: some View {
         List {
-//            ForEach(viewModel.items, id: \.id) { item in
-//                NotificationCell(item: item, onTap: {
-//                    coordinator.push(CollectionRoute.collectionDetail(item.collectionId))
-//                    viewModel.readNotification(item)
-//                })
-//                .listRowSeparator(.hidden)
-//                .listRowInsets(.init(top: 3.5, leading: 9, bottom: 3.5, trailing: 9))
-//                .listRowBackground(Color.clear)
-//                .padding(0)
-//                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-//                    Button(role: .destructive) {
-//                        viewModel.deleteNotification(item)
-//                    } label: {
-//                        Image(systemName: "trash")
-//                    }
-//                }
-//            }
             ForEach(viewModel.items, id: \.id) { item in
                 NotificationCell(item: item) {
                     if case .saerok(let payload) = item.payload {
                         coordinator.push(CollectionRoute.collectionDetail(payload.collectionId))
                         viewModel.readNotification(item)
                     } else if case .announcement(let payload) = item.payload {
-                        // TODO: - 공지사항으로 이동
-//                        viewModel.readNotification(item)
+                        guard let id = payload.announcementId else { return }
+                        
+                        coordinator.push(CollectionRoute.directToBoardDetail(id))
+                        viewModel.readNotification(item)
                     }
                 }
                 .listRowSeparator(.hidden)

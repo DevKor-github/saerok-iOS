@@ -9,21 +9,26 @@
 import SwiftUI
 
 struct CollectionItemView: View {
-    let bird: Local.CollectionSummary
+    let collection: Local.CollectionSummary
     var tapped: () -> Void
+    
+    init(_ collection: Local.CollectionSummary, tapped: @escaping () -> Void) {
+        self.collection = collection
+        self.tapped = tapped
+    }
     
     var body: some View {
         Button(action: tapped) {
             VStack(alignment: .leading, spacing: 8) {
                 ReactiveAsyncImageWithMetadata(
-                    url: bird.thumbnailImageURL ?? "",
+                    url: collection.thumbnailImageURL ?? "",
                     scale: .medium,
                     downsampling: true
                 )
                 .scaledToFit()
                 .clipShape(RoundedRectangle(cornerRadius: 15))
                 
-                Text(bird.birdName ?? "이름 모를 새")
+                Text(collection.birdName ?? "이름 모를 새")
                     .font(.SRFontSet.caption2)
                     .padding(.leading, 8)
             }

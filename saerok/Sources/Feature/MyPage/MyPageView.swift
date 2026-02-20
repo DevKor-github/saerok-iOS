@@ -19,19 +19,39 @@ enum MyPageRoute: AppRoute {
 }
 
 extension MyPageView {
+    struct Routing: Equatable {
+        var boardDetailId: Int?
+    }
+    
     @Observable
     final class ViewModel {
+        enum Output: Equatable {
+            case navigateToBoardDetail(_ id: Int)
+        }
+        
         private let userManager = UserManager.shared
         var user: User? { userManager.user }
-        
+        var output: Output?
+
         // MARK: Dependencies
         private let appState: Store<AppState>
         private let interactor: UserInteractor
         var isGuest: Bool { appState[\.authStatus] == .guest }
         
+        private let cancelBag: CancelBag
+        
         init(appState: Store<AppState>, interactor: UserInteractor) {
             self.appState = appState
             self.interactor = interactor
+            self.cancelBag = .init()
+
+            appState
+                .updates(for: \.routing.myPageView.boardDetailId)
+                .compactMap { $0 }
+                .weakSink(on: self) { viewModel, id in
+                    viewModel.output = .navigateToBoardDetail(id)
+                }
+                .store(in: cancelBag)
         }
         
         func changeStatusToLogout() {
@@ -47,6 +67,10 @@ extension MyPageView {
                 }
             }
         }
+        
+        func resetOutput() {
+            output = nil
+        }
     }
 }
 
@@ -54,8 +78,7 @@ struct MyPageView: View {
     typealias Route = MyPageRoute
     
     @EnvironmentObject private var coordinator: AppCoordinator
-    
-    @State private var viewModel: ViewModel
+    @Bindable private var viewModel: ViewModel
     
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -83,6 +106,16 @@ struct MyPageView: View {
                 case .boardDetail(id: let id):
                     BoardDetailView(id: id, viewModel: coordinator.makeBoardViewModel())
                 }
+            }
+            .onChange(of: viewModel.output, initial: true) { _, output in
+                guard let output = output else { return }
+                
+                switch output {
+                case .navigateToBoardDetail(let id):
+                    coordinator.push(Route.board)
+                    coordinator.push(Route.boardDetail(id: id))
+                }
+                viewModel.resetOutput()
             }
             .task(id: viewModel.isGuest ? "guest" : "user") {
                 viewModel.syncUser()

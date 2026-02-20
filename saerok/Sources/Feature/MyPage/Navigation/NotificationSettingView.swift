@@ -24,9 +24,8 @@ struct NotificationSettingView: View {
             Spacer()
         }
         .regainSwipeBack()
-        .onAppear {
-            Task { @MainActor in
-                let fetched = try await injected.interactors.user.fetchNotificationSetting()
+        .task {
+            if let fetched = try? await injected.interactors.user.fetchNotificationSetting() {
                 self.settings = fetched
             }
         }

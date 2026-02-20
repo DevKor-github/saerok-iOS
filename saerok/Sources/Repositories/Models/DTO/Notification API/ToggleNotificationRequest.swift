@@ -5,11 +5,11 @@
 //  Created by HanSeung on 8/12/25.
 //
 
-
 extension DTO {
     struct ToggleNotificationRequest: Codable {
         let deviceId: String
         let type: String
+        let platform: String
     }
     
     struct ToggleNotificationResponse: Decodable {

@@ -12,25 +12,23 @@ import SwiftUI
 
 enum CollectionRoute: AppRoute {
     case collectionDetail(Int)
-    case addCollection
+    case addCollection(bird: Local.Bird?)
     case notification
+    case directToBoardDetail(Int)
 }
 
-struct CollectionView: Routable {
+struct CollectionView: View {
     typealias Route = CollectionRoute
     
     // MARK: - Dependencies
-    @Environment(\.injected) private var injected: DIContainer
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var coordinator: AppCoordinator
-    
-    // MARK: - Routing
-    @State var routingState: Routing = .init()
-    
+        
     // MARK: - View State
+    @Bindable private var viewModel: ViewModel
     @State private var offsetY: CGFloat = 0
     @State private var showPopup: Bool = false
-    @State private var viewModel: ViewModel
+    @State private var scrollToTopTrigger: Bool = false
     
     // MARK: - Init
     init(viewModel: ViewModel) {
@@ -40,40 +38,29 @@ struct CollectionView: Routable {
     // MARK: - Body
     var body: some View {
         content
-            .task { await viewModel.loadPosts() }
-            .onReceive(routingUpdate) { routingState = $0 }
+            .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .collectionDetail(let id):
                     CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
-                case .addCollection:
-                    CollectionFormView(mode: .add)
+                case .addCollection(let bird):
+                    CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .add, bird: bird))
                 case .notification:
                     NotificationView(viewModel: coordinator.makeNotificationViewModel())
+                case .directToBoardDetail(let id):
+                    BoardDetailView(id: id, viewModel: coordinator.makeBoardViewModel())
                 }
             }
-            .onChange(of: routingState.collectionID, initial: true) { _, id in
-                guard let id else { return }
-                coordinator.push(Route.collectionDetail(id))
-            }
-            .onChange(of: routingState.addCollection, initial: true) { _, isTrue in
-                if isTrue { coordinator.push(Route.addCollection) }
-            }
-            .onChange(of: routingState.refreshCollections) { _, newID in
-                guard newID != nil else { return }
-                Task {
-                    await viewModel.loadPosts()
+            .onChange(of: viewModel.output, initial: true) { _, output in
+                guard let output = output else { return }
+
+                switch output {
+                case .scrollToTop:
+                    scrollToTopTrigger.toggle()
+                case .navigateToDetail(let id):
+                    coordinator.push(Route.collectionDetail(id))
                 }
-            }
-            .onChange(of: routingState.scrollToTop) { _, newID in
-                guard let _ = newID else { return }
-                offsetY = 0
-                self.routingState.scrollToTop = nil
-            }
-            .onChange(of: coordinator.path) { _, path in
-                if !path.isEmpty {
-                    routingBinding.wrappedValue.collectionID = nil
-                }
+                viewModel.resetOutput()
             }
             .onPreferenceChange(ScrollPreferenceKey.self) { offsetY = $0 }
     }
@@ -125,9 +112,7 @@ private extension CollectionView {
         ZStack(alignment: .topLeading) {
             NavigationBar(
                 trailing: {
-                    Button {
-                        coordinator.push(Route.notification)
-                    } label: {
+                    Button { coordinator.push(Route.notification) } label: {
                         (viewModel.hasUnread ? Image.SRIconSet.bellOn : Image.SRIconSet.bell)
                             .frame(.defaultIconSizeLarge)
                     }
@@ -157,9 +142,9 @@ private extension CollectionView {
                     navigationBar
                     VStack(spacing: 0) {
                         CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
-                        StaggeredGrid<_, _, EmptyView>(items: collectionSummaries, columns: 2) { bird in
-                            CollectionItemView(bird: bird, tapped: {
-                                injected.appState[\.routing.collectionView.collectionID] = bird.id
+                        StaggeredGrid<_, _, EmptyView>(items: collectionSummaries, columns: 2) { collection in
+                            CollectionItemView(collection, tapped: {
+                                coordinator.push(Route.collectionDetail(collection.id))
                             })
                         }
                         .padding(.horizontal)
@@ -172,24 +157,18 @@ private extension CollectionView {
                     }
                 }
                 .refreshable { await viewModel.loadPosts() }
-                .onChange(of: offsetY) { _, newValue in
-                    if newValue == 0 {
-                        withAnimation {
-                            proxy.scrollTo(Constants.scrollableID, anchor: .top)
-                        }
-                    }
+                .onChange(of: scrollToTopTrigger) { _, _ in
+                    withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
                 }
             }
         }
     }
     
-    func birdView(for bird: Local.CollectionSummary) -> some View {
-        Button {
-            injected.appState[\.routing.collectionView.collectionID] = bird.id
-        } label: {
+    func birdView(for collection: Local.CollectionSummary) -> some View {
+        Button { coordinator.push(Route.collectionDetail(collection.id)) } label: {
             VStack(alignment: .leading) {
                 ReactiveAsyncImage(
-                    url: bird.imageURL ?? "",
+                    url: collection.imageURL ?? "",
                     scale: .small,
                     size: .zero,
                     downsampling: true
@@ -197,7 +176,7 @@ private extension CollectionView {
                 .scaledToFit()
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
-                Text(bird.birdName ?? "이름 모를 새")
+                Text(collection.birdName ?? "이름 모를 새")
                     .font(.SRFontSet.caption2)
                     .padding(.leading, 8)
             }
@@ -220,7 +199,7 @@ private extension CollectionView {
                 title: "로그인",
                 action: {
                     showPopup = false
-                    injected.appState[\.authStatus] = .notDetermined
+                    viewModel.changeStatusToLogout()
                 },
                 style: .confirm
             ),
@@ -228,10 +207,7 @@ private extension CollectionView {
         )
     }
     
-    func addButtonTapped() {
-        routingState.addCollection = true
-        injected.appState[\.routing.addCollectionItemView.selectedBird] = nil
-    }
+    func addButtonTapped() { coordinator.push(Route.addCollection(bird: nil)) }
 }
 
 // MARK: - Loading & Error Views
@@ -259,24 +235,5 @@ private extension CollectionView {
     func failedView(_ error: Error) -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
-    }
-}
-
-// MARK: - Routable
-
-extension CollectionView {
-    struct Routing: Equatable {
-        var collectionID: Int?
-        var addCollection: Bool = false
-        var scrollToTop: UUID?
-        var refreshCollections: UUID?
-    }
-    
-    var routingUpdate: AnyPublisher<Routing, Never> {
-        injected.appState.updates(for: \.routing.collectionView)
-    }
-    
-    var routingBinding: Binding<Routing> {
-        $routingState.dispatched(to: injected.appState, \.routing.collectionView)
     }
 }

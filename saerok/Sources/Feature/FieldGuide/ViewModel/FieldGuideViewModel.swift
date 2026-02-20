@@ -7,7 +7,6 @@
 
 import Foundation
 import Combine
-import SwiftUI
 
 // MARK: - Routing
 extension FieldGuideView {
@@ -21,35 +20,53 @@ extension FieldGuideView {
 extension FieldGuideView {
     @Observable
     final class ViewModel {
+        enum Output: Equatable {
+            case showBirdDetail(Local.Bird)
+            case scrollToTop(UUID)
+        }
+        
         // MARK: State
         var fieldGuide: [Local.Bird] = []
         var fieldGuideState: LoadState<Void> = .notRequested
         var filterKey: BirdFilter = .init()
-        var routingState = Routing() {
-            didSet {
-                appState[\.routing.fieldGuideView] = routingState
-            }
-        }
+        var output: Output?
         
-        private let cancelBag: CancelBag
-
         // MARK: Dependencies
         private let appState: Store<AppState>
         private var interactor: FieldGuideInteractor
         private var isGuest: Bool { appState[\.authStatus] == .guest }
-
+        
+        private let cancelBag: CancelBag
+        
         init(appState: Store<AppState>, interactor: FieldGuideInteractor) {
             self.appState = appState
             self.interactor = interactor
             self.cancelBag = .init()
-            
+            binding()
+        }
+        
+        private func binding() {
             cancelBag.collect {
                 appState
-                    .updates(for: \.routing.fieldGuideView)
-                    .weakAssign(to: \.routingState, on: self)
+                    .updates(for: \.routing.fieldGuideView.birdName)
+                    .sink { [weak self] name in
+                        guard let self,
+                              let name,
+                              let bird = self.fieldGuide.first(where: { $0.name == name })
+                        else { return }
+                        
+                        self.output = .showBirdDetail(bird)
+                    }
+                
+                appState
+                    .updates(for: \.routing.fieldGuideView.scrollToTop)
+                    .compactMap { $0 }
+                    .weakSink(on: self) { viewModel, _ in
+                        viewModel.output = .scrollToTop(UUID())
+                    }
             }
         }
- 
+        
         func loadFieldGuide() {
             if !fieldGuide.isEmpty {
                 fieldGuideState = .success(())

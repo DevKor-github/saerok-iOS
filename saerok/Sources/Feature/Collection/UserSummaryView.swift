@@ -58,11 +58,9 @@ private extension UserSummaryView {
                     columns: 2,
                     header: { countView }
                 ) { bird in
-                    CollectionItemView(
-                        bird: bird,
-                        tapped: {
-                            coordinator.push(CommunityView.Route.detail(id: bird.id))
-                        })
+                    CollectionItemView(bird) {
+                        coordinator.push(CommunityView.Route.detail(id: bird.id))
+                    }
                 }
                 .padding(.horizontal, 9)
             }

@@ -8,12 +8,22 @@
 import Combine
 
 extension Publisher where Failure == Never {
-    func weakAssign<T: AnyObject>(
-        to keyPath: ReferenceWritableKeyPath<T, Output>,
-        on object: T
+    func weakAssign<Object: AnyObject>(
+        to keyPath: ReferenceWritableKeyPath<Object, Output>,
+        on object: Object
     ) -> AnyCancellable {
         sink { [weak object] value in
             object?[keyPath: keyPath] = value
+        }
+    }
+
+    func weakSink<T: AnyObject>(
+        on object: T,
+        receiveValue: @escaping (T, Output) -> Void
+    ) -> AnyCancellable {
+        sink { [weak object] value in
+            guard let object else { return }
+            receiveValue(object, value)
         }
     }
 }

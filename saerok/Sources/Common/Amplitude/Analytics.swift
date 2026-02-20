@@ -209,7 +209,7 @@ final class Analytics {
 
     // Amplitude 전송
     private func sendToAmplitude(_ dict: [String: Any]) {
-        guard let eventName = dict["event"] as? String else { return }
+//        guard let eventName = dict["event"] as? String else { return }
 
         var props = dict
         props.removeValue(forKey: "event")

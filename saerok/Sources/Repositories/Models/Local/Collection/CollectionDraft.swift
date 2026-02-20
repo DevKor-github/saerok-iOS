@@ -55,7 +55,7 @@ extension Local {
             self.isVisible = isVisible
             self.collectionID = collectionID
         }
-        
+
         static func == (lhs: CollectionDraft, rhs: CollectionDraft) -> Bool {
             lhs.bird?.id == rhs.bird?.id
             && lhs.image == rhs.image

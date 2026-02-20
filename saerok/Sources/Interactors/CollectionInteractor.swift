@@ -38,7 +38,6 @@ enum CollectionInteractorError: Error {
 }
 
 struct CollectionInteractorImpl: CollectionInteractor {
-
     let repository: CollectionRepository
     
     func fetchMyCollections() async throws -> [Local.CollectionSummary] {
@@ -118,7 +117,6 @@ struct CollectionInteractorImpl: CollectionInteractor {
         try await repository.reportComment(collecionId, commentId: commentId)
     }
 
-    
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] {
         return try await repository.fetchBirdSuggestions(collectionId: id)
     }

@@ -26,6 +26,26 @@ enum LoadState<T> {
         if case .loading = self { return true }
         return false
     }
+    
+    var inError: Bool {
+        if case .failure(_) = self {
+            return true
+        }
+        return false
+    }
+    
+    var description: String {
+        switch self {
+        case .notRequested:
+            "notRequested"
+        case .loading:
+            "loading"
+        case .success(let t):
+            "success\(t)"
+        case .failure(let error):
+            "failure\(error.localizedDescription)"
+        }
+    }
 }
 
 extension LoadState {

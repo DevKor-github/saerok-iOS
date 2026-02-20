@@ -29,11 +29,13 @@ extension DTO {
         case likedOnCollection = "LIKED_ON_COLLECTION"
         case commentedOnCollection = "COMMENTED_ON_COLLECTION"
         case systemPublishedAnnouncement = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
+        case repliedToComment = "REPLIED_TO_COMMENT"
     }
     
     struct NotificationPayload: Codable {
         // 새록
         let collectionId: Int?
+        let commentId: Int?
         let suggestedName: String?
         let collectionImageUrl: String?
         let comment: String?

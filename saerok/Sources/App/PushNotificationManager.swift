@@ -5,14 +5,15 @@
 //  Created by HanSeung on 8/5/25.
 //
 
-
 import Foundation
 import FirebaseMessaging
 import UserNotifications
 import UIKit
 
+@MainActor
 final class PushNotificationManager: NSObject {
     static let shared = PushNotificationManager()
+    static private let registeredKey = "lastSyncedNotificationEnabled"
     
     var injected: DIContainer?
     
@@ -24,24 +25,11 @@ final class PushNotificationManager: NSObject {
     
     func configurePush(application: UIApplication, diContainer: DIContainer) {
         self.injected = diContainer
-        
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
         
-        requestAuthorization()
-        application.registerForRemoteNotifications()
-        Messaging.messaging().token { token, error in
-            if let error = error {
-                print("Error fetching FCM registration token: \(error)")
-            } else if let token = token {
-                print("FCM registration token: \(token)")
-            }
-        }
-    }
-    
-    private func requestAuthorization() {
-        let options: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(options: options) { granted, error in
+        Task { @MainActor in
+            try? await handleNotificationAuthorization(application)
         }
     }
     
@@ -50,7 +38,33 @@ final class PushNotificationManager: NSObject {
     }
 }
 
-extension PushNotificationManager: UNUserNotificationCenterDelegate {
+// MARK: - Handling Notification Register
+private extension PushNotificationManager {
+    func handleNotificationAuthorization(_ application: UIApplication) async throws {
+        let status = await checkNotificationAuthorization()
+        switch status {
+        case .notDetermined:
+            try await requestAuthorization()
+            application.registerForRemoteNotifications()
+        case .denied, .authorized, .provisional, .ephemeral: ()
+        @unknown default:
+            break
+        }
+    }
+    
+    func checkNotificationAuthorization() async -> UNAuthorizationStatus {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        return settings.authorizationStatus
+    }
+    
+    func requestAuthorization() async throws {
+        let options: UNAuthorizationOptions = [.alert, .badge, .sound]
+        let currentEnabled = try await UNUserNotificationCenter.current().requestAuthorization(options: options)
+    }
+}
+
+// MARK: - APNs Routing
+extension PushNotificationManager: @MainActor UNUserNotificationCenterDelegate {
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -59,24 +73,23 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound, .badge])
     }
     
+    @MainActor
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         let userInfo = response.notification.request.content.userInfo
-        
-        if let relatedId = parseRelatedId(from: userInfo) {
-            handleDeepLink(relatedId)
+        if let type = parseNotificationType(from: userInfo),
+           let relatedId = parseRelatedId(from: userInfo) {
+            handleDeepLink(for: type, relatedId)
         }
         
         if let notificationId = parseNotificationId(from: userInfo),
-           let networkService = injected?.networkService {
+           let interactor = injected?.interactors.user {
             Task {
                 do {
-                    let _: EmptyResponse = try await networkService.performSRRequest(
-                        .readNotification(notificationId: notificationId)
-                    )
+                    try await interactor.readNotification(notificationId)
                 } catch {
                     print("알림 읽음 처리 실패: \(error)")
                 }
@@ -86,42 +99,70 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
         completionHandler()
     }
     
-    private func handleDeepLink(_ num: Int) {
-        Task { @MainActor in
-            self.injected?.appState[\.routing.contentView.tabSelection] = .collection
-            self.injected?.appState[\.routing.collectionView.collectionID] = num
+    private func handleDeepLink(for type: Local.NotificationType, _ id: Int) {
+        guard let appState = injected?.appState else { return }
+        
+        appState.bulkUpdate {
+            switch type {
+            case .system:
+                $0.routing.contentView.tabSelection = .profile
+                $0.routing.myPageView.boardDetailId = id
+            default:
+                $0.routing.contentView.tabSelection = .collection
+                $0.routing.collectionView.collectionID = id
+            }
+        }
+    }
+    
+    private func parseNotificationType(from userInfo: [AnyHashable: Any]) -> Local.NotificationType? {
+        guard let type = userInfo["type"] as? String else { return nil }
+        
+        switch type {
+        case Local.NotificationType.system.rawValue:
+            return .system
+        default:
+            return .comment
         }
     }
     
     private func parseRelatedId(from userInfo: [AnyHashable: Any]) -> Int? {
         return (userInfo["relatedId"] as? Int) ??
-               (userInfo["relatedId"] as? NSNumber)?.intValue ??
-               (userInfo["relatedId"] as? String).flatMap(Int.init)
+        (userInfo["relatedId"] as? NSNumber)?.intValue ??
+        (userInfo["relatedId"] as? String).flatMap(Int.init)
     }
     
     private func parseNotificationId(from userInfo: [AnyHashable: Any]) -> Int? {
         return (userInfo["notificationId"] as? Int) ??
-               (userInfo["notificationId"] as? NSNumber)?.intValue ??
-               (userInfo["notificationId"] as? String).flatMap(Int.init)
+        (userInfo["notificationId"] as? NSNumber)?.intValue ??
+        (userInfo["notificationId"] as? String).flatMap(Int.init)
     }
 }
 
-extension PushNotificationManager: MessagingDelegate {
+// MARK: - FCM Registering
+extension PushNotificationManager: @MainActor MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let fcmToken = fcmToken,
-              let networkService = injected?.networkService
+              let interactor = injected?.interactors.user,
+              !isRegistered()
         else { return }
         
         Task { @MainActor in
             do {
-                let _: DTO.RegisterDeviceTokenResponse = try await networkService.performSRRequest(
-                    .registerDeviceToken(body: .init(deviceId: deviceID, token: fcmToken))
-                )
-                
-                try await self.injected?.interactors.user.toggleAllNotificationSetting()
+                try await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
+                try await interactor.toggleAllNotificationSetting()
+                UserDefaults.standard.set(true, forKey: PushNotificationManager.registeredKey)
             } catch {
                 print(error.localizedDescription)
             }
+        }
+    }
+    
+    private func isRegistered() -> Bool {
+        if let result = UserDefaults.standard.object(forKey: PushNotificationManager.registeredKey) as? Bool {
+            return result
+        } else {
+            UserDefaults.standard.set(false, forKey: PushNotificationManager.registeredKey)
+            return false
         }
     }
 }

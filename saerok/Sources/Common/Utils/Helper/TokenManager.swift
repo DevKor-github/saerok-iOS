@@ -14,7 +14,6 @@ actor TokenManager {
     private init() {}
 
     // MARK: - 저장
-
     func saveTokens(accessToken: String, refreshToken: String?) {
         do {
             try KeyChain.create(key: .accessToken, token: accessToken)
@@ -28,7 +27,6 @@ actor TokenManager {
     }
 
     // MARK: - 불러오기
-
     nonisolated func getAccessToken() -> String? {
         return try? KeyChain.read(key: .accessToken)
     }
@@ -52,7 +50,6 @@ actor TokenManager {
     }
 
     // MARK: - 삭제
-
     func clearTokens() {
         do {
             try KeyChain.delete(key: .accessToken)
@@ -68,25 +65,21 @@ actor TokenManager {
     }
 
     // MARK: - 자동 로그인
-    func tryAutoLogin() async -> AppState.AuthStatus {
+    func tryAutoLogin() async throws  -> AppState.AuthStatus {
         guard let refreshToken = getRefreshToken() else {
             return .notDetermined
         }
         
-        do {
-            let endpoint = SREndpoint.refreshToken(refreshToken: refreshToken)
-            let response: DTO.AuthResponse = try await SRNetworkServiceImpl().performSRRequest(endpoint)
-            
-            let newRefreshToken = extractRefreshTokenFromCookies() ?? refreshToken
-            saveTokens(accessToken: response.accessToken, refreshToken: newRefreshToken)
-            
-            if response.signupStatus == .completed {
-                syncUserData()
-            }
-            return .signedIn(isRegistered: response.signupStatus == .completed)
-        } catch {
-            return .notDetermined
+        let endpoint = SREndpoint.refreshToken(refreshToken: refreshToken)
+        let response: DTO.AuthResponse = try await SRNetworkServiceImpl().performSRRequest(endpoint)
+        
+        let newRefreshToken = extractRefreshTokenFromCookies() ?? refreshToken
+        saveTokens(accessToken: response.accessToken, refreshToken: newRefreshToken)
+        
+        if response.signupStatus == .completed {
+            syncUserData()
         }
+        return .signedIn(isRegistered: response.signupStatus == .completed)
     }
     
     func trySocialLogin(accessToken: String) {

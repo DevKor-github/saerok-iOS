@@ -67,6 +67,18 @@ extension Local.Notification {
                     comment: dto.payload.comment
                 )
             )
+            
+        case .repliedToComment:
+            self.type = .replied
+            self.payload = .saerok(
+                .init(
+                    actorImageUrl: dto.actorProfileImageUrl!,
+                    actorNickname: dto.actorNickname!,
+                    collectionId: dto.payload.collectionId!,
+                    collectionImageUrl: dto.payload.collectionImageUrl,
+                    comment: dto.payload.comment
+                )
+            )
 
         case .suggestedBirdIdOnCollection:
             self.type = .birdIdSuggestion

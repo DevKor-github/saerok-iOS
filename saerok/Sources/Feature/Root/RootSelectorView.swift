@@ -5,7 +5,6 @@
 //  Created by HanSeung on 6/5/25.
 //
 
-
 import SwiftUI
 import Combine
 
@@ -27,16 +26,16 @@ struct RootSelectorView: View {
         ZStack {
             content
             if !networkMonitor.isConnected {
-                networkAlertView
+                NetworkAlertView()
             }
         }
         .ignoresSafeArea()
         .animation(.spring(), value: networkMonitor.isConnected)
         .onReceive(authStatusUpdate) { authStatus = $0 }
-        .onChange(of: scenePhase, initial: false) {
-            if scenePhase == .active {
+        .onChange(of: scenePhase) { before, after in
+            if before == .background && after == .inactive {
                 Task { @MainActor in
-                   injected.appState[\.authStatus] = await TokenManager.shared.tryAutoLogin()
+                   injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()
                 }
             }
         }
@@ -45,27 +44,34 @@ struct RootSelectorView: View {
 
 private extension RootSelectorView {
     var content: some View {
-        ZStack {
-            switch authStatus {
-            case .notDetermined:
-                LoginView(authStatus: $authStatus)
-
-            case .guest:
-                ContentView()
-                
-            case .signedIn(let isRegistered):
-                if isRegistered {
-                    ContentView()
-                } else {
+        Group {
+            if showSplash {
+                SplashView(showSplash: $showSplash) {
+                    Task {
+                        do {
+                            injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()
+                        } catch {
+                            injected.appState[\.authStatus] = .notDetermined
+                        }
+                        showSplash = false
+                    }
+                }
+            } else {
+                switch authStatus {
+                case .notDetermined:
                     LoginView(authStatus: $authStatus)
+                case .guest:
+                    ContentView()
+                case .signedIn(let isRegistered):
+                    if isRegistered {
+                        ContentView()
+                    } else {
+                        LoginView(authStatus: $authStatus)
+                    }
                 }
             }
-
-            splashView
         }
-        .task {
-            await versionChecker.checkVersion()
-        }
+        .task { await versionChecker.checkVersion() }
         .alert("업데이트 필요", isPresented: $versionChecker.showUpdateAlert) {
             Button("앱스토어로 이동") {
                 AppStorePresenter.present(appID: "6744866662")
@@ -74,23 +80,17 @@ private extension RootSelectorView {
             Text("새로운 버전이 출시되었습니다.\n최신 버전으로 업데이트해주세요.")
         }
     }
-
-    var splashView: some View {
-        SplashView(showSplash: $showSplash)
-    }
-
-    var networkAlertView: some View {
-        NetworkAlertView()
-    }
 }
 
 private struct SplashView: View {
     @Binding var showSplash: Bool
+    let onAppear: () -> Void
+    
     var body: some View {
         if showSplash {
             LottieView(animationName: "splash") {
                 withAnimation(.easeInOut(duration: 0.8)) {
-                    showSplash = false
+                    onAppear()
                 }
             }
             .background(Color.srWhite)

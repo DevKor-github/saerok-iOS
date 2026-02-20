@@ -10,6 +10,7 @@ extension DTO {
     struct RegisterDeviceTokenRequest: Codable {
         let deviceId: String
         let token: String
+        let platform: String
     }
     
     struct RegisterDeviceTokenResponse: Decodable {

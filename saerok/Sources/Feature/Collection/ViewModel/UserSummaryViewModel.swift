@@ -10,7 +10,6 @@ import Foundation
 extension UserSummaryView {
     @Observable
     final class ViewModel: ObservableObject {
-        
         private let userID: Int
         private(set) var summaryState: LoadState<Local.UserProfileSummary> = .notRequested
         
@@ -24,8 +23,10 @@ extension UserSummaryView {
         }
         
         func loadSummary() async {
-            summaryState = await summaryState.load {
-                try await interactor.fetchUserSummary(userID: userID)
+            if case .notRequested = summaryState {
+                summaryState = await summaryState.load {
+                    try await interactor.fetchUserSummary(userID: userID)
+                }
             }
         }
     }

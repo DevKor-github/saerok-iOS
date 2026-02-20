@@ -8,8 +8,9 @@
 import Combine
 import SwiftUI
 
-
 struct BirdDetailView: View {
+    typealias Route = FieldGuideRoute
+    
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var showPopup: Bool = false
     @State private var viewModel: ViewModel
@@ -230,7 +231,7 @@ private extension BirdDetailView {
     
     func saerokButtonTapped(bird: Local.Bird) {
         if !viewModel.isGuest {
-            viewModel.addSaerok(for: bird)
+            coordinator.push(Route.addSaerok(bird))
         } else {
             HapticManager.shared.trigger(.error)
             showPopup.toggle()

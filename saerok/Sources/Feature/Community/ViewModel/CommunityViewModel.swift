@@ -33,12 +33,11 @@ extension CommunityView {
             self.appState = appState
             self.interactor = interactor
             self.cancelBag = .init()
-            
             cancelBag.collect {
                 appState.sink { [weak self] in
                     self?.isGuestMode = $0.authStatus == .guest
                 }
-            }
+            }            
         }
         
         func loadPosts() async {
@@ -66,7 +65,7 @@ extension CommunityView {
                 return
             }
             
-            searchDebounceTask = .debounce(delay: 600_000_000, task: searchDebounceTask) {
+            searchDebounceTask = .debounce(delay: 400_000_000, task: searchDebounceTask) {
                 await self.performSearch(text, for: self.searchCase)
             }
         }

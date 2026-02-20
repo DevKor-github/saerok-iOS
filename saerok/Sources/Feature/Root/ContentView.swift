@@ -9,26 +9,18 @@
 import Combine
 import SwiftUI
 
-struct ContentView: Routable {
+struct ContentView: View {
     // MARK: View State
     @State private var selectedTab: TabbedItems = SRConstant.mainTab
-    @State private var isTabbarHidden: Bool = false
     
     // MARK: Dependencies
     @Environment(\.injected) private var injected
     @EnvironmentObject private var coordinator: AppCoordinator
-    
-    // MARK: Routing
-    @State var routingState = Routing()
-    
+        
     var body: some View {
         content
-            .onReceive(routingUpdate) { routingState = $0 }
-            .onChange(of: routingState.tabSelection, initial: true) { _, tab in
-                selectedTab = tab
-            }
-            .onChange(of: routingState.isTabbarHidden, initial: true) { _, hidden in
-                isTabbarHidden = hidden
+            .onReceive(injected.appState.updates(for: \.routing.contentView.tabSelection)) {
+                selectedTab = $0
             }
             .onAppear(perform: configureNavigationBar)
     }
@@ -37,10 +29,7 @@ struct ContentView: Routable {
         NavigationStack(path: $coordinator.path) {
             ZStack {
                 CachedTabContainer(selectedTab: selectedTab)
-                
                 TabbarView(selectedTab: selectedTab)
-                    .opacity(routingState.isTabbarHidden ? 0 : 1)
-                    .allowsHitTesting(!routingState.isTabbarHidden)
             }
             .onboardingOverlay(type: selectedTab.onboardingType)
             .ignoresSafeArea(.all)
@@ -63,51 +52,34 @@ struct ContentView: Routable {
 extension ContentView {
     struct Routing: Equatable {
         var tabSelection: TabbedItems = SRConstant.mainTab
-        var isTabbarHidden: Bool = false
-    }
-    
-    var routingUpdate: AnyPublisher<Routing, Never> {
-        injected.appState.updates(for: \.routing.contentView)
-    }
-    
-    var routingBinding: Binding<Routing> {
-        $routingState.dispatched(to: injected.appState, \.routing.contentView)
     }
 }
 
 struct CachedTabContainer: View {
-    @EnvironmentObject private var coordinator: AppCoordinator
-
     let selectedTab: TabbedItems
-    @State private var cache: [TabbedItems: AnyView] = [:]
+    @State private var initializedTabs: Set<TabbedItems> = []
 
+    init(selectedTab: TabbedItems) {
+        self.selectedTab = selectedTab
+    }
+    
     var body: some View {
         ZStack {
             ForEach(TabbedItems.allCases, id: \.self) { tab in
-                let isSelected = (selectedTab == tab)
+                let isSelected = selectedTab == tab
+
                 Group {
-                    if tab == .map {
-                        if isSelected {
-                            MapView()
-                        } else {
-                            EmptyView()
-                        }
-                    } else {
-                        if let cached = cache[tab] {
-                            cached
-                        } else if isSelected {
-                            let built = AnyView(TabContent(tab: tab))
-                            built
-                                .onAppear {
-                                    cache[tab] = built
-                                }
-                        } else {
-                            EmptyView()
-                        }
+                    if initializedTabs.contains(tab) {
+                        TabContent(tab: tab)
+                    } else if isSelected {
+                        TabContent(tab: tab)
+                            .onAppear {
+                                initializedTabs.insert(tab)
+                            }
                     }
                 }
                 .opacity(isSelected ? 1 : 0)
-                .scaleEffect(isSelected ? 1 : 0.98)
+                .scaleEffect(isSelected ? 1 : 0.99)
                 .offset(y: isSelected ? 0 : 5)
                 .animation(.spring(response: 0.15, dampingFraction: 0.9), value: selectedTab)
             }
@@ -118,7 +90,6 @@ struct CachedTabContainer: View {
 private struct TabContent: View {
     let tab: TabbedItems
     
-    @Environment(\.injected) var injected: DIContainer
     @EnvironmentObject private var coordinator: AppCoordinator
     
     var body: some View {
@@ -129,15 +100,15 @@ private struct TabContent: View {
     private var content: some View {
         switch tab {
         case .map:
-            EmptyView()
+            MapView()
         case .fieldGuide:
-            FieldGuideView(viewModel: coordinator.makeFieldGuideViewModel())
+            FieldGuideView(viewModel: coordinator.fieldGuideViewModel)
         case .collection:
-            CollectionView(viewModel: coordinator.makeCollectionViewModel())
+            CollectionView(viewModel: coordinator.collectionViewModel)
         case .community:
-            CommunityView(viewModel: coordinator.makeCommunityViewModel())
+            CommunityView(viewModel: coordinator.communityViewModel)
         case .profile:
-            MyPageView(viewModel: coordinator.makeMyPageViewModel())
+            MyPageView(viewModel: coordinator.myPageViewModel)
         }
     }
 }

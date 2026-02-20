@@ -10,7 +10,7 @@ import SwiftData
 import Foundation
 
 @Model
-final class User {
+final class User: Sendable {
     @Attribute(.unique) var id: String
     var provider: SocialLoginProvider?
     var nickname: String

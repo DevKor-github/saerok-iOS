@@ -28,7 +28,6 @@ extension CommunityDetailView {
         init(type: CommunityType, interactor: CommunityInteractor) {
             self.type = type
             self.interactor = interactor
-            print("init!!!")
         }
 
         // MARK: Side Effect

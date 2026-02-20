@@ -96,7 +96,7 @@ extension CollectionFormView {
     var editModeDeleteConfirmPopup: CustomPopup<ConfirmButtonStyle, DeleteButtonStyle, PrimaryButtonStyle> {
         CustomPopup(
             title: "삭제하시겠어요?",
-            message: "'\(self.collectionDraft.bird?.name ?? "이름 모를 새")' 새록이 삭제돼요.",
+            message: "'\(viewModel.collectionDraft.bird?.name ?? "이름 모를 새")' 새록이 삭제돼요.",
             leading: .init(
                 title: "취소",
                 action: {
