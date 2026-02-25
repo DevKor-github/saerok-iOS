@@ -5,7 +5,6 @@
 //  Created by HanSeung on 5/20/25.
 //
 
-
 import Foundation
 
 extension Bundle {
@@ -21,15 +20,11 @@ extension Bundle {
         return infoDictionary?["KAKAO_ADFIT_KEY"] as? String ?? ""
     }
     
-    var kakaoTestAPIKey: String {
-        return infoDictionary?["KAKAO_API_KEY_TEST"] as? String ?? ""
-    }
-    
-    var kakaoTestAppID: String {
-        return infoDictionary?["KAKAO_NATIVE_APP_KEY_TEST"] as? String ?? ""
-    }
-    
     var amplitudeApiKey: String {
         return infoDictionary?["AMPLITUDE_API_KEY"] as? String ?? ""
+    }
+    
+    var baseURL: String {
+        return infoDictionary?["BASE_URL"] as? String ?? ""
     }
 }

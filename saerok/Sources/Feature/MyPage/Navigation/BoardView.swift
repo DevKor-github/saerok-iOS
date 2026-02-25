@@ -51,6 +51,7 @@ struct BoardView: View {
             boardList
             Spacer()
         }
+        .ignoresSafeArea(edges: [.bottom])
         .regainSwipeBack()
         .task { await viewModel.loadAnnouncements() }
     }

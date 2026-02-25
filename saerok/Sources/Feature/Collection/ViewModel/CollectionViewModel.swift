@@ -57,7 +57,6 @@ extension CollectionView {
                     .compactMap { $0 }
                     .weakSink(on: self) { viewModel, id in
                         viewModel.output = .navigateToDetail(id: id)
-                        print("싱크! \(id)")
                     }
                 
                 appState

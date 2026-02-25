@@ -23,17 +23,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 
 // MARK: - Lifecycle
-
 extension AppDelegate {
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
-        // MARK: - forDevelopingServer
-                KakaoSDK.initSDK(appKey: Bundle.main.kakaoTestAppID)
-//        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
-       
+        KakaoSDK.initSDK(appKey: Bundle.main.kakaoAppID)
         PushNotificationManager.shared.configurePush(
             application: application,
             diContainer: environment.diContainer

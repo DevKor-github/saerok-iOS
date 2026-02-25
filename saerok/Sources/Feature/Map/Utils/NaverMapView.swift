@@ -12,7 +12,7 @@ import SwiftUI
 
 struct NaverMapView: View {
     @Binding var coord: (Double, Double)
-    @ObservedObject var controller: MapController
+    @Bindable var controller: MapController
     
     let showCenter: Bool
     

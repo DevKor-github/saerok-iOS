@@ -100,7 +100,7 @@ private struct TabContent: View {
     private var content: some View {
         switch tab {
         case .map:
-            MapView()
+            MapView(viewModel: coordinator.mapViewModel)
         case .fieldGuide:
             FieldGuideView(viewModel: coordinator.fieldGuideViewModel)
         case .collection:

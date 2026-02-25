@@ -5,7 +5,6 @@
 //  Created by HanSeung on 11/3/25.
 //
 
-
 import SwiftUI
 
 struct TermsAgreementSheet: View {
@@ -33,8 +32,6 @@ struct TermsAgreementSheet: View {
 }
 
 // MARK: - Subviews
-
-
 private extension TermsAgreementSheet {
     var content: some View {
         VStack(alignment: .center, spacing: 0) {

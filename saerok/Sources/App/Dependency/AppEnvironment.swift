@@ -63,7 +63,13 @@ private extension AppEnvironment {
         networkService: SRNetworkService
     ) -> DIContainer.Repositories {
         let mainRepository: MainRepository = .init(modelContainer: modelContainer)
-        return .init(birds: mainRepository, collections: mainRepository, community: mainRepository, user: mainRepository)
+        return .init(
+            birds: mainRepository,
+            collections: mainRepository,
+            community: mainRepository,
+            map: mainRepository,
+            user: mainRepository
+        )
     }
     
     /// 저장소를 기반으로 앱에서 사용할 인터랙터들을 생성합니다.
@@ -73,6 +79,7 @@ private extension AppEnvironment {
             fieldGuide: FieldGuideInteractorImpl(repository: repositories.birds),
             collection: CollectionInteractorImpl(repository: repositories.collections),
             community: CommunityInteractorImpl(repository: repositories.community),
+            map: MapInteractorImpl(repository: repositories.map),
             user: UserInteractorImpl(repository: repositories.user)
         )
     }

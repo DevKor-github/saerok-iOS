@@ -5,10 +5,10 @@
 //  Created by HanSeung on 5/22/25.
 //
 
-
 import Combine
 import SwiftUI
 import SwiftData
+import Foundation
 
 enum MapRoute: AppRoute {
     case detail(_ collectionID: Int)
@@ -18,89 +18,51 @@ struct MapView: View {
     typealias Route = MapRoute
     
     // MARK: - Dependencies
-    
-    @Environment(\.injected) var injected
     @EnvironmentObject private var coordinator: AppCoordinator
-    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
-    
-    // MARK: - Routable
-    
-    @State var routingState: Routing = .init()
-    
-    // MARK: - View State
         
-    private var locationManager: LocationManager { LocationManager.shared }
-    @StateObject private var mapController: MapController
-    
-    @State private var mapViewState: LoadState<Void> = .notRequested
-    @State private var position: (Double, Double) = (37.59080, 127.0278)
-    @State private var address: String = ""
-    @State private var text: String = ""
-    @State private var response: [Local.KakaoPlace] = []
-    @State private var mode: SearchInputBar.Mode = .idle
+    @State private var viewModel: ViewModel
     @FocusState private var isFocused: Bool
-    @State private var isMineOnly: Bool = false
-    @State private var item: [Local.NearbyCollectionSummary] = []
-    @State private var searchDebounceTask: Task<Void, Error>? = nil
-    @State private var isNavigating = false
-    
-    private var isModeIdle: Bool { mode == .idle }
-    private var networkService: SRNetworkService { injected.networkService }
-    
-    init(locationManager: LocationManager = .shared) {
-        let mapController = MapController(locationManager: locationManager)
-        self._mapController = .init(wrappedValue: mapController)
+
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
         
     var body: some View {
         content
             .ignoresSafeArea(.all)
             .onAppear {
-                mapController.selectedBird = nil
-                reloadAddress()
+                Task {
+                    viewModel.onAppear()
+                    await viewModel.initialLoad()
+                }
             }
-            .onReceive(routingUpdate) { self.routingState = $0 }
             .navigationDestination(for: Route.self) { route in
                 switch route  {
                 case .detail(let id):
                     CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
                 }
             }
-            .onChange(of: mapController.selectedBird) { _, newBird in
+            .onChange(of: viewModel.mapController.selectedBird) { _, newBird in
                 if let newBird = newBird {
                     coordinator.push(MapRoute.detail(newBird.collectionId))
                 }
             }
-            .onChange(of: routingState.navigation) { _, update in
-                guard let update = update, !isNavigating else { return }
-
-                isNavigating = true
-                injected.appState[\.routing.mapView.navigation] = nil
-                Task { @MainActor in
-                    mapController.moveCamera(lat: update.latitude, lng: update.longitude, animated: true)
-                    try? await Task.sleep(for: .seconds(0.3))
-                    try? await fetchPosition(update.latitude, update.longitude)
-
-                    isNavigating = false
+            .onChange(of: viewModel.output, initial: true) { _, output in
+                guard let output else { return }
+                
+                switch output {
+                case .navigateTo(coord: let coord):
+                    viewModel.handleRoutingNavigationUpdate(coord)
                 }
+                viewModel.resetOutput()
             }
     }
         
     @ViewBuilder
     var content: some View {
-        switch mapViewState {
+        switch viewModel.mapViewState {
         case .notRequested:
             Text("")
-                .task {
-                    if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
-                        mapViewState = .loading
-                        position = (location.latitude, location.longitude)
-                        try? await fetchNearby(mineOnly: isMineOnly)
-                        mapViewState = .success(())
-                    } else {
-                        mapViewState = .notRequested
-                    }
-                }
         case .success:
             loadedContent
         default:
@@ -118,10 +80,10 @@ private extension MapView {
             searchBarSection
             buttonSection
             
-            if isModeIdle {
+            if viewModel.isModeIdle {
                 Text("")
                     .bottomSheet(alwaysOnDisplay: true, keyboard: KeyboardObserver()) {
-                        NearbySheet(address: address, item: item) { item in
+                        NearbySheet(address: viewModel.address, item: viewModel.item) { item in
                             coordinator.push(Route.detail(item.collectionId))
                         }
                     }
@@ -136,34 +98,34 @@ private extension MapView {
             SearchInputBar(
                 tintColor: nil,
                 placeHolder: "원하는 장소를 입력하세요",
-                isModeIdle: isModeIdle,
-                text: $text,
+                isModeIdle: viewModel.isModeIdle,
+                text: $viewModel.text,
                 isFocused: $isFocused,
-                mode: $mode,
+                mode: $viewModel.mode,
                 onTap: {
-                    mode = .searching
+                    viewModel.mode = .searching
                 },
                 onTextChange: { new in
-                    debounceTask {
-                        await performSearch()
+                    viewModel.debounceTask {
+                        await viewModel.performSearch()
                     }
-                    mode = (new.isEmpty ? .searching : (mode == .idle ? .idle : mode))
+                    viewModel.mode = (new.isEmpty ? .searching : (viewModel.mode == .idle ? .idle : viewModel.mode))
                 }
             )
             
             SearchRefreshButton {
-                refreshButtonTapped()
-                reloadAddress()
+                viewModel.refreshButtonTapped()
+                viewModel.reloadAddress()
             }
-            .opacity(mode == .idle ? 1 : 0)
-            .allowsHitTesting(mode == .idle)
+            .opacity(viewModel.mode == .idle ? 1 : 0)
+            .allowsHitTesting(viewModel.mode == .idle)
         }
         .onChange(of: isFocused) { _, new in
             if new {
-                mode = .searching
+                viewModel.mode = .searching
             }
         }
-        .onChange(of: mode) { _, new in
+        .onChange(of: viewModel.mode) { _, new in
             if new == .idle {
                 isFocused = false
             }
@@ -173,12 +135,12 @@ private extension MapView {
     var resultSection: some View {
         ZStack(alignment: .top) {
             searchResultSection()
-                .opacity(!isModeIdle ? 1 : 0)
-                .allowsHitTesting(!isModeIdle)
+                .opacity(!viewModel.isModeIdle ? 1 : 0)
+                .allowsHitTesting(!viewModel.isModeIdle)
             
-            NaverMapView(showCenter: false, coord: $position, controller: mapController)
-                .opacity(isModeIdle ? 1 : 0)
-                .allowsHitTesting(isModeIdle)
+            NaverMapView(showCenter: false, coord: $viewModel.position, controller: viewModel.mapController)
+                .opacity(viewModel.isModeIdle ? 1 : 0)
+                .allowsHitTesting(viewModel.isModeIdle)
         }
         .onTapGesture { isFocused = false }
     }
@@ -188,7 +150,7 @@ private extension MapView {
             Spacer()
             HStack {
                 Button {
-                    mapController.moveToUserLocation()
+                    viewModel.mapController.moveToUserLocation()
                 } label: {
                     Image(.mylocation)
                         .resizable()
@@ -196,16 +158,16 @@ private extension MapView {
                 }
                 Spacer()
                 
-                if !isGuest {
-                    GlobalToggleButton(isOff: $isMineOnly) {
-                        globalToggleButtonTapped()
+                if !viewModel.isGuest {
+                    GlobalToggleButton(isOff: $viewModel.isMineOnly) {
+                        viewModel.globalToggleButtonTapped()
                     }
                 }
             }
         }
         .padding(SRDesignConstant.defaultPadding)
         .padding(.bottom, 152)
-        .opacity(isModeIdle ? 1 : 0)
+        .opacity(viewModel.isModeIdle ? 1 : 0)
     }
     
     func searchResultSection() -> some View {
@@ -213,7 +175,7 @@ private extension MapView {
             Color.clear.frame(height: 140)
             VStack(spacing: 2) {
                 Divider()
-                ForEach(response, id: \.id) { item in
+                ForEach(viewModel.response, id: \.id) { item in
                     VStack(spacing: 0) {
                         searchCell(item)
                         Divider()
@@ -245,106 +207,7 @@ private extension MapView {
         .frame(maxWidth: .infinity)
         .background(Color.srWhite)
         .onTapGesture {
-            searchCellTapped(item)
-        }
-    }
-}
-
-// MARK: - Networking & Helpers
-
-private extension MapView {
-    func searchCellTapped(_ item: Local.KakaoPlace) {
-        position = (item.latitude, item.longtitude)
-        mapController.moveCamera(lat: item.latitude, lng: item.longtitude, animated: true)
-        mode = .idle
-    }
-    
-    func globalToggleButtonTapped() {
-        Task {
-            do {
-                HapticManager.shared.trigger(.light)
-                try await fetchNearby(mineOnly: !isMineOnly)
-                withAnimation(.bouncy(duration: 0.4)) {
-                    isMineOnly.toggle()
-                }
-                HapticManager.shared.trigger(.success)
-            } catch {
-                HapticManager.shared.trigger(.error)
-            }
-        }
-    }
-    
-    func refreshButtonTapped() {
-        Task {
-            HapticManager.shared.trigger(.light)
-            try? await fetchNearby(mineOnly: self.isMineOnly)
-            HapticManager.shared.trigger(.success)
-        }
-    }
-    
-    func fetchNearby(mineOnly: Bool) async throws {
-        let radius = mapController.visibleRadius
-        item = try await  injected.interactors.collection.fetchNearbyCollections(
-            lat: position.0,
-            lng: position.1,
-            rad: radius,
-            isMineOnly: mineOnly,
-            isGuest: isGuest
-        )
-        clearMarkers()
-        loadMarkers(item)
-    }
-    
-    func fetchPosition(_ lat: Double, _ lng: Double) async throws {
-        item = try await injected.interactors.collection.fetchNearbyCollections(
-            lat: lat,
-            lng: lng,
-            rad: 500,
-            isMineOnly: isMineOnly,
-            isGuest: isGuest
-        )
-        loadMarkers(item)
-    }
-    
-    func clearMarkers() {
-        mapController.clearMarkers()
-    }
-    
-    func loadMarkers(_ items: [Local.NearbyCollectionSummary]) {
-        mapController.refreshBirdMarkers(items)
-    }
-    
-    func debounceTask(delay: UInt64 = 800_000_000, action: @escaping @Sendable () async throws -> Void) {
-        searchDebounceTask?.cancel()
-        searchDebounceTask = Task {
-            do {
-                try? await Task.sleep(nanoseconds: delay)
-                if !Task.isCancelled {
-                    try await action()
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
-        }
-    }
-    
-    func performSearch() async {
-        do {
-            let searchResponse: DTO.KakaoSearchResponse = try await networkService.performKakaoRequest(.keyword(text))
-            response = searchResponse.documents.toLocal()
-            mode = .resultShown
-        } catch { }
-    }
-    
-    func reloadAddress() {
-        debounceTask {
-            let result: DTO.KakaoAddressResponse = try await networkService.performKakaoRequest(
-                .address(
-                    lng: position.0,
-                    lat: position.1
-                )
-            )
-            self.address = result.documents.first?.address?.adrs ?? ""
+            viewModel.searchCellTapped(item)
         }
     }
 }
@@ -422,31 +285,7 @@ extension MapView {
     }
 }
 
-// MARK: - Routable
-
-extension MapView {
-    struct Routing: Equatable {
-        var navigation: Coordinate?
-    }
-    
-    var routingUpdate: AnyPublisher<Routing, Never> {
-        injected.appState.updates(for: \.routing.mapView)
-    }
-    
-    var routingBinding: Binding<Routing> {
-        $routingState.dispatched(to: injected.appState, \.routing.mapView)
-    }
-}
-
-extension MapView.Routing {
-    struct Coordinate: Equatable {
-        let latitude: Double
-        let longitude: Double
-    }
-}
-
 // MARK: - Global Toggle Button
-
 private struct GlobalToggleButton: View {
     @Binding var isOff: Bool
     let buttonAction: () -> Void

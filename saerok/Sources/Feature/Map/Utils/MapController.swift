@@ -5,11 +5,11 @@
 //  Created by HanSeung on 5/14/25.
 //
 
-
 import CoreLocation
 import Foundation
 
-class MapController: ObservableObject {
+@Observable
+final class MapController {
     enum Action {
         case moveCamera(lat: Double, lng: Double, animated: Bool)
         case clearMarkers
@@ -18,10 +18,10 @@ class MapController: ObservableObject {
     
     let locationManager: LocationManager
 
-    @Published var pendingActions: [Action] = []
-    @Published var selectedBird: Local.NearbyCollectionSummary? = nil
-    @Published var allBirdMarkers: [Local.NearbyCollectionSummary] = []
-    @Published var visibleRadius: Double = 1000
+    var pendingActions: [Action] = []
+    var selectedBird: Local.NearbyCollectionSummary? = nil
+    var allBirdMarkers: [Local.NearbyCollectionSummary] = []
+    var visibleRadius: Double = 1000
 
     init(locationManager: LocationManager) {
         self.locationManager = locationManager

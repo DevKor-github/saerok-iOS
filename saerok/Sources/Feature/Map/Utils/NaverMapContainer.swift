@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - NaverMapContainer
 
 struct NaverMapContainer {
-    @ObservedObject var controller: MapController
+    @Bindable var controller: MapController
     @Binding var coord: (Double, Double)
 }
 
@@ -66,7 +66,8 @@ extension NaverMapContainer: UIViewRepresentable {
 // MARK: - Coordinator Class
 
 extension NaverMapContainer {
-    class Coordinator: NSObject, NMFMapViewCameraDelegate, NMFMapViewTouchDelegate {
+    @MainActor
+    class Coordinator: NSObject, @preconcurrency NMFMapViewCameraDelegate, @preconcurrency NMFMapViewTouchDelegate {
         var parent: NaverMapContainer
         var mapView: NMFMapView?
         let birdClusterMarkerManager = BirdClusterManager()
@@ -80,6 +81,7 @@ extension NaverMapContainer {
             self.mapView = mapView
         }
 
+        @MainActor
         func refreshClusterMarkers() {
             birdClusterMarkerManager.refreshBirdMarkers(parent.controller.allBirdMarkers) { [weak self] bird in
                 return { _ in

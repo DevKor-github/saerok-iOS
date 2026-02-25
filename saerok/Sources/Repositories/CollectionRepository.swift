@@ -5,7 +5,6 @@
 //  Created by HanSeung on 4/17/25.
 //
 
-
 import SwiftData
 import Foundation
 
@@ -17,7 +16,6 @@ protocol CollectionRepository {
     func registerImageMetadata(collectionId: Int, request: DTO.RegisterImageRequest) async throws -> DTO.RegisterImageResponse
     func deleteCollection(_ id: Int) async throws
     func editCollection(id: Int, isBirdUpdated: Bool, _ draft: Local.CollectionDraft) async throws
-    func fetchNearbyCollections(_ request: Local.NearbyRequest) async throws -> [Local.NearbyCollectionSummary]
     func fetchCollectionComments(_ id: Int) async throws -> [Local.CollectionComment]
     func createCollectionComment(id: Int, _ content: String) async throws
     func toggleCollectionLike(_ id: Int) async throws -> Bool
@@ -90,23 +88,6 @@ extension MainRepository: CollectionRepository {
         let _: DTO.CollectionEditResponse = try await networkService.performSRRequest(
             .editCollection(collectionId: id, body: dto)
         )
-    }
-
-    func fetchNearbyCollections(
-        _ request: Local.NearbyRequest
-    ) async throws -> [Local.NearbyCollectionSummary] {
-        let dtos: DTO.NearbyCollectionsResponse = try await networkService.performSRRequest(
-            .nearbyCollections(
-                lat: request.latitude,
-                lng: request.longtitude,
-                radius: request.radius,
-                isMineOnly: request.isMineOnly,
-                isGuest: request.isGuest
-            )
-        )
-        return dtos.items.map {
-            Local.NearbyCollectionSummary.from(dto: $0)
-        }
     }
 
     func fetchCollectionComments(_ id: Int) async throws -> [Local.CollectionComment] {

@@ -82,13 +82,7 @@ enum SREndpoint: Endpoint {
 }
 
 extension SREndpoint {
-    var baseURL: String {
-        return "http://dev-api.saerok.app/api/v1/"
-    }
-    
-//    var baseURL: String {
-//        return "https://api.saerok.app/api/v1/"
-//    }
+    var baseURL: String { Bundle.main.baseURL }
     
     var path: String {
         switch self {

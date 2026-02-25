@@ -34,6 +34,7 @@ extension DIContainer {
         let birds: BirdsRepository
         let collections: CollectionRepository
         let community: CommunityRepository
+        let map: MapRepository
         let user: UserRepository
     }
     
@@ -41,12 +42,14 @@ extension DIContainer {
         let fieldGuide: FieldGuideInteractor
         let collection: CollectionInteractor
         let community: CommunityInteractor
+        let map: MapInteractor
         let user: UserInteractor
         
         nonisolated(unsafe) static let stub: Interactors = .init(
             fieldGuide: MockFieldGuideInteractorImpl(),
             collection: MockCollectionInteractorImpl(),
             community: MockCommunityInteractorImpl(),
+            map: MockMapInteractorImpl(),
             user: MockUserInteractorImpl()
         )
     }

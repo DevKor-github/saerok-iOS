@@ -12,7 +12,6 @@ protocol CollectionInteractor {
     func createCollection(_ draft: Local.CollectionDraft) async throws
     func deleteCollection(_ id: Int) async throws
     func editCollection(_ draft: Local.CollectionDraft) async throws
-    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary]
     func fetchComments(_ id: Int) async throws -> [Local.CollectionComment]
     func createComments(id: Int, _ content: String) async throws
     func deleteComment(collectionId: Int, commentId: Int) async throws
@@ -73,17 +72,6 @@ struct CollectionInteractorImpl: CollectionInteractor {
         
         let isBirdUpdated = draft.originalBirdId != draft.bird?.id
         try await repository.editCollection(id: id, isBirdUpdated: isBirdUpdated, draft)
-    }
-    
-    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] {
-        let request = Local.NearbyRequest(
-            latitude: lat,
-            longtitude: lng,
-            radius: rad,
-            isMineOnly: isMineOnly,
-            isGuest: isGuest
-        )
-        return try await repository.fetchNearbyCollections(request)
     }
     
     func fetchComments(_ id: Int) async throws -> [Local.CollectionComment] {
@@ -157,10 +145,8 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     
     func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary] { [] }
     
-    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] { [] }
-    
     func editCollection(_ draft: Local.CollectionDraft) async throws { }
-    
+
     func deleteCollection(_ id: Int) async throws { }
     
     func createCollection(_ draft: Local.CollectionDraft) async throws { }

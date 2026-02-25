@@ -30,8 +30,7 @@ struct FindPlaceView: View {
     @State private var showingSheet: Bool = false
     @FocusState private var isFocused: Bool
     
-    @StateObject private var mapController: MapController = .init(locationManager: LocationManager.shared)
-    
+    @State private var mapController: MapController = .init(locationManager: LocationManager.shared)
     @State private var searchDebounceTask: Task<Void, Never>?
     
     private var networkService: SRNetworkService { injected.networkService }

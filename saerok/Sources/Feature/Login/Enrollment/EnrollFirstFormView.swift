@@ -182,3 +182,8 @@ private extension EnrollView.Constants {
     static let fieldHorizontalPadding: CGFloat = 1
     static let horizontalTextPadding: CGFloat = 10
 }
+
+#Preview {
+    @Previewable @State var user: User = .init(nickname: "he")
+    EnrollView(user: $user)
+}

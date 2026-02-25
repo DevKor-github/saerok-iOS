@@ -1,5 +1,5 @@
 //
-//  AppRoute.swift
+//  AppCoordinator.swift
 //  saerok
 //
 //  Created by HanSeung on 1/12/26.
@@ -18,6 +18,7 @@ final class AppCoordinator: ObservableObject {
     lazy var fieldGuideViewModel = makeFieldGuideViewModel()
     lazy var collectionViewModel = makeCollectionViewModel()
     lazy var communityViewModel = makeCommunityViewModel()
+    lazy var mapViewModel = makeMapViewModel()
     lazy var myPageViewModel = makeMyPageViewModel()
     
     init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {
@@ -132,6 +133,13 @@ extension AppCoordinator {
             collectionInteractor: container.interactors.collection,
             mode: mode,
             bird: bird
+        )
+    }
+    
+    func makeMapViewModel() -> MapView.ViewModel {
+        .init(
+            mapInteractor: container.interactors.map,
+            appState: container.appState
         )
     }
 }

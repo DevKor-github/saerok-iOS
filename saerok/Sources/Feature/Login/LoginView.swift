@@ -16,9 +16,7 @@ enum LoginRoute: AppRoute {
 }
 
 struct LoginView: View {
-//    enum Route: Hashable {
-//        case enroll
-//    }
+    typealias Route = LoginRoute
     
     @Environment(\.injected) var injected
     @State var showingAlert: Bool = false
