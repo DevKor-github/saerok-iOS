@@ -5,7 +5,6 @@
 //  Created by HanSeung on 4/17/25.
 //
 
-
 protocol CollectionInteractor {
     func fetchMyCollections() async throws -> [Local.CollectionSummary]
     func fetchCollectionDetail(id: Int) async throws -> Local.CollectionDetail

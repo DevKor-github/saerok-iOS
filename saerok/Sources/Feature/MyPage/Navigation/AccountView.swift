@@ -5,7 +5,6 @@
 //  Created by HanSeung on 5/29/25.
 //
 
-
 import SwiftData
 import SwiftUI
 import KakaoSDKUser

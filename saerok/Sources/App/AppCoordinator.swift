@@ -142,4 +142,10 @@ extension AppCoordinator {
             appState: container.appState
         )
     }
+    
+    func makeEditProfileViewModel() -> EditProfileView.ViewModel {
+        .init(
+            interactor: container.interactors.user
+        )
+    }
 }

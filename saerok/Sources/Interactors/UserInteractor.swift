@@ -5,16 +5,16 @@
 //  Created by HanSeung on 8/7/25.
 //
 
-
-import UIKit
+import Foundation
 
 protocol UserInteractor {
     func getUser() async throws -> User
     func deleteUser() async throws
     func createAccount(nickname: String) async throws
     func deleteAccount() async throws
-    func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse
+    func updateProfileImage(_ image: Data) async throws -> DTO.MeResponse
     func updateNickname(_ nickname: String) async throws
+    func checkNicknameAvailability(_ nickname: String) async throws -> (Bool, String?)
     func deleteProfileImage() async throws
     func fetchNotifications() async throws -> [Local.Notification]
     func fetchNotificationSetting() async throws -> Local.NotificationSettings
@@ -63,7 +63,24 @@ struct UserInteractorImpl: UserInteractor {
         }
     }
     
-    func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
+//    func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
+//        guard let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image) else {
+//            throw UserInteractorError.invalidImageData
+//        }
+//        
+//        let presigned = try await repository.getProfilePresignedURL("image/jpeg")
+//        
+//        try await S3Uploader.uploadImage(to: presigned.presignedUrl, data: jpegData)
+//        
+//        let registerRequest = DTO.ProfileRegisterImageRequest(
+//            profileImageObjectKey: presigned.objectKey,
+//            profileImageContentType: "image/jpeg"
+//        )
+//        
+//        return try await repository.updateProfileImage(registerRequest)
+//    }
+    
+    func updateProfileImage(_ image: Data) async throws -> DTO.MeResponse {
         guard let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image) else {
             throw UserInteractorError.invalidImageData
         }
@@ -88,6 +105,12 @@ struct UserInteractorImpl: UserInteractor {
         try await repository.updateUser(to: user)
     }
     
+    func checkNicknameAvailability(_ nickname: String) async throws -> (Bool, String?) {
+        let result = try await repository.checkNicknameAvailability(nickname)
+        
+        return (result.isAvailable, result.reason)
+    }
+
     func deleteProfileImage() async throws {
         _ = try await repository.deleteProfileImage()
     }
@@ -154,6 +177,8 @@ struct UserInteractorImpl: UserInteractor {
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func checkNicknameAvailability(_ nickname: String) async throws -> (Bool, String?) { (false, nil) }
+    
     func registerDeviceToken(deviceID: String, fcmToken: String) async throws { }
     
     func getAnnouncements() async throws -> [DTO.Announcement] { [] }
@@ -188,7 +213,7 @@ struct MockUserInteractorImpl: UserInteractor {
 
     func fetchNotificationSetting() async throws -> Local.NotificationSettings { .init() }
     
-    func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
+    func updateProfileImage(_ image: Data) async throws -> DTO.MeResponse {
         .init(nickname: "", email: "", joinedDate: "", profileImageUrl: "")
     }
     

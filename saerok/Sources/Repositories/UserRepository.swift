@@ -14,6 +14,7 @@ protocol UserRepository {
     func getProfilePresignedURL(_ contentType: String) async throws -> DTO.PresignedURLResponse
     func updateProfileImage(_ request: DTO.ProfileRegisterImageRequest) async throws -> DTO.MeResponse
     func updateNickname(_ nickname: String) async throws
+    func checkNicknameAvailability(_ nickname: String) async throws -> DTO.CheckNicknameResponse
     func deleteProfileImage() async throws -> EmptyResponse
     func fetchNotifications() async throws -> DTO.NotificationResponse
     func fetchNotificationSetting(_ deviceID: String) async throws -> DTO.GetNotificationSettingsResponse
@@ -79,6 +80,14 @@ extension MainRepository: UserRepository {
     
     func updateNickname(_ nickname: String) async throws {
         let _: DTO.MeResponse = try await networkService.performSRRequest(.updateMe(nickname: nickname))
+    }
+    
+    func checkNicknameAvailability(_ nickname: String) async throws -> DTO.CheckNicknameResponse {
+        let result: DTO.CheckNicknameResponse = try await networkService.performSRRequest(
+            .checkNickname(nickname)
+        )
+        
+        return result
     }
     
     func deleteProfileImage() async throws -> EmptyResponse {

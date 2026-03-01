@@ -100,7 +100,7 @@ struct MyPageView: View {
                 case .notification:
                     NotificationSettingView()
                 case .editProfile:
-                    EditProfileView()
+                    EditProfileView(viewModel: coordinator.makeEditProfileViewModel())
                 case .board:
                     BoardView(viewModel: coordinator.makeBoardViewModel())
                 case .boardDetail(id: let id):
