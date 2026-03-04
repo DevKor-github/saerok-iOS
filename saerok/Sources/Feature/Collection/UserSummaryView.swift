@@ -89,7 +89,7 @@ private extension UserSummaryView {
                 .font(.SRFontSet.heavy)
                 .fontWeight(.semibold)
                 .foregroundStyle(.splash)
-            Text("종의 새가 새록에 담겨있어요")
+            Text("마리의 새가 기록됐어요.")
                 .font(.SRFontSet.caption1)
                 .foregroundStyle(.black)
         }

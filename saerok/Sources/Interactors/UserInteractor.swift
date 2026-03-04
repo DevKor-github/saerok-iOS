@@ -63,23 +63,6 @@ struct UserInteractorImpl: UserInteractor {
         }
     }
     
-//    func updateProfileImage(_ image: UIImage) async throws -> DTO.MeResponse {
-//        guard let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image) else {
-//            throw UserInteractorError.invalidImageData
-//        }
-//        
-//        let presigned = try await repository.getProfilePresignedURL("image/jpeg")
-//        
-//        try await S3Uploader.uploadImage(to: presigned.presignedUrl, data: jpegData)
-//        
-//        let registerRequest = DTO.ProfileRegisterImageRequest(
-//            profileImageObjectKey: presigned.objectKey,
-//            profileImageContentType: "image/jpeg"
-//        )
-//        
-//        return try await repository.updateProfileImage(registerRequest)
-//    }
-    
     func updateProfileImage(_ image: Data) async throws -> DTO.MeResponse {
         guard let jpegData = ImageUploadPreprocessor.prepareJPEGDataForUpload(from: image) else {
             throw UserInteractorError.invalidImageData
