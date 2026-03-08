@@ -13,7 +13,6 @@ import UIKit
 @MainActor
 final class PushNotificationManager: NSObject {
     static let shared = PushNotificationManager()
-    static private let registeredKey = "lastSyncedNotificationEnabled"
     
     var injected: DIContainer?
     
@@ -33,6 +32,11 @@ final class PushNotificationManager: NSObject {
         }
     }
     
+    func isDeniedNotificationPermission() async -> Bool {
+        let status = await checkNotificationAuthorization()
+        return status == .denied
+    }
+    
     func setAPNSToken(_ token: Data) {
         Messaging.messaging().apnsToken = token
     }
@@ -44,9 +48,15 @@ private extension PushNotificationManager {
         let status = await checkNotificationAuthorization()
         switch status {
         case .notDetermined:
-            try await requestAuthorization()
+            let granted = try await requestAuthorization()
+            if granted { application.registerForRemoteNotifications() }
+
+        case .authorized, .provisional, .ephemeral:
             application.registerForRemoteNotifications()
-        case .denied, .authorized, .provisional, .ephemeral: ()
+
+        case .denied:
+            break
+
         @unknown default:
             break
         }
@@ -57,9 +67,9 @@ private extension PushNotificationManager {
         return settings.authorizationStatus
     }
     
-    func requestAuthorization() async throws {
+    func requestAuthorization() async throws -> Bool {
         let options: UNAuthorizationOptions = [.alert, .badge, .sound]
-        let currentEnabled = try await UNUserNotificationCenter.current().requestAuthorization(options: options)
+        return try await UNUserNotificationCenter.current().requestAuthorization(options: options)
     }
 }
 
@@ -142,27 +152,16 @@ extension PushNotificationManager: @MainActor UNUserNotificationCenterDelegate {
 extension PushNotificationManager: @MainActor MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let fcmToken = fcmToken,
-              let interactor = injected?.interactors.user,
-              !isRegistered()
+              let interactor = injected?.interactors.user
         else { return }
         
         Task { @MainActor in
             do {
                 try await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
                 try await interactor.toggleAllNotificationSetting()
-                UserDefaults.standard.set(true, forKey: PushNotificationManager.registeredKey)
             } catch {
                 print(error.localizedDescription)
             }
-        }
-    }
-    
-    private func isRegistered() -> Bool {
-        if let result = UserDefaults.standard.object(forKey: PushNotificationManager.registeredKey) as? Bool {
-            return result
-        } else {
-            UserDefaults.standard.set(false, forKey: PushNotificationManager.registeredKey)
-            return false
         }
     }
 }

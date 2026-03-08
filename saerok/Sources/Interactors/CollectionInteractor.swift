@@ -53,11 +53,8 @@ struct CollectionInteractorImpl: CollectionInteractor {
         else { throw CollectionInteractorError.invalidImageData }
         
         let createResponse = try await repository.createCollection(draft.toDTO())
-        
         let presigned = try await repository.getPresignedURL(collectionId: createResponse.collectionId, contentType: "image/jpeg")
-        
         try await S3Uploader.uploadImage(to: presigned.presignedUrl, data: jpegData)
-        
         let registerRequest = DTO.RegisterImageRequest(objectKey: presigned.objectKey, contentType: "image/jpeg")
         let _ = try await repository.registerImageMetadata(collectionId: createResponse.collectionId, request: registerRequest)
     }
