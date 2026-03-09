@@ -15,7 +15,7 @@ final class AppCoordinator: ObservableObject {
     private let container: DIContainer
     @Published var path = NavigationPath()
     
-    lazy var fieldGuideViewModel = makeFieldGuideViewModel()
+    var fieldGuideViewModel = makeFieldGuideViewModel()
     lazy var collectionViewModel = makeCollectionViewModel()
     lazy var communityViewModel = makeCommunityViewModel()
     lazy var mapViewModel = makeMapViewModel()
