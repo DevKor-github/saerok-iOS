@@ -15,7 +15,7 @@ final class Provider {
     
     func request<T: Decodable>(_ request: URLRequest) async throws -> T {
         #if DEBUG
-//        logRequest(request)
+        logRequest(request)
         #endif
         
         let (data, response) = try await defaultURLSession.data(for: request)
@@ -24,7 +24,7 @@ final class Provider {
         }
         
         #if DEBUG
-//        logResponse(data: data, response: httpResponse)
+        logResponse(data: data, response: httpResponse)
         #endif
         
         guard 200..<300 ~= httpResponse.statusCode else {

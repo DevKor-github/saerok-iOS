@@ -12,7 +12,7 @@ protocol CollectionInteractor {
     func deleteCollection(_ id: Int) async throws
     func editCollection(_ draft: Local.CollectionDraft) async throws
     func fetchComments(_ id: Int) async throws -> [Local.CollectionComment]
-    func createComments(id: Int, _ content: String) async throws
+    func createComments(id: Int, parentId: Int?, _ content: String) async throws
     func deleteComment(collectionId: Int, commentId: Int) async throws
     func toggleLike(_ id: Int) async throws -> Bool
     func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary]
@@ -74,8 +74,8 @@ struct CollectionInteractorImpl: CollectionInteractor {
         return try await repository.fetchCollectionComments(id)
     }
     
-    func createComments(id: Int, _ content: String) async throws {
-        try await repository.createCollectionComment(id: id, content)
+    func createComments(id: Int, parentId: Int? = nil, _ content: String) async throws {
+        try await repository.createCollectionComment(id: id, parentId: parentId, content)
     }
     
     func deleteComment(collectionId: Int, commentId: Int) async throws {
@@ -159,8 +159,7 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     
     func fetchComments(_ id: Int) async throws -> [Local.CollectionComment] { [] }
     
-    func createComments(id: Int, _ content: String) async throws { }
-    
+    func createComments(id: Int, parentId: Int?, _ content: String) async throws { }
     func deleteComment(collectionId: Int, commentId: Int) async throws { }
     
     func toggleLike(_ id: Int) async throws -> Bool { true }

@@ -5,18 +5,18 @@
 //  Created by HanSeung on 7/14/25.
 //
 
-
 import SwiftUI
 
 struct CollectionCommentInputBar: View {
-    @Environment(\.injected) var injected
     @Binding var text: String
-    @FocusState var isFocused: Bool
+    var selectedNickname: String?
     let nickname: String
-    let onSubmit: (String) async -> Void
+    let onSubmit: () async -> Void
+    
+    @FocusState var isFocused: Bool
     @State var keyboard: KeyboardObserver
 
-    private var isGuest: Bool { injected.appState[\.authStatus] == .guest }
+    var isGuest: Bool 
     private var isInputValid: Bool {
         !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -27,20 +27,26 @@ struct CollectionCommentInputBar: View {
                 .frame(height: 1)
 
             HStack(alignment: .bottom) {
-                TextField(isGuest ? "로그인하고 댓글을 남겨보세요." : "\(nickname)에게 댓글 남기기", text: $text, axis: .vertical)
-                    .focused($isFocused)
-                    .font(.SRFontSet.body2)
-                    .lineLimit(4)
-                    .padding(.vertical, 16)
+                TextField(
+                    isGuest
+                    ? "로그인하고 댓글을 남겨보세요."
+                    : placeholderText(),
+                    text: $text,
+                    axis: .vertical
+                )
+                .focused($isFocused)
+                .font(.SRFontSet.body2)
+                .lineLimit(4)
+                .padding(.vertical, 16)
                 
                 Spacer()
                 
-                Button(action: {
+                Button {
                     Task {
-                        await onSubmit(text)
+                        await onSubmit()
                         text = .init()
                     }
-                }) {
+                } label: {
                     Image.SRIconSet.upperArrow
                         .frame(.defaultIconSizeLarge)
                         .padding(8)
@@ -64,6 +70,18 @@ struct CollectionCommentInputBar: View {
         .padding(.bottom, keyboard.keyboardHeight)
         .animation(.smooth(duration: 0.25), value: keyboard.keyboardHeight)
         .disabled(isGuest)
+        .onChange(of: selectedNickname) { old, new in
+            guard let _ = new else { return }
+            isFocused = true
+        }
+    }
+    
+    func placeholderText() -> String {
+        if let selectedNickname {
+            return "\(selectedNickname)에게 답글 남기기"
+        } else {
+            return "\(nickname)에게 댓글 남기기"
+        }
     }
 }
 

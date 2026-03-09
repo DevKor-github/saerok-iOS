@@ -9,6 +9,7 @@
 extension DTO {
     struct CreateCommentRequest: Encodable {
         let content: String
+        let parentId: Int?
     }
 
     struct CreateCommentResponse: Decodable {

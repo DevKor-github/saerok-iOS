@@ -30,6 +30,7 @@ extension CollectionDetailView {
         var selectedPreview: Local.BirdSuggestion?
         var selectedAdopting: Local.BirdSuggestion?
         var opinionFlow: OpinionFlow?
+        var isGuest: Bool { appState[\.authStatus] == .guest }
         
         // MARK: Dependencies
         private let appState: Store<AppState>
@@ -94,9 +95,9 @@ extension CollectionDetailView {
             }
         }
 
-        func postComment(text: String) async {
+        func postComment(text: String, parentId: Int?) async {
             do {
-                try await collectionInteractor.createComments(id: collectionID, text)
+                try await collectionInteractor.createComments(id: collectionID, parentId: parentId, text)
                 comments = try await collectionInteractor.fetchComments(collectionID)
                 collection.commentCount += 1
             } catch {
@@ -111,6 +112,13 @@ extension CollectionDetailView {
                 collection.commentCount -= 1
             } catch {
             }
+        }
+        
+        func reportComment(id: Int) async {
+            try? await collectionInteractor.reportComment(
+                collecionId: collectionID,
+                commentId: id
+            )
         }
 
         func toggleLike() async {

@@ -28,6 +28,7 @@ struct CollectionDetailView: View {
         var showLikerSheet: Bool = false
         var showFullImage = false
         var text: String = ""
+        var selectedComment: Local.CollectionComment?
         var collectionImage: UIImage?
     }
         
@@ -134,10 +135,12 @@ private extension CollectionDetailView {
         .background(Color.srLightGray)
         .bottomSheet(isShowing: $uiState.showCommentSheet, isFocused: _isFocused, keyboard: keyboard) {
             CollectionCommentSheet(
+                viewModel: viewModel,
                 collectionId: viewModel.collectionID,
+                collectionUserId: viewModel.collection.user.id,
                 isMyCollection: viewModel.collection.isMine,
-                nickname: viewModel.collection.user.nickname,
                 comments: viewModel.comments,
+                selectedComment: $uiState.selectedComment,
                 onTap: navigateToOther(_:),
                 onDelete: viewModel.deleteComment,
                 onDismiss: { uiState.showCommentSheet.toggle() },
@@ -151,14 +154,23 @@ private extension CollectionDetailView {
         }
         .onTapGesture {
             isFocused = false
+            uiState.selectedComment = nil
         }
         .commentInputOverlay(isPresented: $uiState.showCommentSheet) {
             CollectionCommentInputBar(
                 text: $uiState.text,
-                isFocused: _isFocused,
+                selectedNickname: uiState.selectedComment?.user.nickname,
                 nickname: viewModel.collection.user.nickname,
-                onSubmit: viewModel.postComment,
-                keyboard: keyboard
+                onSubmit: {
+                    await viewModel.postComment(
+                        text: uiState.text,
+                        parentId: uiState.selectedComment?.id
+                    )
+                    uiState.selectedComment = nil
+                },
+                isFocused: _isFocused,
+                keyboard: keyboard,
+                isGuest: viewModel.isGuest
             )
         }
         .bottomSheet(isShowing: $uiState.showSuggestionSheet, keyboard: keyboard, isExtendable: false) {

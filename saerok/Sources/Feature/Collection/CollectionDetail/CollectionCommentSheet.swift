@@ -5,45 +5,37 @@
 //  Created by HanSeung on 7/14/25.
 //
 
-
 import SwiftUI
 
 struct CollectionCommentSheet: View {
+    @Bindable var viewModel: CollectionDetailView.ViewModel
     let collectionId: Int
+    let collectionUserId: Int
     let isMyCollection: Bool
-    let nickname: String
     let comments: [Local.CollectionComment]
+    @Binding var selectedComment: Local.CollectionComment?
+    
     let onTap: (_ userId: Int) -> Void
     let onDelete: (Int) async -> Void
     let onDismiss: () -> Void
-
+    
     @State var showReportCommentPopup: Bool = false
-    @State private var selectedCommentId: Int? = nil
-
+    @State var reportId: Int?
+    
     @Environment(\.injected) private var injected: DIContainer
-
+    
     var body: some View {
         VStack(spacing: 20) {
             header
-
             if comments.isEmpty {
                 emptyView
             } else {
                 ScrollView {
                     VStack(spacing: 7) {
                         ForEach(comments) { item in
-                            CollectionCommentCell(
-                                isMyCollection: isMyCollection,
-                                item: item,
-                                onTap: { onTap(item.user.id) },
-                                onDelete: onDelete,
-                                onReport: {
-                                    selectedCommentId = item.id
-                                    showReportCommentPopup.toggle()
-                                }
-                            )
+                            commentThread(for: item)
                         }
-
+                        
                         Color.clear
                             .frame(height: UIScreen.main.bounds.height * 0.5)
                     }
@@ -55,7 +47,7 @@ struct CollectionCommentSheet: View {
             commentReportAlertView
         }
     }
-
+    
     private var header: some View {
         HStack {
             Text("댓글")
@@ -73,7 +65,7 @@ struct CollectionCommentSheet: View {
         .font(.SRFontSet.subtitle2)
         .padding(.horizontal, SRDesignConstant.defaultPadding)
     }
-
+    
     private var emptyView: some View {
         VStack(spacing: 32) {
             VStack(spacing: 5) {
@@ -98,10 +90,7 @@ struct CollectionCommentSheet: View {
             message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
             leading: .init(
                 title: "신고하기",
-                action: {
-                    test()
-                    showReportCommentPopup = false
-                },
+                action: reportComment,
                 style: .delete
             ),
             trailing: .init(
@@ -113,21 +102,64 @@ struct CollectionCommentSheet: View {
         )
     }
     
-    func test() {
-        if let id = selectedCommentId {
-            Task {
-                do {
-                    try await injected.interactors.collection.reportComment(
-                        collecionId: collectionId,
-                        commentId: id
+    func reportComment() {
+        guard let reportId = reportId else { return }
+        
+        Task {
+            await viewModel.reportComment(id: reportId)
+            self.reportId = nil
+            showReportCommentPopup = false
+        }
+    }
+    
+    private func commentThread(for item: Local.CollectionComment) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            parentCommentView(item)
+            repliesView(item)
+        }
+    }
+    
+    private func parentCommentView(_ item: Local.CollectionComment) -> some View {
+        CollectionCommentCell(
+            collectionUserId: collectionUserId,
+            isMyCollection: isMyCollection,
+            isReply: false,
+            isSelected: selectedComment == item,
+            item: item,
+            onTap: { onTap(item.user.id) },
+            onReply: { selectedComment = item },
+            onDelete: onDelete,
+            onReport: {
+                reportId = item.id
+                showReportCommentPopup.toggle()
+            }
+        )
+        .contentShape(Rectangle())
+    }
+    
+    @ViewBuilder
+    private func repliesView(_ item: Local.CollectionComment) -> some View {
+        if let replies = item.replies, !replies.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(replies) { reply in
+                    CollectionCommentCell(
+                        collectionUserId: collectionUserId,
+                        isMyCollection: isMyCollection,
+                        isReply: true,
+                        isSelected: false,
+                        item: reply,
+                        onTap: { onTap(reply.user.id) },
+                        onReply: {},
+                        onDelete: onDelete,
+                        onReport: {
+                            reportId = item.id
+                            showReportCommentPopup.toggle()
+                        }
                     )
-                    selectedCommentId = nil
-                } catch {
-                    print(error.localizedDescription)
                 }
-                
             }
         }
     }
 }
+
 
