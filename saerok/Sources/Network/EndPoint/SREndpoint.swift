@@ -13,6 +13,10 @@ enum SREndpoint: Endpoint {
     case fullSync
     case birdChanges(since: Date)
     
+    // MARK: Bookmark API
+    case myBookmarks
+    case toggleBookmark(birdId: Int)
+    
     // MARK: Collections API
     case myCollections
     case collectionDetail(collectionId: Int)
@@ -38,10 +42,6 @@ enum SREndpoint: Endpoint {
     case toggleSuggestionDisagree(collectionId: Int, birdId: Int)
     case resetSuggestion(collectionId: Int)
     
-    // MARK: Bookmark API
-    case myBookmarks
-    case toggleBookmark(birdId: Int)
-    
     // MARK: Community API
     case communityMain
     case communityPendingBirdId(page: Int? = nil, size: Int? = nil)
@@ -57,6 +57,7 @@ enum SREndpoint: Endpoint {
     case refreshToken(refreshToken: String)
     
     // MARK: User API
+    case signUp_complete(body: DTO.SignUpRequest)
     case checkNickname(_ nickname: String)
     case me
     case deleteMe
@@ -86,25 +87,23 @@ extension SREndpoint {
     
     var path: String {
         switch self {
+            
+        // MARK: Birds API
         case .fullSync: "birds/full-sync"
         case .birdChanges: "birds/changes"
+            
+        // MARK: Bookmark API
+        case .toggleBookmark(let ID): "birds/bookmarks/\(ID)/toggle"
+        case .myBookmarks: "birds/bookmarks/"
+            
+        // MARK: Collections API
         case .myCollections: "collections/me"
         case .collectionDetail(let collectionID), .deleteCollection(let collectionID): "collections/\(collectionID)"
+        case .nearbyCollections: "collections/nearby"
         case .createCollection: "collections/"
         case .getPresignedURL(let collectionID, _): "collections/\(collectionID)/images/presign"
         case .registerUploadedImage(let collectionID, _): "collections/\(collectionID)/images"
         case .editCollection(let collectionID, _): "collections/\(collectionID)/edit"
-        case .nearbyCollections: "collections/nearby"
-        case .appleLogin: "auth/apple/login"
-        case .kakaoLogin: "auth/kakao/login"
-        case .refreshToken: "auth/refresh"
-        case .checkNickname: "user/check-nickname"
-        case .me, .updateMe, .deleteMe: "user/me"
-        case .getProfilePresignedURL: "user/me/profile-image/presign"
-        case .deleteProfileImage: "user/me/profile-image"
-        case .profile(let userId): "profile/\(userId)"
-        case .toggleBookmark(let ID): "birds/bookmarks/\(ID)/toggle"
-        case .myBookmarks: "birds/bookmarks/"
         case .collectionComments(let collectionID): "collections/\(collectionID)/comments"
         case .createComment(let collectionID, _): "collections/\(collectionID)/comments"
         case .likeCollection(collectionId: let collectionID): "collections/\(collectionID)/like"
@@ -112,12 +111,29 @@ extension SREndpoint {
         case .reportCollection(let collectionId): "collections/\(collectionId)/report"
         case .reportComment(let collectionId, let commentId): "collections/\(collectionId)/comments/\(commentId)/report"
         case .collectionLikeUsers(let collectionId): "collections/\(collectionId)/like/users"
+            
+        // MARK: Bird ID Suggestions API
         case .getSuggestions(let collectionId): "collections/\(collectionId)/bird-id-suggestions"
         case .suggestBird(let collectionId, _): "collections/\(collectionId)/bird-id-suggestions"
         case .toggleSuggestionAgree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/agree"
         case .toggleSuggestionDisagree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/disagree"
         case .adoptSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/adopt"
         case .resetSuggestion(collectionId: let collectionId): "/collections/\(collectionId)/bird-id-suggestions/all"
+            
+        // MARK: Auth API
+        case .appleLogin: "auth/apple/login"
+        case .kakaoLogin: "auth/kakao/login"
+        case .refreshToken: "auth/refresh"
+            
+        // MARK: User API
+        case .signUp_complete: "user/signup-complete"
+        case .checkNickname: "user/check-nickname"
+        case .me, .updateMe, .deleteMe: "user/me"
+        case .getProfilePresignedURL: "user/me/profile-image/presign"
+        case .deleteProfileImage: "user/me/profile-image"
+        case .profile(let userId): "profile/\(userId)"
+            
+        // MARK: Notifications API
         case .registerDeviceToken: "notifications/tokens"
         case .getNotificationSettings: "notifications/settings"
         case .toggleNotificationSetting: "notifications/settings/toggle"
@@ -127,6 +143,8 @@ extension SREndpoint {
         case .deleteAllNotifications: "notifications/all"
         case .deleteNotification(let notificationId): "notifications/\(notificationId)"
         case .notificationsUnreadCount: "notifications/unread-count"
+            
+        // MARK: Community API
         case .communityMain: "community/main"
         case .communityPendingBirdId: "community/pending-bird-id"
         case .communityPopular: "community/popular"
@@ -134,6 +152,8 @@ extension SREndpoint {
         case .communitySearch: "community/search"
         case .communitySearchUsers: "community/search/users"
         case .communitySearchCollections: "community/search/collections"
+        
+        // MARK: Announcements API
         case .announcements: "announcements"
         case .announcementDetail(id: let id): "announcements/\(id)"
         }
@@ -142,7 +162,7 @@ extension SREndpoint {
     var method: String {
         switch self {
         case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections, .announcements, .announcementDetail: "GET"
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment: "POST"
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment, .signUp_complete: "POST"
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: "PATCH"
         case .deleteMe, .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification, .deleteProfileImage: "DELETE"
         }
@@ -153,7 +173,7 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete:
             return true
         case .getSuggestions:
             return TokenManager.shared.getAccessToken() != nil
@@ -172,7 +192,7 @@ extension SREndpoint {
         }
         
         switch self {
-        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBird, .getProfilePresignedURL, .registerDeviceToken, .toggleNotificationSetting:
+        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBird, .getProfilePresignedURL, .registerDeviceToken, .toggleNotificationSetting, .signUp_complete:
             headers["Content-Type"] = "application/json"
         default:
             break
@@ -222,6 +242,8 @@ extension SREndpoint {
                return try? JSONEncoder().encode(body)
         case .toggleNotificationSetting(let body):
                return try? JSONEncoder().encode(body)
+        case .signUp_complete(let signupRequest):
+            return try? JSONEncoder().encode(signupRequest)
         default:
             return nil
         }

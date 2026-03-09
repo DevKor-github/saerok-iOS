@@ -8,9 +8,9 @@
 import Foundation
 
 protocol UserInteractor {
+    func signupComplete(nickname: String, source: SignUpSource) async throws
     func getUser() async throws -> User
     func deleteUser() async throws
-    func createAccount(nickname: String) async throws
     func deleteAccount() async throws
     func updateProfileImage(_ image: Data) async throws -> DTO.MeResponse
     func updateNickname(_ nickname: String) async throws
@@ -43,16 +43,16 @@ struct UserInteractorImpl: UserInteractor {
     
     private var deviceID: String { TokenManager.shared.getDeviceId() }
     
+    func signupComplete(nickname: String, source: SignUpSource) async throws {
+        try await repository.signUpComplete(nickname: nickname, source: source)
+    }
+    
     func getUser() async throws -> User {
         try await repository.getMeResponse()
     }
     
     func deleteUser() async throws {
         try await repository.deleteUser(nil)
-    }
-    
-    func createAccount(nickname: String) async throws {
-        try await repository.createNewUser(nickname: nickname)
     }
     
     func deleteAccount() async throws {
@@ -160,6 +160,8 @@ struct UserInteractorImpl: UserInteractor {
 }
 
 struct MockUserInteractorImpl: UserInteractor {
+    func signupComplete(nickname: String, source: SignUpSource) async throws { }
+    
     func checkNicknameAvailability(_ nickname: String) async throws -> (Bool, String?) { (false, nil) }
     
     func registerDeviceToken(deviceID: String, fcmToken: String) async throws { }

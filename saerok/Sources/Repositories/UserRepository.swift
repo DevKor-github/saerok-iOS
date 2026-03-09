@@ -9,6 +9,7 @@ import SwiftData
 import Foundation
 
 protocol UserRepository {
+    func signUpComplete(nickname: String, source: SignUpSource) async throws
     func createNewUser(nickname: String) async throws
     func deleteAccount() async throws
     func getProfilePresignedURL(_ contentType: String) async throws -> DTO.PresignedURLResponse
@@ -35,6 +36,18 @@ protocol UserRepository {
 }
 
 extension MainRepository: UserRepository {
+    func signUpComplete(nickname: String, source: SignUpSource) async throws {
+        let _: EmptyResponse = try await networkService.performSRRequest(
+            .signUp_complete(body: .init(nickname: nickname, signupSource: source))
+        )
+        let me: DTO.MeResponse = try await networkService.performSRRequest(
+            .me
+        )
+        let user = User(dto: me)
+        modelContext.insert(user)
+        try modelContext.save()
+    }
+    
     func getMeResponse() async throws -> User {
         let userDTO: DTO.MeResponse = try await networkService.performSRRequest(.me)
 

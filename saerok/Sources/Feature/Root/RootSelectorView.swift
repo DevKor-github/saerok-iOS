@@ -29,7 +29,6 @@ struct RootSelectorView: View {
                 NetworkAlertView()
             }
         }
-        .ignoresSafeArea()
         .animation(.spring(), value: networkMonitor.isConnected)
         .onReceive(authStatusUpdate) { authStatus = $0 }
         .onChange(of: scenePhase) { before, after in

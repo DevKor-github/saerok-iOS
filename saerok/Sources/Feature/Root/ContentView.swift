@@ -5,12 +5,10 @@
 //  Created by HanSeung on 3/18/25.
 //
 
-
 import Combine
 import SwiftUI
 
 struct ContentView: View {
-    // MARK: View State
     @State private var selectedTab: TabbedItems = SRConstant.mainTab
     
     // MARK: Dependencies
@@ -23,6 +21,9 @@ struct ContentView: View {
                 selectedTab = $0
             }
             .onAppear(perform: configureNavigationBar)
+            .onAppear {
+                let _ = coordinator.fieldGuideViewModel // lazy 강제초기화
+            }
     }
     
     private var content: some View {

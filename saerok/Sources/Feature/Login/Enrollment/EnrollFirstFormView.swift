@@ -5,7 +5,6 @@
 //  Created by HanSeung on 5/19/25.
 //
 
-
 import SwiftData
 import SwiftUI
 
@@ -30,7 +29,9 @@ extension EnrollView {
         
         @State private var nicknameStatus: NicknameStatus = .empty
         @State private var enrollStatus: EnrollStatus = .editing
+        @State private var signupSource: SignUpSource?
         @State private var showstermSheet: Bool = false
+        @State private var showsSourceSheet: Bool = false
         
         @FocusState private var isFocused: Bool
         @Binding var user: User
@@ -40,6 +41,7 @@ extension EnrollView {
                 nicknameSection
                 Spacer()
                 nextButtonSection
+                    .safeAreaPadding(.bottom)
             }
             .onChange(of: user.nickname) { _, newValue in
                 updateNicknameStatus(newValue)
@@ -49,13 +51,26 @@ extension EnrollView {
                     onDismiss: {
                         showstermSheet.toggle()
                     },
-                    nextButtonTapped: enrollButtonTapped,
+                    nextButtonTapped: {
+                        showstermSheet.toggle()
+                        showsSourceSheet.toggle()
+                    },
                     enrollStatus: $enrollStatus)
+            }
+            .fullScreenCover(isPresented: $showsSourceSheet) {
+                SourceSheet(
+                    nextButtonTapped: {
+                        try? await injected.interactors.user.signupComplete(
+                            nickname: user.nickname,
+                            source: signupSource ?? .etc
+                        )
+                    },
+                    singupSource: $signupSource
+                )
             }
         }
         
         // MARK: - Subviews
-        
         private var nicknameSection: some View {
             VStack(alignment: .leading, spacing: 7) {
                 Text("닉네임 입력(필수)")
@@ -114,7 +129,10 @@ extension EnrollView {
         private var nextButtonSection: some View {
             VStack {
                 Spacer()
-                Button(action: { showstermSheet.toggle() }) {
+                Button(action: {
+                    isFocused = false
+                    showstermSheet.toggle()
+                }) {
                     Text("다음")
                 }
                 .buttonStyle(.primary)
@@ -124,13 +142,8 @@ extension EnrollView {
         
         // MARK: - Button Actions
         
-        private func enrollButtonTapped() {
-            Task {
-                enrollStatus = .loading
-                try await Task.sleep(for: .seconds(1))
-                try await injected.interactors.user.createAccount(nickname: user.nickname)
-                enrollStatus = .editing
-            }
+        private func termsNextButtonTapped() {
+            showsSourceSheet.toggle()
         }
         
         private func nicknameCheckButtonTapped() {
@@ -174,16 +187,10 @@ extension EnrollView {
 }
 
 // MARK: - Constants
-
 private extension EnrollView.Constants {
     static let nicknameFormHeight: CGFloat = 56
     static let captionTopPadding: CGFloat = 48
     static let captionLeadingPadding: CGFloat = 8
     static let fieldHorizontalPadding: CGFloat = 1
     static let horizontalTextPadding: CGFloat = 10
-}
-
-#Preview {
-    @Previewable @State var user: User = .init(nickname: "he")
-    EnrollView(user: $user)
 }

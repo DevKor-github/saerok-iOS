@@ -16,21 +16,17 @@ struct EnrollView: View {
     var body: some View {
         VStack(alignment: .leading) {
             navigationBar
-            Group {
+            VStack(alignment: .leading, spacing: 0) {
                 headerSection
                 Rectangle().fill(.clear)
                     .frame(height: 40)
                 EnrollFirstFormView(user: $user)
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
-            Spacer()
         }
-        .padding(.vertical, 43)
-        .regainSwipeBack()
     }
     
     // MARK: - Subviews
-    
     private var navigationBar: some View {
         NavigationBar(leading: {
             Button(action: handleBackButton) {

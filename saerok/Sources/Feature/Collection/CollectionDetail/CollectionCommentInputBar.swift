@@ -45,6 +45,7 @@ struct CollectionCommentInputBar: View {
                     Task {
                         await onSubmit()
                         text = .init()
+                        isFocused.toggle()
                     }
                 } label: {
                     Image.SRIconSet.upperArrow

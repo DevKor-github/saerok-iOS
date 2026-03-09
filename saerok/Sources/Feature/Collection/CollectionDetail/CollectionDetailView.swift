@@ -198,6 +198,11 @@ private extension CollectionDetailView {
             isPresented: $uiState.showFullImage,
             image: uiState.collectionImage,
         )
+        .onChange(of: uiState.showCommentSheet) { _, new in
+            if new == false {
+                uiState.selectedComment = nil
+            }
+        }
     }
     
     var navigationBar: some View {
