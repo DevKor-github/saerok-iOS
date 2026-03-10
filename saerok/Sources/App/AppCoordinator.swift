@@ -148,4 +148,11 @@ extension AppCoordinator {
             interactor: container.interactors.user
         )
     }
+    
+    func makeCollectionLikerSheetViewModel(_ id: Int) -> CollectionLikerSheet.ViewModel {
+        .init(
+            collectionID: id,
+            interactor: container.interactors.collection
+        )
+    }
 }

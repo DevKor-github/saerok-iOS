@@ -54,6 +54,8 @@ extension Image {
         case bell
         case bellOn
         case locker
+        case lockFilled
+        case unlock
         case info
         case login
         case logout
@@ -207,6 +209,8 @@ extension Image.SRIconSet {
         case .bellOn: return Image(.bellOn)
         case .info: return Image(.info)
         case .locker: return Image(.locke)
+        case .unlock: return Image(.unlock)
+        case .lockFilled: return Image(.lockFilled)
         case .jongchuMini: return Image(.jongchuMini)
         case .board: return Image(.board)
         case .heart: return Image(.heart)

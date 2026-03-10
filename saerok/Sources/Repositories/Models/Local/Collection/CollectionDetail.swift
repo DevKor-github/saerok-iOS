@@ -14,6 +14,7 @@ extension Local {
         let id: Int
         let imageURL: String
         let discoveredDate: Date
+        let uploadDate: Date
         let coordinate: (latitude: Double, longitude: Double)
         let address: String
         let locationAlias: String
@@ -67,6 +68,7 @@ extension Local.CollectionDetail {
             id: dto.collectionId,
             imageURL: dto.imageUrl ?? "",
             discoveredDate: formatter.date(from: dto.discoveredDate ?? "2025-06-19") ?? .now,
+            uploadDate: dto.createdAt ,
             coordinate: (dto.latitude, dto.longitude),
             address: dto.address ?? "",
             locationAlias: dto.locationAlias ?? "",
@@ -94,6 +96,7 @@ extension Local.CollectionDetail {
             id: 1,
             imageURL: "",
             discoveredDate: Date(timeIntervalSince1970: 1_710_000_000),
+            uploadDate: .now,
             coordinate: (latitude: 37.5665, longitude: 126.9780),
             address: "",
             locationAlias: "",

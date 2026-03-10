@@ -17,7 +17,8 @@ enum CollectionDetailRoute: AppRoute {
 
 struct CollectionDetailView: View {
     typealias Route = CollectionDetailRoute
-    
+    private let variant = ABTestManager.shared.interactionZoneVariant
+
     struct CollectionUIState: Equatable {
         var showPopup: Bool = false
         var showSuggestPopup: Bool = false
@@ -31,28 +32,27 @@ struct CollectionDetailView: View {
         var selectedComment: Local.CollectionComment?
         var collectionImage: UIImage?
     }
-        
+    
     // MARK:  View State
     @State var viewModel: ViewModel
     @State private var uiState = CollectionUIState()
     @State private var error: Error? = nil
     @FocusState private var isFocused
     @State private var keyboard = KeyboardObserver()
-    
-    // MARK: - Environment
-    @Environment(\.injected) private var injected: DIContainer
+        
+    // MARK: Environment
     @EnvironmentObject private var coordinator: AppCoordinator
     
-    // MARK: - Init
+    // MARK: Init
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
     
-    // MARK: - Body
+    // MARK: Body
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             content
-
+            
             CollectionPopupLayer(
                 showPopup: $uiState.showPopup,
                 showSuggestPopup: $uiState.showSuggestPopup,
@@ -62,8 +62,12 @@ struct CollectionDetailView: View {
                 suggestAlertView: suggestAlertView
             )
             
+            if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
+                interactionZone
+            }
+            
             shareSheetSection
-
+            
             if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
                 shareButton
             }
@@ -125,7 +129,7 @@ private extension CollectionDetailView {
                         .offset(y: -20)
                     
                     Color.clear
-                        .frame(height: 40)
+                        .frame(height: 160)
                 }
                 
                 Spacer()
@@ -141,14 +145,14 @@ private extension CollectionDetailView {
                 isMyCollection: viewModel.collection.isMine,
                 comments: viewModel.comments,
                 selectedComment: $uiState.selectedComment,
-                onTap: navigateToOther(_:),
+                onTap: { userId in coordinator.push(Route.other(userId)) },
                 onDelete: viewModel.deleteComment,
                 onDismiss: { uiState.showCommentSheet.toggle() },
             )
         }
         .sheet(isPresented: $uiState.showLikerSheet) {
             CollectionLikerSheet(
-                viewModel: .init(collectionID: viewModel.collectionID, interactor: injected.interactors.collection),
+                viewModel: coordinator.makeCollectionLikerSheetViewModel(viewModel.collectionID),
                 onDismiss: { uiState.showLikerSheet.toggle() }
             )
         }
@@ -208,7 +212,6 @@ private extension CollectionDetailView {
     var navigationBar: some View {
         NavigationBar(
             leading: { leadingButton },
-            trailing: { trailingProfileImage },
             backgroundColor: .clear
         )
         .padding(.top, 60)
@@ -222,42 +225,6 @@ private extension CollectionDetailView {
                     .frame(.defaultIconSize)
             }
             .srStyled(.iconButton)
-        }
-    }
-    
-    @ViewBuilder
-    var trailingProfileImage: some View {
-        if !viewModel.collection.isMine {
-            Button {
-                navigateToOther(viewModel.collection.user.id)
-            } label: {
-                HStack {
-                    ReactiveAsyncImage(
-                        url: viewModel.collection.user.profileImageUrl,
-                        scale: .small,
-                        size: .init(width: 25, height: 25),
-                        downsampling: true
-                    )
-                    .frame(width: 25, height: 25)
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .inset(by: 0.8)
-                            .stroke(.srLightGray, lineWidth: 2)
-                    )
-                    .id(viewModel.collection.id)
-                    
-                    Text(viewModel.collection.user.nickname)
-                        .font(.SRFontSet.body4)
-                }
-                .padding(.vertical, 7)
-                .padding(.leading, 10)
-                .padding(.trailing, 12)
-                .background(Color.glassWhite)
-                .clipShape(RoundedRectangle(cornerRadius: .infinity))
-            }
-        } else {
-            EmptyView()
         }
     }
     
@@ -288,18 +255,6 @@ private extension CollectionDetailView {
             collection: viewModel.collection,
         ) { action in
             switch action {
-            case .likeToggle:
-                Task {
-                    HapticManager.shared.trigger(.light)
-                    await viewModel.toggleLike()
-                }
-        
-            case .likeCountTap:
-                uiState.showLikerSheet.toggle()
-        
-            case .commentTap:
-                uiState.showCommentSheet.toggle()
-                
             case .reportTap:
                 uiState.showPopup.toggle()
                 
@@ -312,8 +267,27 @@ private extension CollectionDetailView {
                 
             case .navigateToMap:
                 viewModel.navigateToMap()
+                
+            case .navigateToOther(let userId):
+                coordinator.push(Route.other(userId))
             }
         }
+    }
+    
+    private var interactionZone: some View {
+        InteractionZone(
+            variant: variant,
+            collection: viewModel.collection,
+            onLikeTap: {
+                Task {
+                    HapticManager.shared.trigger(.light)
+                    await viewModel.toggleLike()
+                }
+            },
+            onLikeCountTap: { uiState.showLikerSheet.toggle() },
+            onCommentTap: {uiState.showCommentSheet.toggle() }
+        )
+        .frame(maxWidth: .infinity, alignment: variant == .a ? .bottom : .bottomTrailing)
     }
     
     @ViewBuilder
@@ -335,7 +309,8 @@ private extension CollectionDetailView {
             Button(action: { uiState.showShareSheet.toggle() }) {
                 Image.SRIconSet.airplane
                     .frame(.floatingButton)
-                    .padding(.horizontal, SRDesignConstant.defaultPadding)
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 6)
             }
         } else {
             EmptyView()
@@ -447,10 +422,6 @@ private extension CollectionDetailView {
         )
     }
     
-    func navigateToOther(_ userId: Int) {
-        coordinator.push(Route.other(userId))
-    }
-    
     func downloadImage(from urlString: String) {
         guard let url = URL(string: urlString) else { return }
         
@@ -493,7 +464,7 @@ struct CollectionPopupLayer: View {
     let alertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
     let adoptView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
     let suggestAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
-
+    
     var body: some View {
         EmptyView()
             .customPopup(isPresented: $showPopup) { alertView }

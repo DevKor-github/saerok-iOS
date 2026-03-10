@@ -13,6 +13,7 @@ extension DTO {
         let collectionId: Int
         let imageUrl: String?
         let discoveredDate: String?
+        let createdAt: Date
         let latitude: Double
         let longitude: Double
         let address: String?

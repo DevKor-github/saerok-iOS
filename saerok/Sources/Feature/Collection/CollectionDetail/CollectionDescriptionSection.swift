@@ -5,26 +5,24 @@
 //  Created by HanSeung on 7/17/25.
 //
 
-
 import SwiftUI
 
 struct CollectionDescriptionSection: View {
     typealias Route = CollectionDetailRoute
     
     enum Action {
-        case likeToggle
-        case likeCountTap
-        case commentTap
         case reportTap
         case suggestTap
         case navigateToFieldGuide
+        case navigateToOther(_ userId: Int)
         case navigateToMap
     }
     
     @EnvironmentObject private var coordinator: AppCoordinator
     let collection: Local.CollectionDetail
     let onAction: (Action) -> Void
-    
+    private var isUnknownBird: Bool { collection.birdID == nil }
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             VStack(alignment: .leading, spacing: 10) {
@@ -41,93 +39,131 @@ struct CollectionDescriptionSection: View {
 private extension CollectionDescriptionSection {
     var nameView: some View {
         HStack {
+            nameTag
+            Spacer()
+            saerokTab
+        }
+    }
+    
+    var nameTag: some View {
+        return HStack(spacing: 6.5) {
             Text(collection.birdName ?? "이름 모를 새")
                 .font(.SRFontSet.subtitle1)
-                .padding(.vertical, 19)
-                .padding(.horizontal, 17)
-                .background(Color.srWhite)
-                .cornerRadius(20)
-                .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
-            Spacer()
-            ZStack(alignment: .trailing) {
-                Image(.saerokTap)
-                trailingButtons
-                    .padding(11)
+                .foregroundStyle(isUnknownBird ? Color.srGray : .primary)
+                .padding(.trailing, isUnknownBird ? 3.5 : 0)
+            if !isUnknownBird {
+                Image.SRIconSet.chevronRight
+                    .frame(.defaultIconSize, tintColor: .srGray)
+                    .padding(.bottom, 1)
+            }
+        }
+        .padding(.vertical, 19)
+        .padding(.leading, 17)
+        .padding(.trailing, 13.5)
+        .background(Color.srWhite)
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
+        .onTapGesture {
+            if !isUnknownBird {
+                if coordinator.path.isEmpty {
+                    onAction(.navigateToFieldGuide)
+                } else {
+                    coordinator.push(Route.bird(collection.birdID!))
+                }
             }
         }
     }
     
+    var saerokTab: some View {
+        return ZStack(alignment: .trailing) {
+            isUnknownBird ? Image(.saerokTapLarge) : Image(.saerokTapSmall)
+            trailingButtons
+                .padding([.top, .horizontal], 11)
+                .padding(.bottom, 9)
+        }
+    }
+    
+    @ViewBuilder
+    var trailingButtons: some View {
+        HStack(spacing: 9) {
+            if isUnknownBird {
+                suggestButton
+                    .background(
+                        Circle()
+                            .fill(Color.white)
+                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                    )
+            }
+            
+            additionalButton
+                .background(
+                    Circle()
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                )
+        }
+    }
+    
     var noteView: some View {
-        VStack(spacing: 0) {
-            Text(collection.note.allowLineBreaking())
-                .font(.SRFontSet.body3_2)
-                .lineSpacing(5)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-                .lineLimit(nil)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 19)
-                .padding(.horizontal, 26)
-                .padding(.top, 19)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 7) {
+                Text(collection.note.allowLineBreaking())
+                    .font(.SRFontSet.body3_2)
+                    .lineSpacing(5)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(nil)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(collection.uploadDate.timeAgoText)
+                    .font(.SRFontSet.caption3)
+                    .foregroundStyle(.srGray)
+            }
+            .padding(.vertical, 19)
+            .padding(.horizontal, 28)
+            .padding(.top, 19)
             
             Divider()
                 .hidden()
                 .frame(height: 1)
                 .background(.srLightGray)
             
-            HStack(spacing: 0) {
-                noteButton(
-                    image: (collection.isLiked ? Image.SRIconSet.heartFilled : .heart),
-                    index: collection.likeCount,
-                    onTap: { onAction(.likeToggle) },
-                    additionalTap: { onAction(.likeCountTap) }
-                )
-                
-                Divider()
-                    .hidden()
-                    .frame(width: 1)
-                    .background(.srLightGray)
-                
-                noteButton(
-                    image: .comment,
-                    index: collection.commentCount,
-                    onTap: { onAction(.commentTap) }
-                )
-            }
+            profileView
         }
         .background(Color.srWhite)
         .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
     }
     
-    func noteButton(
-        image: Image.SRIconSet,
-        index: Int,
-        onTap: @escaping () -> Void,
-        additionalTap: (() -> Void)? = nil
-    ) -> some View {
-        HStack {
-            image
-                .frame(.defaultIconSizeLarge)
-                .padding(8)
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onTap)
-            
-            Spacer()
-            
-            Text("\(index)")
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if let additionalTap = additionalTap {
-                        additionalTap()
-                    } else {
-                        onTap()
-                    }
-                }
+    var profileView: some View {
+        Button {
+            onAction(.navigateToOther(collection.user.id))
+        } label: {
+            HStack(spacing: 7) {
+                ReactiveAsyncImage(
+                    url: collection.user.profileImageUrl,
+                    scale: .small,
+                    size: .init(width: 25, height: 25),
+                    downsampling: true
+                )
+                .frame(width: 25, height: 25)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .inset(by: 0.6)
+                        .stroke(.srLightGray, lineWidth: 2)
+                )
+                .id(collection.id)
+                
+                Text(collection.user.nickname)
+                    .font(.SRFontSet.caption1)
+                Spacer()
+                Image.SRIconSet.chevronRight
+                    .frame(.defaultIconSize, tintColor: .srGray)
+            }
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .contentShape(Rectangle())
         }
-        .frame(width: 146, height: 40)
-        .padding(.leading, 5.5)
-        .padding(.trailing, 20)
-        .padding(.vertical, 8)
+        .buttonStyle(.plain)
     }
     
     var infoView: some View {
@@ -162,8 +198,19 @@ private extension CollectionDescriptionSection {
                 Image.SRIconSet.clock
                     .frame(.defaultIconSize, tintColor: .pointtext)
                 
-                Text(collection.discoveredDate.korString)
+                Text("\(collection.discoveredDate.toFullString) 발견")
                     .font(.SRFontSet.body4)
+            }
+            
+            if collection.isMine {
+                let isPublic = collection.accessLevel == .publicAccess
+                HStack(spacing: 5) {
+                    (isPublic ? Image.SRIconSet.unlock : Image.SRIconSet.lockFilled)
+                        .frame(.defaultIconSize, tintColor: isPublic ? .pointtext : .srLightGray)
+                    
+                    Text(isPublic ? "함께 보기" : "나만 보기")
+                        .font(.SRFontSet.body4)
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -172,50 +219,14 @@ private extension CollectionDescriptionSection {
         .background(Color.srWhite)
         .cornerRadius(20)
     }
-
-    @ViewBuilder
-    var trailingButtons: some View {
-        HStack(spacing: 9) {
-            toDogamButton
-                .background(
-                    Circle()
-                        .fill(Color.white)
-                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                )
-            
-            additionalButton
-                .background(
-                    Circle()
-                        .fill(Color.white)
-                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                )
-        }
-    }
     
-    @ViewBuilder
-    var toDogamButton: some View {
-        if let birdID = collection.birdID {
-            if !coordinator.path.isEmpty {
-                Button {
-                    coordinator.push(Route.bird(birdID))
-                } label: {
-                    Image.SRIconSet.toDogam
-                        .frame(.defaultIconSizeVeryLarge)
-                }
-            } else {
-                Button { onAction(.navigateToFieldGuide) } label: {
-                    Image.SRIconSet.toDogam
-                        .frame(.defaultIconSizeVeryLarge)
-                }
-            }
-        } else {
-            Button { onAction(.suggestTap) } label: {
-                Image.SRIconSet.unknown
-                    .frame(.defaultIconSizeLarge, tintColor: .srWhite)
-                    .padding(8)
-                    .background(Color.pointtext)
-                    .clipShape(Circle())
-            }
+    var suggestButton: some View {
+        Button { onAction(.suggestTap) } label: {
+            Image.SRIconSet.unknown
+                .frame(.defaultIconSizeLarge, tintColor: .srWhite)
+                .padding(8)
+                .background(Color.pointtext)
+                .clipShape(Circle())
         }
     }
     
@@ -240,4 +251,3 @@ private extension CollectionDescriptionSection {
         }
     }
 }
-
