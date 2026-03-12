@@ -15,15 +15,9 @@ struct NotificationCell: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             actorImage
-            .frame(width: 25, height: 25)
-            .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .inset(by: 0.8)
-                    .stroke(.srLightGray, lineWidth: 2)
-            )
-            .padding(.leading, 9)
-            .padding(.trailing, 6)
+                .srStyled(.avatar)
+                .padding(.leading, 9)
+                .padding(.trailing, 6)
 
             payloadContent
             relatedImage

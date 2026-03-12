@@ -109,11 +109,26 @@ private extension CommunityView {
                     .allowsHitTesting(!viewModel.isModeIdle)
                 }
             }
-
+            
+            #if RELEASE // TODO: 자유게시판 배포 시 삭제 예정
             addButton
                 .padding(.bottom, 106)
                 .padding(.trailing, 24)
+            #endif
         }
+        .modifier(
+            FloatingMenuModifier(
+                postAction: {},
+                saerokAction: {
+                    if viewModel.isGuestMode {
+                        showLoginPopup = true
+                    } else {
+                        coordinator.push(Route.addCollection)
+                    }
+                },
+                bottomOffset: 102
+            )
+        )
         .ignoresSafeArea(.all)
         .onTapGesture {
             if !viewModel.isModeIdle { isFocused = false }
@@ -185,6 +200,9 @@ private extension CommunityView {
             iconButton(type: .recent, icon: .commentCommunity, background: .accent)
             iconButton(type: .popular, icon: .fire, background: .fire)
             iconButton(type: .suggestion, icon: .unknown, background: .pointtext)
+            #if DEBUG
+            iconButton(type: .board, icon: .post, background: .srGreen)
+            #endif
         }
         .padding(15)
         .cornerRadius(10)

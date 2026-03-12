@@ -40,6 +40,10 @@ extension CommunityView {
             }            
         }
         
+        func createPost(title: String, content: String) async {
+            
+        }
+        
         func loadPosts() async {
             if case .notRequested = loadState {
                 loadState = await loadState.load {

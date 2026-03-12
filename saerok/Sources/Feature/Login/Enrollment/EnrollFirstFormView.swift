@@ -135,7 +135,7 @@ extension EnrollView {
                 }) {
                     Text("다음")
                 }
-                .buttonStyle(.primary)
+                .srStyled(.primaryButton)
                 .disabled(!(nicknameStatus == .available))
             }
         }

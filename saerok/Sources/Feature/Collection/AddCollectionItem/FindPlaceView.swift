@@ -109,7 +109,7 @@ private extension FindPlaceView {
                         .font(.SRFontSet.button1)
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.primary)
+                .srStyled(.primaryButton)
                 .padding(SRDesignConstant.defaultPadding)
             }
             .opacity(mode == .idle ? 1 : 0)
@@ -261,7 +261,7 @@ private extension FindPlaceView {
                     buttonAction()
                 })
                 .font(.SRFontSet.button1)
-                .buttonStyle(.primary)
+                .srStyled(.primaryButton)
                 .frame(height: 53)
                 .disabled(text.isEmpty)
             }

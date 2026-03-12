@@ -243,7 +243,7 @@ private extension CollectionFormView {
         }
         .disabled(!viewModel.collectionDraft.submittable && viewModel.mode.isAddMode)
         .disabled(isSubmitting)
-        .buttonStyle(.primary)
+        .srStyled(.primaryButton)
     }
     
     @ViewBuilder

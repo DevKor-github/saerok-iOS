@@ -46,7 +46,7 @@ private extension TermsAgreementSheet {
                     Text("다음")
                 }
             }
-            .buttonStyle(.primary)
+            .srStyled(.primaryButton)
             .disabled(!isAllAgreed || enrollStatus == .loading)
         }
         .padding(24)

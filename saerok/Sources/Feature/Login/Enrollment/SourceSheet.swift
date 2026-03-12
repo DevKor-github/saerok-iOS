@@ -81,7 +81,7 @@ struct SourceSheet: View {
                 Text("완료")
             }
         }
-        .buttonStyle(.primary)
+        .srStyled(.primaryButton)
         .disabled(singupSource == nil || enrollStatus == .loading)
     }
 }

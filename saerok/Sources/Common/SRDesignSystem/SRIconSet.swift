@@ -83,6 +83,7 @@ extension Image {
         case unknown
         case commentCommunity
         case megaphone
+        case post
         
         // MARK: Tabbar
         case doongzi
@@ -227,6 +228,7 @@ extension Image.SRIconSet {
         case .unknown: return Image(.unknown)
         case .commentCommunity: return Image(.communityComment)
         case .megaphone: return Image(.megaphone)
+        case .post: return Image(.post)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)

@@ -279,7 +279,7 @@ struct EditProfileView: View {
         Button(action: saveButtonTapped) {
             Text("닉네임 수정하기")
         }
-        .buttonStyle(.primary)
+        .srStyled(.primaryButton)
         .disabled(viewModel.nicknameStatus != .available)
         .padding(.bottom, 16)
     }

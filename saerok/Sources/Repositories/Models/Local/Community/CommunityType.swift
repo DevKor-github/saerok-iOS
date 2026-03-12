@@ -10,6 +10,9 @@ enum CommunityType {
     case recent
     case popular
     case suggestion
+    #if DEBUG
+    case board
+    #endif
     case search(_ text: String)
     
     var title: String {
@@ -17,6 +20,9 @@ enum CommunityType {
         case .recent: return "최근에 올라온 새록"
         case .popular: return "요즘 인기있는 새록"
         case .suggestion: return "이 새 이름이 뭔가요?"
+        #if DEBUG
+        case .board: return "자유게시판"
+        #endif
         default: return ""
         }
     }
@@ -40,10 +46,10 @@ extension CommunityType: Equatable {
 extension CommunityType: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
-        case .recent: hasher.combine("recent")
-        case .popular: hasher.combine("popular")
-        case .suggestion: hasher.combine("suggestion")
-        case .search(let text): hasher.combine("search_\(text)")
+        case .search(let text):
+            hasher.combine("search_\(text)")
+        default:
+            hasher.combine(self.title)
         }
     }
 }

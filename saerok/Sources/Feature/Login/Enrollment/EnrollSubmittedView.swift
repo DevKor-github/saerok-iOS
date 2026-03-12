@@ -25,7 +25,7 @@ extension EnrollView {
                 Button(action: startButtonTapped) {
                     Text("새록 시작하기")
                 }
-                .buttonStyle(.primary)
+                .srStyled(.primaryButton)
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
         }

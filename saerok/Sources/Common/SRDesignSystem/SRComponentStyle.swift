@@ -11,7 +11,9 @@ enum SRComponentStyle {
     case textField(isFocused: FocusState<Bool>.Binding, alwaysFocused: Bool = false, tintColor: Color? = nil)
     case filterButton(isActive: Bool, isResetButton: Bool = false)
     case defaultItem
+    case primaryButton
     case iconButton
+    case avatar
 
     @MainActor @ViewBuilder
     func apply(to view: some View) -> some View {
@@ -24,6 +26,10 @@ enum SRComponentStyle {
             view.modifier(DefaultItemStyle())
         case .iconButton:
             view.buttonStyle(.icon)
+        case .avatar:
+            view.srAvatarStyle()
+        case .primaryButton:
+            view.buttonStyle(.primary)
         }
     }
 }

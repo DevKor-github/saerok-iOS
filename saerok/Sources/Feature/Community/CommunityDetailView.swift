@@ -10,7 +10,7 @@ import SwiftUI
 struct CommunityDetailView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: ViewModel
-    
+
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
@@ -24,6 +24,9 @@ struct CommunityDetailView: View {
     private var content: some View {
         VStack(spacing: 0) {
             navigationBar
+            Divider()
+                .frame(height: 1)
+                .foregroundStyle(.srGray)
             itemList
         }
     }
@@ -55,6 +58,10 @@ struct CommunityDetailView: View {
             barIconStyle(icon: .fire, background: .fire)
         case .suggestion:
             barIconStyle(icon: .unknown, background: .pointtext)
+            #if DEBUG
+        case .board:
+            barIconStyle(icon: .post, background: .srGreen)
+            #endif
         case .search:
             EmptyView()
         }
@@ -71,16 +78,25 @@ struct CommunityDetailView: View {
     private var itemList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
-                    Button {
-                        coordinator.push(CommunityView.Route.detail(id: item.id))
-                    } label: {
-                        CommunityCell(item: item, type: viewModel.type)
+                switch viewModel.type {
+                #if DEBUG
+                case .board:
+                    ForEach(CommunityDetailView.mockPosts, id: \.id) { post in
+                        PostCell(post: post)
                     }
-                    .buttonStyle(.plain)
-                    .onAppear {
-                        if index == viewModel.items.count - 1 {
-                            Task { await viewModel.loadMore() }
+                #endif
+                default:
+                    ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
+                        Button {
+                            coordinator.push(CommunityView.Route.detail(id: item.id))
+                        } label: {
+                            CommunityCell(item: item, type: viewModel.type)
+                        }
+                        .buttonStyle(.plain)
+                        .onAppear {
+                            if index == viewModel.items.count - 1 {
+                                Task { await viewModel.loadMore() }
+                            }
                         }
                     }
                 }
@@ -90,5 +106,28 @@ struct CommunityDetailView: View {
                 }
             }
         }
+    }
+}
+
+extension DTO {
+    struct Post: Decodable {
+        let id: Int
+        let title: String
+        let content: String
+        let author: DTO.User
+        let likeCount: Int
+        let commentCount: Int
+        let isLiked: Bool
+        let createdAt: String
+    }
+    
+    struct PostListResponseDTO: Decodable {
+        let posts: [Post]
+        let hasNext: Bool
+    }
+    
+    struct PostCreateRequestDTO: Encodable {
+        let title: String
+        let content: String
     }
 }
