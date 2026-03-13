@@ -53,3 +53,20 @@ extension CommunityType: Hashable {
         }
     }
 }
+
+extension CommunityType {
+    var responseType: Decodable.Type {
+        switch self {
+        case .recent:
+            return DTO.CommunityRecentResponse.self
+        case .popular:
+            return DTO.CommunityPopularResponse.self
+        case .suggestion:
+            return DTO.CommunityPendingBirdIdResponse.self
+        case .board:
+            return EmptyResponse.self
+        case .search:
+            return EmptyResponse.self
+        }
+    }
+}

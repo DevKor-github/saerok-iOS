@@ -11,7 +11,7 @@ import Foundation
 protocol CollectionRepository {
     func fetchCollectionSummaries() async throws -> [Local.CollectionSummary]
     func fetchCollectionDetail(for id: Int) async throws -> Local.CollectionDetail
-    func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse
+    func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> Int
     func getPresignedURL(collectionId: Int, contentType: String) async throws -> DTO.PresignedURLResponse
     func registerImageMetadata(collectionId: Int, request: DTO.RegisterImageRequest) async throws -> DTO.RegisterImageResponse
     func deleteCollection(_ id: Int) async throws
@@ -49,10 +49,11 @@ extension MainRepository: CollectionRepository {
         return Local.CollectionDetail.from(dto: collectionDetailDTO)
     }
 
-    func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> DTO.CreateCollectionResponse {
-        try await networkService.performSRRequest(
+    func createCollection(_ request: DTO.CreateCollectionRequest) async throws -> Int {
+        let response: DTO.CreateCollectionResponse = try await networkService.performSRRequest(
             .createCollection(body: request)
         )
+        return response.collectionId
     }
 
     func getPresignedURL(

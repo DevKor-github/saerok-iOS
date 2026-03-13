@@ -1,3 +1,10 @@
+//
+//  CommunityInteractor.swift
+//  saerok
+//
+//  Created by HanSeung on 9/24/25.
+//
+
 import Foundation
 
 protocol CommunityInteractor {
@@ -20,27 +27,17 @@ struct CommunityInteractorImpl: CommunityInteractor {
     }
 
     func fetchMain() async throws -> Local.CommunityMainItems {
-        let dto = try await repository.fetchCommunityMain()
-        return Local.CommunityMainItems.from(dto: dto)
+        try await repository.fetchCommunityMain()
     }
     
     func fetchItems(type: CommunityType, page: Int? = nil, size: Int? = nil) async throws -> [Local.CommunityItemSummary] {
-        switch type {
-        case .popular: try await fetchPopular(page: page, size: size)
-        case .recent: try await fetchRecent(page: page, size: size)
-        case .suggestion: try await fetchPending(page: page, size: size)
-            #if DEBUG  // TODO: - 자유게시판
-        case .board: try await fetchPopular(page: page, size: size)
-            #endif
-        case .search: fatalError("search case is not supported")
-        }
+        try await repository.fetchCommunityDetail(type: type, page: page, size: size)
     }
     
     func search(_ query: String, searchCase: CommunitySearchCase) async throws -> Local.CommunitySearchMainItems {
         switch searchCase {
         case .all:
-            let dto = try await repository.search(query: query)
-            return .from(dto: dto)
+            return try await repository.search(query: query)
         case .collection:
             return try await searchCollections(query, page: nil, size: nil)
         case .user:
@@ -49,40 +46,11 @@ struct CommunityInteractorImpl: CommunityInteractor {
     }
 
     private func searchUsers(_ query: String, page: Int?, size: Int?) async throws -> Local.CommunitySearchMainItems {
-        let dto = try await repository.searchUsers(query: query, page: page, size: size)
-        return .init(
-            collections: [],
-            users: dto.items.map {.from(dto: $0) },
-            collectionsCount: 0,
-            usersCount: dto.items.count
-        )
+        return try await repository.searchUsers(query: query, page: page, size: size)
     }
 
     private func searchCollections(_ query: String, page: Int?, size: Int?) async throws -> Local.CommunitySearchMainItems {
-        let dto = try await repository.searchCollections(query: query, page: page, size: size)
-        return .init(
-            collections: dto.items.map { .from(dto: $0) },
-            users: [],
-            collectionsCount: dto.items.count,
-            usersCount: 0
-        )
-    }
-}
-
-private extension CommunityInteractorImpl {
-    func fetchPending(page: Int?, size: Int?) async throws -> [Local.CommunityItemSummary]  {
-        let dto = try await repository.fetchPendingBirdId(page: page, size: size)
-        return dto.items.map { Local.CommunityItemSummary.from(dto: $0) }
-    }
-
-    func fetchPopular(page: Int?, size: Int?) async throws -> [Local.CommunityItemSummary]  {
-        let dto = try await repository.fetchPopular(page: page, size: size)
-        return dto.items.map { Local.CommunityItemSummary.from(dto: $0) }
-    }
-
-    func fetchRecent(page: Int?, size: Int?) async throws -> [Local.CommunityItemSummary]  {
-        let dto = try await repository.fetchRecent(page: page, size: size)
-        return dto.items.map { Local.CommunityItemSummary.from(dto: $0) }
+        return try await repository.searchCollections(query: query, page: page, size: size)
     }
 }
 
