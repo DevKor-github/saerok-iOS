@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-enum AlertStyle {
+enum SRAlertStyle {
     case confirm
     case delete
     case bordered
@@ -83,14 +83,14 @@ enum AlertStyle {
 
 }
 
-extension ButtonStyle where Self == AlertStyle.ComfirmButtonStyle {
+extension ButtonStyle where Self == SRAlertStyle.ComfirmButtonStyle {
     static var alert_confirm: Self { Self() }
 }
 
-extension ButtonStyle where Self == AlertStyle.DeleteButtonStyle {
+extension ButtonStyle where Self == SRAlertStyle.DeleteButtonStyle {
     static var alert_delete: Self { Self() }
 }
 
-extension ButtonStyle where Self == AlertStyle.BorderedButtonStyle {
+extension ButtonStyle where Self == SRAlertStyle.BorderedButtonStyle {
     static var alert_bordered: Self { Self() }
 }

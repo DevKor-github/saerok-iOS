@@ -1,5 +1,5 @@
 //
-//  CustomPopup.swift
+//  SRPopup.swift
 //  saerok
 //
 //  Created by HanSeung on 5/13/25.
@@ -21,11 +21,11 @@ enum PopupButtonLayout {
 
 struct PopupButtonConfig {
     let title: String
-    let style: AlertStyle
+    let style: SRAlertStyle
     let action: () -> Void
 }
 
-struct CustomPopup: View {
+struct SRPopup: View {
     let title: String
     let message: String
     let buttons: PopupButtonLayout
@@ -79,7 +79,7 @@ struct CustomPopup: View {
 }
 
 extension View {
-    func customPopup(
+    func srPopup(
         isPresented: Binding<Bool>,
         config: PopupConfig?
     ) -> some View {
@@ -95,7 +95,7 @@ extension View {
                     .transition(.opacity)
                     .zIndex(1)
 
-                CustomPopup(
+                SRPopup(
                     title: config.title,
                     message: config.message,
                     buttons: config.buttons
