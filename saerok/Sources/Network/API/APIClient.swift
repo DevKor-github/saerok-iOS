@@ -9,7 +9,12 @@ import Foundation
 
 struct EmptyResponse: Decodable {}
 
-final class Provider {
+protocol APIClient {
+    func request<T: Decodable>(_ request: URLRequest) async throws -> T
+    func requestWithStatus<T: Decodable>(_ request: URLRequest) async throws -> (T, Int)
+}
+
+final class DefaultAPIClient: APIClient {
     private let defaultURLSession = URLSession(configuration: .default)
     private let decoder: JSONDecoder = .withFlexibleISO8601()
     
@@ -76,7 +81,7 @@ final class Provider {
     }
 }
 
-private extension Provider {
+private extension APIClient {
     func logRequest(_ request: URLRequest) {
         print("🚀 [REQUEST]")
         print("URL:", request.url?.absoluteString ?? "")
@@ -94,7 +99,7 @@ private extension Provider {
         print("-----------------------")
     }
     
-    private func logResponse(data: Data, response: HTTPURLResponse) {
+    func logResponse(data: Data, response: HTTPURLResponse) {
         print("📦 [RESPONSE]")
         print("StatusCode:", response.statusCode)
         print("URL:", response.url?.absoluteString ?? "")

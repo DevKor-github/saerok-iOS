@@ -15,7 +15,7 @@ protocol Endpoint {
     var path: String { get }
     
     /// HTTP 요청 메서드 (GET, POST, PUT 등)
-    var method: String { get }
+    var method: HTTPMethod { get }
     
     /// HTTP 헤더에 추가할 키-값 쌍
     var headers: [String: String]? { get }
@@ -30,6 +30,13 @@ protocol Endpoint {
     func createRequest() -> URLRequest
 }
 
+enum HTTPMethod: String {
+    case get = "GET"
+    case post = "POST"
+    case patch = "PATCH"
+    case delete = "DELETE"
+}
+
 extension Endpoint {
     func createRequest() -> URLRequest {
         var components = URLComponents(string: baseURL + path)!
@@ -40,7 +47,7 @@ extension Endpoint {
         
         let url = components.url!
         var request = URLRequest(url: url)
-        request.httpMethod = method
+        request.httpMethod = method.rawValue
         
         if let requestBody = requestBody {
             request.httpBody = requestBody

@@ -29,10 +29,10 @@ extension KakaoEndpoint {
         }
     }
     
-    var method: String {
+    var method: HTTPMethod {
         switch self {
         case .keyword, .address:
-            return "GET"
+            return .get
         }
     }
     
