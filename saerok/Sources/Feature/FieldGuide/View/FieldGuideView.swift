@@ -108,7 +108,7 @@ private extension FieldGuideView {
             scrollToTopButton
         }
         .ignoresSafeArea(.all)
-        .customPopup(
+        .srPopup(
             isPresented: $showPopup,
             config: showPopup ? loginRequiredPopupConfig : nil
         )

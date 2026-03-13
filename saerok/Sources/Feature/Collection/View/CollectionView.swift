@@ -225,7 +225,7 @@ private extension CollectionView {
                 })
             }
         }
-        .customPopup(
+        .srPopup(
             isPresented: $showPopup,
             config: showPopup ? loginRequiredPopupConfig : nil
         )

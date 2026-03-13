@@ -69,7 +69,7 @@ struct AccountView: View {
             Spacer()
         }
         .regainSwipeBack()
-        .customPopup(
+        .srPopup(
             isPresented: Binding(
                 get: { activePopup != .none },
                 set: { newValue in

@@ -374,15 +374,15 @@ private extension CollectionDetailView {
         
         var body: some View {
             EmptyView()
-                .customPopup(
+                .srPopup(
                     isPresented: $showPopup,
                     config: alertConfig
                 )
-                .customPopup(
+                .srPopup(
                     isPresented: $showSuggestPopup,
                     config: suggestConfig
                 )
-                .customPopup(
+                .srPopup(
                     isPresented: $showAdoptPopup,
                     config: adoptConfig
                 )
@@ -412,7 +412,7 @@ private extension CollectionDetailView {
                     .transition(.opacity)
                     .zIndex(1)
 
-                CustomPopup(
+                SRPopup(
                     title: popupConfig.title,
                     message: popupConfig.message,
                     buttons: popupConfig.buttons

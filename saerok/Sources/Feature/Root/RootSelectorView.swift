@@ -104,7 +104,7 @@ private struct NetworkAlertView: View {
             Color.black.opacity(0.4)
                 .transition(.opacity)
                 .zIndex(1)
-            CustomPopup(
+            SRPopup(
                 title: networkErrorPopupConfig.title,
                 message: networkErrorPopupConfig.message,
                 buttons: networkErrorPopupConfig.buttons

@@ -187,7 +187,7 @@ private extension CollectionFormView {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, SRDesignConstant.defaultPadding)
         }
-        .customPopup(
+        .srPopup(
             isPresented: Binding(
                 get: { activePopup != .none },
                 set: { newValue in

@@ -30,7 +30,7 @@ struct BirdDetailView: View {
             }
         }
         .regainSwipeBack()
-        .customPopup(isPresented: $showPopup, config: alertConfig)
+        .srPopup(isPresented: $showPopup, config: alertConfig)
     }
     
     @ViewBuilder

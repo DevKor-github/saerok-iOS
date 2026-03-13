@@ -62,7 +62,7 @@ private extension LoginView {
             logo
             loginButtonSection
         }
-        .customPopup(isPresented: $showingAlert, config: alertConfig)
+        .srPopup(isPresented: $showingAlert, config: alertConfig)
     }
     
     var alertConfig: PopupConfig {

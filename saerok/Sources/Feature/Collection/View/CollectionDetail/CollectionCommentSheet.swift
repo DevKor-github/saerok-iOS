@@ -43,7 +43,7 @@ struct CollectionCommentSheet: View {
                 .scrollDismissesKeyboard(.interactively)
             }
         }
-        .customPopup(
+        .srPopup(
             isPresented: $showReportCommentPopup,
             config: showReportCommentPopup ? commentReportPopupConfig : nil
         )

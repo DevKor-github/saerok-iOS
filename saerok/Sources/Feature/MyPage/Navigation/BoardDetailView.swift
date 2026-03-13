@@ -28,7 +28,7 @@ struct BoardDetailView: View {
             .task {
                 await loadDetail()
             }
-            .customPopup(
+            .srPopup(
                 isPresented: $showPopup,
                 config: showPopup ? deletedNoticePopupConfig : nil
             )
@@ -105,6 +105,3 @@ struct BoardDetailView: View {
         }
     }
 }
-
-
-

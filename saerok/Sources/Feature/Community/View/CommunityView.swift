@@ -38,7 +38,7 @@ struct CommunityView: View {
         content
             .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
-            .customPopup(
+            .srPopup(
                 isPresented: $showLoginPopup,
                 config: showLoginPopup ? loginPopupConfig : nil
             )
