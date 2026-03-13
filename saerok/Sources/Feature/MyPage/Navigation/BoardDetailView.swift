@@ -28,7 +28,10 @@ struct BoardDetailView: View {
             .task {
                 await loadDetail()
             }
-            .customPopup(isPresented: $showPopup) { popup }
+            .customPopup(
+                isPresented: $showPopup,
+                config: showPopup ? deletedNoticePopupConfig : nil
+            )
     }
     
     @ViewBuilder
@@ -71,24 +74,26 @@ struct BoardDetailView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                .srStyled(.borderedIconButton)
             },
             backgroundColor: .clear
         )
     }
     
-    private var popup: CustomPopup<ConfirmButtonStyle, ConfirmButtonStyle, ConfirmButtonStyle> {
-        CustomPopup(
+    private var deletedNoticePopupConfig: PopupConfig {
+        PopupConfig(
             title: "오류가 발생했어요",
             message: "삭제된 공지사항입니다.",
-            leading: nil,
-            trailing: nil,
-            center: .init(
-                title: "확인",
-                action: {
-                    coordinator.pop()
-                },
-                style: .confirm)
+            buttons: .single(
+                .init(
+                    title: "확인",
+                    style: .confirm,
+                    action: {
+                        showPopup = false
+                        coordinator.pop()
+                    }
+                )
+            )
         )
     }
     

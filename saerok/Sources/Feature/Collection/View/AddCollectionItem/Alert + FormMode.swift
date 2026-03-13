@@ -45,74 +45,88 @@ enum CollectionFormMode {
 }
 
 extension CollectionFormView {
-    var addModeExitConfirmPopup: CustomPopup<ConfirmButtonStyle, BorderedButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var currentPopupConfig: PopupConfig? {
+        switch activePopup {
+        case .addModeExitConfirm:
+            addModeExitConfirmPopupConfig
+        case .editModeSaveConfirm:
+            editModeSaveConfirmPopup
+        case .editModeDeleteConfirm:
+            editModeDeleteConfirmPopup
+        case .none:
+            nil
+        }
+    }
+    
+    var addModeExitConfirmPopupConfig: PopupConfig {
+        .init(
             title: "작성 중인 내용이 있어요",
             message: "이대로 나가면 변경사항이 저장되지 않아요.\n취소할까요?",
-            leading: .init(
-                title: "계속하기",
-                action: {
-                    activePopup = .none
-                },
-                style: .confirm
-            ),
-            trailing: .init(
-                title: "나가기",
-                action: {
-                    activePopup = .addModeExitConfirm
-                    coordinator.pop()
-                },
-                style: .bordered
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "계속하기",
+                    style: .confirm,
+                    action: { activePopup = .none }
+                ),
+                .init(
+                    title: "나가기",
+                    style: .bordered,
+                    action: {
+                        activePopup = .addModeExitConfirm
+                        coordinator.pop()
+                    }
+                )
+            )
         )
     }
     
-    var editModeSaveConfirmPopup: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var editModeSaveConfirmPopup: PopupConfig {
+        PopupConfig(
             title: "이전 동정 돕기 내역을 불러올까요?",
             message: "불러오지 않으면 동정 돕기가 처음부터 시작돼요.",
-            leading: .init(
-                title: "불러오지 않기",
-                action: {
-                    activePopup = .none
-                    resetSuggestion()
-                    editCollection()
-                },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "불러오기",
-                action: {
-                    activePopup = .none
-                    editCollection()
-                },
-                style: .confirm
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "불러오지 않기",
+                    style: .bordered,
+                    action: {
+                        activePopup = .none
+                        resetSuggestion()
+                        editCollection()
+                    }
+                ),
+                .init(
+                    title: "불러오기",
+                    style: .confirm,
+                    action: {
+                        activePopup = .none
+                        editCollection()
+                    }
+                )
+            )
         )
     }
     
-    var editModeDeleteConfirmPopup: CustomPopup<ConfirmButtonStyle, DeleteButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var editModeDeleteConfirmPopup: PopupConfig {
+        PopupConfig(
             title: "삭제하시겠어요?",
             message: "'\(viewModel.collectionDraft.bird?.name ?? "이름 모를 새")' 새록이 삭제돼요.",
-            leading: .init(
-                title: "취소",
-                action: {
-                    activePopup = .none
-                },
-                style: .confirm
-            ),
-            trailing: .init(
-                title: "삭제하기",
-                action: {
-                    activePopup = .editModeDeleteConfirm
-                    deleteCollection()
-                },
-                style: .delete
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .confirm,
+                    action: {
+                        activePopup = .none
+                    }
+                ),
+                .init(
+                    title: "삭제하기",
+                    style: .delete,
+                    action: {
+                        activePopup = .editModeDeleteConfirm
+                        deleteCollection()
+                    }
+                )
+            )
         )
     }
 }

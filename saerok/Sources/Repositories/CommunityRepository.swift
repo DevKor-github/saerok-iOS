@@ -39,8 +39,10 @@ extension MainRepository: CommunityRepository {
             try await networkService.performSRRequest(.communityPendingBirdId(page: page, size: size))
             return dto.items.map { Local.CommunityItemSummary.from(dto: $0) }
             
+            #if DEBUG
         case .board:
             return []
+            #endif
             
         case .search:
             return []

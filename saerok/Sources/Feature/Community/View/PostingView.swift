@@ -65,7 +65,7 @@ private extension PostingView {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                .srStyled(.borderedIconButton)
             })
     }
     

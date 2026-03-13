@@ -193,19 +193,9 @@ private extension CollectionFormView {
                 set: { newValue in
                     if !newValue { activePopup = .none }
                 }
-            )
-        ) {
-            switch activePopup {
-            case .addModeExitConfirm:
-                AnyView(addModeExitConfirmPopup)
-            case .editModeSaveConfirm:
-                AnyView(editModeSaveConfirmPopup)
-            case .editModeDeleteConfirm:
-                AnyView(editModeDeleteConfirmPopup)
-            case .none:
-                AnyView(EmptyView())
-            }
-        }
+            ),
+            config: currentPopupConfig
+        )
         .disabled(isSubmitting)
     }
     

@@ -62,29 +62,28 @@ private extension LoginView {
             logo
             loginButtonSection
         }
-        .customPopup(isPresented: $showingAlert) { alertView }
+        .customPopup(isPresented: $showingAlert, config: alertConfig)
     }
     
-    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var alertConfig: PopupConfig {
+        .init(
             title: "로그인 없이 이용하시겠어요?",
             message: "도감과 지도만 열람할 수 있어요!",
-            leading: .init(
-                title: "취소",
-                action: {
-                    showingAlert = false
-                },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "계속하기",
-                action: {
-                    showingAlert = false
-                    injected.appState[\.authStatus] = .guest
-                },
-                style: .confirm
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: { showingAlert = false }
+                ),
+                .init(
+                    title: "계속하기",
+                    style: .confirm,
+                    action: {
+                        showingAlert = false
+                        injected.appState[\.authStatus] = .guest
+                    }
+                )
+            )
         )
     }
     

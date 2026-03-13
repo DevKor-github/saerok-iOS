@@ -105,7 +105,7 @@ extension EnrollView {
             }
             .font(.SRFontSet.button3)
             .disabled(nicknameStatus != .notChecked)
-            .buttonStyle(.confirm)
+            .srStyled(.alert(.confirm))
             .frame(width: 80)
         }
         

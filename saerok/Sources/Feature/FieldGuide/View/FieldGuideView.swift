@@ -108,7 +108,10 @@ private extension FieldGuideView {
             scrollToTopButton
         }
         .ignoresSafeArea(.all)
-        .customPopup(isPresented: $showPopup) { popupView }
+        .customPopup(
+            isPresented: $showPopup,
+            config: showPopup ? loginRequiredPopupConfig : nil
+        )
     }
 
     var navigationBar: some View {
@@ -206,24 +209,27 @@ private extension FieldGuideView {
         .opacity(offsetY > 0 ? 0 : 1)
     }
 
-    var popupView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var loginRequiredPopupConfig: PopupConfig {
+        PopupConfig(
             title: "로그인이 필요한 기능이에요",
             message: "로그인하고 더 많은 기능을 사용해보세요!",
-            leading: .init(
-                title: "취소",
-                action: { showPopup = false },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "로그인",
-                action: {
-                    showPopup = false
-                    viewModel.navigateToLoginView()
-                },
-                style: .confirm
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        showPopup = false
+                    }
+                ),
+                .init(
+                    title: "로그인",
+                    style: .confirm,
+                    action: {
+                        showPopup = false
+                        viewModel.navigateToLoginView()
+                    }
+                )
+            )
         )
     }
 }

@@ -13,7 +13,9 @@ enum SRComponentStyle {
     case defaultItem
     case primaryButton
     case iconButton
+    case borderedIconButton
     case avatar
+    case alert(_ type: AlertStyle)
 
     @MainActor @ViewBuilder
     func apply(to view: some View) -> some View {
@@ -26,10 +28,18 @@ enum SRComponentStyle {
             view.modifier(DefaultItemStyle())
         case .iconButton:
             view.buttonStyle(.icon)
+        case .borderedIconButton:
+            view.buttonStyle(.borderedIcon)
         case .avatar:
             view.srAvatarStyle()
         case .primaryButton:
             view.buttonStyle(.primary)
+        case .alert(.confirm):
+            view.buttonStyle(.alert_confirm)
+        case .alert(.delete):
+            view.buttonStyle(.alert_delete)
+        case .alert(.bordered):
+            view.buttonStyle(.alert_bordered)
         }
     }
 }

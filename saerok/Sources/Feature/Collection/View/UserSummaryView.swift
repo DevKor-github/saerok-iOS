@@ -77,7 +77,7 @@ private extension UserSummaryView {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                .srStyled(.borderedIconButton)
             },
             backgroundColor: .clear
         )

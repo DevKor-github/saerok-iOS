@@ -57,9 +57,9 @@ struct CollectionDetailView: View {
                 showPopup: $uiState.showPopup,
                 showSuggestPopup: $uiState.showSuggestPopup,
                 showAdoptPopup: $uiState.showAdoptPopup,
-                alertView: postReportAlertView,
-                adoptView: adoptAlertView,
-                suggestAlertView: suggestAlertView
+                alertConfig: uiState.showPopup ? postReportPopupConfig : nil,
+                adoptConfig: uiState.showAdoptPopup ? adoptPopupConfig : nil,
+                suggestConfig: uiState.showSuggestPopup ? suggestPopupConfig : nil
             )
             
             if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
@@ -113,6 +113,7 @@ private extension CollectionDetailView {
     }
 }
 
+// MARK: - Content
 private extension CollectionDetailView {
     var content: some View {
         ZStack(alignment: .top) {
@@ -341,85 +342,11 @@ private extension CollectionDetailView {
                         Image.SRIconSet.chevronRight
                             .frame(.defaultIconSize)
                     }
-                    .buttonStyle(.icon)
+                    .srStyled(.iconButton)
                     .padding(4)
                 }
             }
         }
-    }
-    
-    var postReportAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
-            title: "게시물을 신고하시겠어요?",
-            message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
-            leading: .init(
-                title: "신고하기",
-                action: {
-                    Task {
-                        await viewModel.reportCollection()
-                        uiState.showPopup = false
-                    }
-                },
-                style: .delete
-            ),
-            trailing: .init(
-                title: "돌아가기",
-                action: { uiState.showPopup = false },
-                style: .confirm
-            ),
-            center: nil
-        )
-    }
-    
-    var suggestAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
-            title: "'\(viewModel.newSuggesting?.name ?? "딱새")'가 맞나요?",
-            message: "정확하지 않은 이름의 제안은 사용자들에게\n혼란을 일으킬 수 있어요.",
-            leading: .init(
-                title: "취소",
-                action: {
-                    uiState.showSuggestPopup = false
-                    viewModel.suggestingCancel()
-                },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "동정돕기",
-                action: {
-                    Task {
-                        await viewModel.suggestingComplete()
-                        uiState.showSuggestPopup = false
-                    }
-                },
-                style: .confirm
-            ),
-            center: nil
-        )
-    }
-    
-    var adoptAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
-            title: "'\(viewModel.selectedAdopting?.bird.name ?? "딱새")'로 채택하시겠어요?",
-            message: "채택된 이후 동정 돕기 창은 사라지며,\n다시 이름 모를 새로 전환하면\n보이게 할 수 있어요.",
-            leading: .init(
-                title: "취소",
-                action: {
-                    uiState.showAdoptPopup = false
-                },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "채택하기",
-                action: {
-                    Task {
-                        await viewModel.adoptBird()
-                        uiState.showAdoptPopup = false
-                    }
-                },
-                style: .confirm
-            ),
-            center: nil
-        )
     }
     
     func downloadImage(from urlString: String) {
@@ -434,7 +361,150 @@ private extension CollectionDetailView {
     }
 }
 
-extension View {
+// MARK: - Popup layer
+private extension CollectionDetailView {
+    struct CollectionPopupLayer: View {
+        @Binding var showPopup: Bool
+        @Binding var showSuggestPopup: Bool
+        @Binding var showAdoptPopup: Bool
+
+        let alertConfig: PopupConfig?
+        let adoptConfig: PopupConfig?
+        let suggestConfig: PopupConfig?
+        
+        var body: some View {
+            EmptyView()
+                .customPopup(
+                    isPresented: $showPopup,
+                    config: alertConfig
+                )
+                .customPopup(
+                    isPresented: $showSuggestPopup,
+                    config: suggestConfig
+                )
+                .customPopup(
+                    isPresented: $showAdoptPopup,
+                    config: adoptConfig
+                )
+        }
+    }
+    
+    struct InvalidAlertView: View {
+        let action: () -> Void
+        
+        private var popupConfig: PopupConfig {
+            PopupConfig(
+                title: "존재하지 않는 새록이에요",
+                message: "새록이 삭제되었거나\n데이터를 불러올 수 없어요.",
+                buttons: .single(
+                    .init(
+                        title: "확인",
+                        style: .confirm,
+                        action: action
+                    )
+                )
+            )
+        }
+        
+        var body: some View {
+            ZStack {
+                Color.black.opacity(0.4)
+                    .transition(.opacity)
+                    .zIndex(1)
+
+                CustomPopup(
+                    title: popupConfig.title,
+                    message: popupConfig.message,
+                    buttons: popupConfig.buttons
+                )
+                .zIndex(10)
+                .transition(.scale)
+            }
+        }
+    }
+
+    
+    var postReportPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "게시물을 신고하시겠어요?",
+            message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
+            buttons: .double(
+                .init(
+                    title: "신고하기",
+                    style: .delete,
+                    action: {
+                        Task {
+                            await viewModel.reportCollection()
+                            uiState.showPopup = false
+                        }
+                    }
+                ),
+                .init(
+                    title: "돌아가기",
+                    style: .confirm,
+                    action: {
+                        uiState.showPopup = false
+                    }
+                )
+            )
+        )
+    }
+
+    var suggestPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "'\(viewModel.newSuggesting?.name ?? "딱새")'가 맞나요?",
+            message: "정확하지 않은 이름의 제안은 사용자들에게\n혼란을 일으킬 수 있어요.",
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        uiState.showSuggestPopup = false
+                        viewModel.suggestingCancel()
+                    }
+                ),
+                .init(
+                    title: "동정돕기",
+                    style: .confirm,
+                    action: {
+                        Task {
+                            await viewModel.suggestingComplete()
+                            uiState.showSuggestPopup = false
+                        }
+                    }
+                )
+            )
+        )
+    }
+
+    var adoptPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "'\(viewModel.selectedAdopting?.bird.name ?? "딱새")'로 채택하시겠어요?",
+            message: "채택된 이후 동정 돕기 창은 사라지며,\n다시 이름 모를 새로 전환하면\n보이게 할 수 있어요.",
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        uiState.showAdoptPopup = false
+                    }
+                ),
+                .init(
+                    title: "채택하기",
+                    style: .confirm,
+                    action: {
+                        Task {
+                            await viewModel.adoptBird()
+                            uiState.showAdoptPopup = false
+                        }
+                    }
+                )
+            )
+        )
+    }
+}
+
+private extension View {
     func topOverlay<Overlay: View, T: Hashable>(
         observed value: T,
         alignment: Alignment = .top,
@@ -454,46 +524,5 @@ extension View {
                 set: { _ in }
             )
         )
-    }
-}
-
-struct CollectionPopupLayer: View {
-    @Binding var showPopup: Bool
-    @Binding var showSuggestPopup: Bool
-    @Binding var showAdoptPopup: Bool
-    let alertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
-    let adoptView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
-    let suggestAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
-    
-    var body: some View {
-        EmptyView()
-            .customPopup(isPresented: $showPopup) { alertView }
-            .customPopup(isPresented: $showSuggestPopup) { suggestAlertView }
-            .customPopup(isPresented: $showAdoptPopup) { adoptView }
-    }
-}
-
-private struct InvalidAlertView: View {
-    let action: () -> Void
-    
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.4)
-                .transition(.opacity)
-                .zIndex(1)
-            CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, ConfirmButtonStyle>(
-                title: "존재하지 않는 새록이에요",
-                message: "새록이 삭제되었거나\n데이터를 불러올 수 없어요.",
-                leading: nil,
-                trailing: nil,
-                center: .init(
-                    title: "확인",
-                    action: action,
-                    style: .confirm
-                )
-            )
-            .zIndex(10)
-            .transition(.scale)
-        }
     }
 }

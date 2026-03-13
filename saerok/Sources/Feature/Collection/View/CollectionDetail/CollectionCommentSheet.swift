@@ -43,9 +43,10 @@ struct CollectionCommentSheet: View {
                 .scrollDismissesKeyboard(.interactively)
             }
         }
-        .customPopup(isPresented: $showReportCommentPopup) {
-            commentReportAlertView
-        }
+        .customPopup(
+            isPresented: $showReportCommentPopup,
+            config: showReportCommentPopup ? commentReportPopupConfig : nil
+        )
     }
     
     private var header: some View {
@@ -84,21 +85,22 @@ struct CollectionCommentSheet: View {
         .padding(.top, 78)
     }
     
-    var commentReportAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var commentReportPopupConfig: PopupConfig {
+        PopupConfig(
             title: "이 댓글을 신고하시겠어요?",
             message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
-            leading: .init(
-                title: "신고하기",
-                action: reportComment,
-                style: .delete
-            ),
-            trailing: .init(
-                title: "돌아가기",
-                action: { showReportCommentPopup = false },
-                style: .confirm
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "신고하기",
+                    style: .delete,
+                    action: reportComment
+                ),
+                .init(
+                    title: "돌아가기",
+                    style: .confirm,
+                    action: { showReportCommentPopup = false }
+                )
+            )
         )
     }
     
@@ -161,5 +163,3 @@ struct CollectionCommentSheet: View {
         }
     }
 }
-
-

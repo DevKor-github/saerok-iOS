@@ -8,25 +8,34 @@
 
 import SwiftUI
 
-struct PopupButtonConfig<Style: ButtonStyle> {
-    let title: String
-    let action: () -> Void
-    let style: Style
-}
-
-struct CustomPopup<Leading: ButtonStyle, Trailing: ButtonStyle, Center: ButtonStyle>: View {
+struct PopupConfig {
     let title: String
     let message: String
-    let leading: PopupButtonConfig<Leading>?
-    let trailing: PopupButtonConfig<Trailing>?
-    let center: PopupButtonConfig<Center>?
+    let buttons: PopupButtonLayout
+}
+
+enum PopupButtonLayout {
+    case single(PopupButtonConfig)
+    case double(PopupButtonConfig, PopupButtonConfig)
+}
+
+struct PopupButtonConfig {
+    let title: String
+    let style: AlertStyle
+    let action: () -> Void
+}
+
+struct CustomPopup: View {
+    let title: String
+    let message: String
+    let buttons: PopupButtonLayout
     
     var body: some View {
         VStack(spacing: 0) {
             Image.SRIconSet.alert
                 .frame(.defaultIconSizeLarge, tintColor: .splash)
                 .padding(.bottom, 15)
-
+            
             VStack(alignment: .center, spacing: 6) {
                 Text(title)
                     .font(.SRFontSet.body3)
@@ -37,7 +46,7 @@ struct CustomPopup<Leading: ButtonStyle, Trailing: ButtonStyle, Center: ButtonSt
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             .padding(.bottom, 20)
-
+            
             buttonSection
         }
         .padding()
@@ -46,64 +55,38 @@ struct CustomPopup<Leading: ButtonStyle, Trailing: ButtonStyle, Center: ButtonSt
         .cornerRadius(20)
         .padding()
     }
-
+    
     @ViewBuilder
     private var buttonSection: some View {
-        if let center = center {
-            Button(center.title, action: center.action)
-                .buttonStyle(center.style)
+        switch buttons {
+        case .single(let button):
+            popupButton(button)
                 .frame(maxWidth: .infinity)
-        } else {
+            
+        case .double(let leading, let trailing):
             HStack {
-                if let leading = leading {
-                    Button(leading.title, action: leading.action)
-                        .buttonStyle(leading.style)
-                }
-                Spacer()
-                if let trailing = trailing {
-                    Button(trailing.title, action: trailing.action)
-                        .buttonStyle(trailing.style)
-                }
+                popupButton(leading)
+                popupButton(trailing)
             }
         }
     }
-}
-
-extension View {
-    func customPopup<Leading: ButtonStyle, Trailing: ButtonStyle, Center: ButtonStyle>(
-        isPresented: Binding<Bool>,
-        config: @escaping () -> CustomPopup<Leading, Trailing, Center>
-    ) -> some View {
-        ZStack {
-            self
-
-            if isPresented.wrappedValue {
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        isPresented.wrappedValue = false
-                    }
-                    .transition(.opacity)
-                    .zIndex(1)
-
-                config()
-                    .transition(.asymmetric(insertion: .scale, removal: .opacity))
-                    .zIndex(2)
-            }
-        }
-        .animation(.spring(duration: 0.2), value: isPresented.wrappedValue)
+    
+    @ViewBuilder
+    private func popupButton(_ config: PopupButtonConfig) -> some View {
+        Button(config.title, action: config.action)
+            .srStyled(.alert(config.style))
     }
 }
 
 extension View {
     func customPopup(
         isPresented: Binding<Bool>,
-        config: @escaping () -> AnyView
+        config: PopupConfig?
     ) -> some View {
         ZStack {
             self
 
-            if isPresented.wrappedValue {
+            if isPresented.wrappedValue, let config {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .onTapGesture {
@@ -112,9 +95,13 @@ extension View {
                     .transition(.opacity)
                     .zIndex(1)
 
-                config()
-                    .transition(.asymmetric(insertion: .scale, removal: .opacity))
-                    .zIndex(2)
+                CustomPopup(
+                    title: config.title,
+                    message: config.message,
+                    buttons: config.buttons
+                )
+                .transition(.asymmetric(insertion: .scale, removal: .opacity))
+                .zIndex(2)
             }
         }
         .animation(.spring(duration: 0.2), value: isPresented.wrappedValue)

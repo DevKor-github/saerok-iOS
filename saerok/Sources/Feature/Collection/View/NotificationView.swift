@@ -69,7 +69,7 @@ struct NotificationView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                .srStyled(.borderedIconButton)
             }, trailing: {
                 Menu {
                     Button {

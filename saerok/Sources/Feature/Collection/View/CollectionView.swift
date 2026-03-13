@@ -116,7 +116,7 @@ private extension CollectionView {
                         (viewModel.hasUnread ? Image.SRIconSet.bellOn : Image.SRIconSet.bell)
                             .frame(.defaultIconSizeLarge)
                     }
-                    .buttonStyle(.icon)
+                    .srStyled(.iconButton)
                 },
                 backgroundColor: .clear
             )
@@ -184,26 +184,27 @@ private extension CollectionView {
         .buttonStyle(.plain)
     }
     
-    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var loginRequiredPopupConfig: PopupConfig {
+        PopupConfig(
             title: "로그인이 필요한 기능이에요",
             message: "로그인하고 더 많은 기능을 사용해보세요!",
-            leading: .init(
-                title: "취소",
-                action: {
-                    showPopup = false
-                },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "로그인",
-                action: {
-                    showPopup = false
-                    viewModel.changeStatusToLogout()
-                },
-                style: .confirm
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        showPopup = false
+                    }
+                ),
+                .init(
+                    title: "로그인",
+                    style: .confirm,
+                    action: {
+                        showPopup = false
+                        viewModel.changeStatusToLogout()
+                    }
+                )
+            )
         )
     }
     
@@ -224,7 +225,10 @@ private extension CollectionView {
                 })
             }
         }
-        .customPopup(isPresented: $showPopup) { alertView }
+        .customPopup(
+            isPresented: $showPopup,
+            config: showPopup ? loginRequiredPopupConfig : nil
+        )
     }
     
     func loadingView() -> some View {

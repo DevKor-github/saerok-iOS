@@ -277,7 +277,7 @@ struct UserInfoView: View {
                     Image.SRIconSet.edit
                         .frame(.defaultIconSizeLarge)
                 }
-                .buttonStyle(.icon)
+                .srStyled(.iconButton)
             }
         }
     }

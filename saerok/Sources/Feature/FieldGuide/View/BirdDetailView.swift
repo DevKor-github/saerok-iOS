@@ -30,7 +30,7 @@ struct BirdDetailView: View {
             }
         }
         .regainSwipeBack()
-        .customPopup(isPresented: $showPopup) { alertView }
+        .customPopup(isPresented: $showPopup, config: alertConfig)
     }
     
     @ViewBuilder
@@ -58,21 +58,22 @@ struct BirdDetailView: View {
         .background(Color.srLightGray)
     }
     
-    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var alertConfig: PopupConfig {
+        .init(
             title: "로그인이 필요한 기능이에요",
             message: "로그인하고 더 많은 기능을 사용해보세요!",
-            leading: .init(
-                title: "취소",
-                action: alertDismissTapped,
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "로그인",
-                action: alertConfirmTapped,
-                style: .confirm
-            ),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: alertDismissTapped
+                ),
+                .init(
+                    title: "로그인",
+                    style: .confirm,
+                    action: alertConfirmTapped
+                )
+            )
         )
     }
 }

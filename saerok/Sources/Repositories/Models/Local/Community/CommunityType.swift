@@ -63,8 +63,10 @@ extension CommunityType {
             return DTO.CommunityPopularResponse.self
         case .suggestion:
             return DTO.CommunityPendingBirdIdResponse.self
+            #if DEBUG
         case .board:
             return EmptyResponse.self
+            #endif
         case .search:
             return EmptyResponse.self
         }

@@ -40,7 +40,7 @@ struct FullImageOverlayModifier: ViewModifier {
                             Image.SRIconSet.xmark
                                 .frame(.defaultIconSize)
                         }
-                        .buttonStyle(.icon)
+                        .srStyled(.iconButton)
                     },
                     backgroundColor: .clear
                 )

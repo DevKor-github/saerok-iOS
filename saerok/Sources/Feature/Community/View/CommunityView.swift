@@ -38,7 +38,10 @@ struct CommunityView: View {
         content
             .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
-            .customPopup(isPresented: $showLoginPopup) { alertView }
+            .customPopup(
+                isPresented: $showLoginPopup,
+                config: showLoginPopup ? loginPopupConfig : nil
+            )
             .onPreferenceChange(ScrollPreferenceKey.self) { self.offsetY = $0 }
             .refreshable { Task { await viewModel.refreshPosts() } }
     }
@@ -271,16 +274,27 @@ private extension CommunityView {
         }
     }
 
-    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
+    var loginPopupConfig: PopupConfig {
+        PopupConfig(
             title: "로그인이 필요한 기능이에요",
             message: "로그인하고 더 많은 기능을 사용해보세요!",
-            leading: .init(title: "취소", action: { showLoginPopup = false }, style: .bordered),
-            trailing: .init(title: "로그인", action: {
-                showLoginPopup = false
-                viewModel.initLoginStatus()
-            }, style: .confirm),
-            center: nil
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        showLoginPopup = false
+                    }
+                ),
+                .init(
+                    title: "로그인",
+                    style: .confirm,
+                    action: {
+                        showLoginPopup = false
+                        viewModel.initLoginStatus()
+                    }
+                )
+            )
         )
     }
 

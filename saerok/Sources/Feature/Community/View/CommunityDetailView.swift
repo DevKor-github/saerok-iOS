@@ -44,7 +44,8 @@ struct CommunityDetailView: View {
                 } label: {
                     Image.SRIconSet.chevronLeft.frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                
+                .srStyled(.borderedIconButton)
             }
         )
     }

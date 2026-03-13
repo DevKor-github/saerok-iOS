@@ -104,19 +104,25 @@ private struct NetworkAlertView: View {
             Color.black.opacity(0.4)
                 .transition(.opacity)
                 .zIndex(1)
-            CustomPopup<BorderedButtonStyle, PrimaryButtonStyle, ConfirmButtonStyle>(
-                title: "네트워크 연결이 원활하지 않아요",
-                message: "인터넷 연결이 불안정하여\n데이터를 불러올 수 없어요.",
-                leading: nil,
-                trailing: nil,
-                center: .init(
-                    title: "확인",
-                    action: {},
-                    style: .confirm
-                )
+            CustomPopup(
+                title: networkErrorPopupConfig.title,
+                message: networkErrorPopupConfig.message,
+                buttons: networkErrorPopupConfig.buttons
             )
             .zIndex(10)
             .transition(.scale)
         }
     }
+    
+    let networkErrorPopupConfig = PopupConfig(
+        title: "네트워크 연결이 원활하지 않아요",
+        message: "인터넷 연결이 불안정하여\n데이터를 불러올 수 없어요.",
+        buttons: .single(
+            .init(
+                title: "확인",
+                style: .confirm,
+                action: {}
+            )
+        )
+    )
 }

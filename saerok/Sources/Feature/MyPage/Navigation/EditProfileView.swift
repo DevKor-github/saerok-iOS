@@ -184,7 +184,7 @@ struct EditProfileView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                .srStyled(.borderedIconButton)
             })
     }
     
@@ -211,7 +211,7 @@ struct EditProfileView: View {
                     Image.SRIconSet.edit
                         .frame(.defaultIconSizeLarge)
                 }
-                .buttonStyle(.icon)
+                .srStyled(.iconButton)
                 .overlay(
                     Circle()
                         .inset(by: 0.5)
@@ -255,7 +255,7 @@ struct EditProfileView: View {
         .font(.SRFontSet.button3)
         .disabled(viewModel.nicknameStatus != .notChecked)
         .frame(width: 83)
-        .buttonStyle(.confirm)
+        .srStyled(.alert(.confirm))
     }
     
     @ViewBuilder

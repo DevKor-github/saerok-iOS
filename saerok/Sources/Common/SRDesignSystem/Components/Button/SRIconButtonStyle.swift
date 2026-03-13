@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct IconButtonStyle: ButtonStyle {
+struct SRIconButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
@@ -21,7 +21,7 @@ struct IconButtonStyle: ButtonStyle {
     }
 }
 
-extension ButtonStyle where Self == IconButtonStyle {
+extension ButtonStyle where Self == SRIconButtonStyle {
     static var icon: Self { Self() }
 }
 

@@ -43,8 +43,10 @@ struct AccountView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
         
     @State private var viewModel: ViewModel
+    
+    @State private var activePopup: ActivePopup = .none
     @State private var showPopup: Bool = false
-    @State private var showDeletePopup: Bool = false
+    
     @State private var isDeleting: Bool = false
     
     init(viewModel: ViewModel) {
@@ -67,8 +69,17 @@ struct AccountView: View {
             Spacer()
         }
         .regainSwipeBack()
-        .customPopup(isPresented: $showPopup) { alertView }
-        .customPopup(isPresented: $showDeletePopup) { deleteAlertView }
+        .customPopup(
+            isPresented: Binding(
+                get: { activePopup != .none },
+                set: { newValue in
+                    if !newValue {
+                        activePopup = .none
+                    }
+                }
+            ),
+            config: currentPopupConfig
+        )
         .disabled(isDeleting)
     }
     
@@ -96,8 +107,7 @@ struct AccountView: View {
     
     private var logoutRow: some View {
         Button {
-            showPopup = true
-
+            activePopup = .logoutConfirm
         } label: {
             HStack(spacing: 8) {
                 Image.SRIconSet.logout
@@ -117,7 +127,7 @@ struct AccountView: View {
     
     private var deleteAccountRow: some View {
         Button {
-            showDeletePopup = true
+            activePopup = .deleteAccountConfirm
         } label: {
             HStack(spacing: 8) {
                 Image.SRIconSet.logout
@@ -147,53 +157,10 @@ struct AccountView: View {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
                 }
-                .buttonStyle(.borderedIcon)
+                .srStyled(.borderedIconButton)
             })
     }
-    
-    var alertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
-            title: "정말 로그아웃 하시겠어요?",
-            message: "",
-            leading: .init(
-                title: "취소",
-                action: { showPopup = false },
-                style: .bordered
-            ),
-            trailing: .init(
-                title: "로그아웃",
-                action: {
-                    showPopup = false
-                    logout()
-                },
-                style: .confirm
-            ),
-            center: nil
-        )
-    }
-    
-    var deleteAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
-        CustomPopup(
-            title: "정말 탈퇴하시겠어요?",
-            message: "탈퇴 시 탐조기록이 모두 삭제돼요",
-            leading: .init(
-                title: "회원탈퇴",
-                action: {
-                    deleteAccount()
-                },
-                style: .delete
-            ),
-            trailing: .init(
-                title: "돌아가기",
-                action: {
-                    showDeletePopup = false
-                },
-                style: .confirm
-            ),
-            center: nil
-        )
-    }
-    
+
     func logout() {        
         Task { @MainActor in
             try await viewModel.logout()
@@ -204,9 +171,75 @@ struct AccountView: View {
         Task {
             isDeleting = true
             try await viewModel.deleteAccount()
-            showDeletePopup = false
+            showPopup = false
             isDeleting = false
         }
     }
 }
 
+private extension AccountView {
+    enum ActivePopup {
+        case none
+        case logoutConfirm
+        case deleteAccountConfirm
+    }
+    
+    var currentPopupConfig: PopupConfig? {
+        switch activePopup {
+        case .logoutConfirm:
+            logoutConfirmPopupConfig
+        case .deleteAccountConfirm:
+            deleteAccountConfirmPopupConfig
+        case .none:
+            nil
+        }
+    }
+    
+    var logoutConfirmPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "정말 로그아웃 하시겠어요?",
+            message: "",
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        activePopup = .none
+                    }
+                ),
+                .init(
+                    title: "로그아웃",
+                    style: .confirm,
+                    action: {
+                        activePopup = .none
+                        logout()
+                    }
+                )
+            )
+        )
+    }
+    
+    var deleteAccountConfirmPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "정말 탈퇴하시겠어요?",
+            message: "탈퇴 시 탐조기록이 모두 삭제돼요",
+            buttons: .double(
+                .init(
+                    title: "회원탈퇴",
+                    style: .delete,
+                    action: {
+                        activePopup = .none
+                        deleteAccount()
+                    }
+                ),
+                .init(
+                    title: "돌아가기",
+                    style: .confirm,
+                    action: {
+                        activePopup = .none
+                    }
+                )
+            )
+        )
+    }
+}

@@ -55,7 +55,7 @@ struct CollectionShareView: View {
                     .frame(.defaultIconSize)
                     .foregroundColor(.black)
             }
-            .buttonStyle(.icon)
+            .srStyled(.iconButton)
         }
         .padding(.horizontal)
         .padding(.top)
