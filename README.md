@@ -1,328 +1,349 @@
-
 # 새록 (saerok-iOS)
 
-“새를 기록하다, 새록”
-관찰한 새를 사진, 위치, 메모와 함께 기록하고 지도에서 탐색할 수 있는 iOS 앱
+**"새를 기록하다, 새록"**\
+관찰한 새를 사진, 위치, 메모와 함께 기록하고 지도에서 탐색할 수 있는 iOS
+앱
 
-새록은 탐조(birdwatching) 기록을 위한 모바일 애플리케이션으로
-사용자가 관찰한 새를 기록하고, 도감 정보를 확인하며, 지도 기반으로 탐색할 수 있도록 설계되었습니다.
+새록은 탐조(birdwatching) 기록을 위한 모바일 애플리케이션으로\
+사용자가 관찰한 새를 기록하고, 도감 정보를 확인하며, 지도 기반으로
+탐색할 수 있도록 설계되었습니다.
 
-⸻
+------------------------------------------------------------------------
 
 ## 앱 주요 기능
 
 ### 1. 새 관찰 기록
 
 사용자는 관찰한 새를 다음 정보와 함께 기록할 수 있습니다.
-    - 사진 업로드
-    - 관찰 위치 저장
-    - 메모 기록
-    - 날짜 기록
+
+-   사진 업로드
+-   관찰 위치 저장
+-   메모 기록
+-   날짜 기록
 
 관찰 데이터는 지도와 개인 컬렉션에 저장됩니다.
 
-⸻
+------------------------------------------------------------------------
 
 ### 2. 새 도감 (Field Guide)
 
 새록에는 새 정보를 확인할 수 있는 도감 기능이 포함되어 있습니다.
 
 가능한 기능
-    - 새 이름 검색
-    - 새 상세 정보 확인
-    - 사진 및 설명 조회
 
-⸻
+-   새 이름 검색
+-   새 상세 정보 확인
+-   사진 및 설명 조회
+
+------------------------------------------------------------------------
 
 ### 3. 지도 탐색 (Map)
 
 지도 기반 탐색 기능을 제공합니다.
 
 기능
-    - 관찰 위치 표시
-    - 커스텀 마커
-    - 마커 클러스터링
-    - 주변 관찰 기록 탐색
 
-지도는 Naver Maps SDK를 사용하여 구현되어 있습니다.
+-   관찰 위치 표시
+-   커스텀 마커
+-   마커 클러스터링
+-   주변 관찰 기록 탐색
 
-⸻
+지도는 **Naver Maps SDK**를 사용하여 구현되어 있습니다.
+
+------------------------------------------------------------------------
 
 ### 4. 컬렉션 관리
 
 사용자는 자신이 기록한 새를 모아서 관리할 수 있습니다.
-    - 개인 관찰 기록 목록
-    - 사진 기반 기록 관리
-    - 기록 상세 조회
 
-⸻
+-   개인 관찰 기록 목록
+-   사진 기반 기록 관리
+-   기록 상세 조회
+
+------------------------------------------------------------------------
 
 ### 5. 로그인
 
 소셜 로그인을 지원합니다.
 
 지원 로그인
-    - Apple 로그인
-    - Kakao 로그인
+
+-   Apple 로그인
+-   Kakao 로그인
 
 로그인 후 사용자 데이터는 서버와 동기화됩니다.
 
-⸻
+------------------------------------------------------------------------
 
 ## 기술 스택
 
 ### Language
-    - Swift
+
+-   Swift
 
 ### Platform
-    - iOS 17+
+
+-   iOS 17+
 
 ### UI
-    - SwiftUI
-    - Custom Design System
+
+-   SwiftUI
+-   Custom Design System
 
 ### Architecture
 
-### Clean Architecture 기반 구조
+Clean Architecture 기반 구조
 
-View
-↓
-Interactor
-↓
-Repository
-↓
-Network
+    View
+    ↓
+    Interactor
+    ↓
+    Repository
+    ↓
+    Network
 
 ### 각 레이어 역할
 
-Layer    역할
-Feature    UI 및 사용자 인터페이스
-Interactor    비즈니스 로직
-Repository    데이터 접근
-Network    API 통신
+  Layer        역할
+  ------------ -------------------------
+  Feature      UI 및 사용자 인터페이스
+  Interactor   비즈니스 로직
+  Repository   데이터 접근
+  Network      API 통신
 
+------------------------------------------------------------------------
 
-⸻
+### Networking
 
-*Networking*
-    - URLSession
-    - Endpoint 기반 API 구조
-    - DTO → Domain Model 변환
+-   URLSession
+-   Endpoint 기반 API 구조
+-   DTO → Domain Model 변환
 
-⸻
+------------------------------------------------------------------------
 
-*Map*
-    - Naver Maps iOS SDK
-    - Kakao Geocoding API
+### Map
 
-⸻
+-   Naver Maps iOS SDK
+-   Kakao Geocoding API
 
-*Authentication*
-    - Sign in with Apple
-    - Kakao Login
+------------------------------------------------------------------------
 
-⸻
+### Authentication
 
-*Storage & Security*
-    - Keychain 기반 토큰 저장
-    - JWT 인증
+-   Sign in with Apple
+-   Kakao Login
 
-⸻
+------------------------------------------------------------------------
 
-*Image Upload*
-    - AWS S3
-    - Presigned URL 방식 업로드
+### Storage & Security
 
-⸻
+-   Keychain 기반 토큰 저장
+-   JWT 인증
 
-*Analytics*
-    - Amplitude Analytics
+------------------------------------------------------------------------
 
-⸻
+### Image Upload
+
+-   AWS S3
+-   Presigned URL 방식 업로드
+
+------------------------------------------------------------------------
+
+### Analytics
+
+-   Amplitude Analytics
+
+------------------------------------------------------------------------
 
 ## 프로젝트 구조
 
 ### 메인 소스 위치
 
-saerok/Sources
+    saerok/Sources
 
 구조
 
-Sources
- ├ App
- ├ Common
- ├ Feature
- ├ Interactors
- ├ Network
- └ Repositories
+    Sources
+     ├ App
+     ├ Common
+     ├ Feature
+     ├ Interactors
+     ├ Network
+     └ Repositories
 
 ### 각 디렉토리 역할
 
-*App*
+#### App
 
 앱 시작 및 의존성 설정
 
 포함 기능
-    - AppDelegate
-    - AppState
-    - Dependency Injection
 
-⸻
+-   AppDelegate
+-   AppState
+-   Dependency Injection
 
-*Common*
+------------------------------------------------------------------------
+
+#### Common
 
 공통 모듈
 
 포함
-    - Design System
-    - Utilities
-    - Extensions
-    - Analytics
-    - Image Loader
 
-⸻
+-   Design System
+-   Utilities
+-   Extensions
+-   Analytics
+-   Image Loader
 
-*Feature*
+------------------------------------------------------------------------
+
+#### Feature
 
 UI 기능 모듈
 
-Feature
- ├ Collection
- ├ Community
- ├ FieldGuide
- ├ Login
- ├ Map
- ├ MyPage
- ├ Onboarding
- └ Root
+    Feature
+     ├ Collection
+     ├ Community
+     ├ FieldGuide
+     ├ Login
+     ├ Map
+     ├ MyPage
+     ├ Onboarding
+     └ Root
 
-각 Feature는 다음 구조를 가집니다.
+각 Feature 구조
 
-FeatureName
- ├ Views
- ├ ViewModel
- └ Components
+    FeatureName
+     ├ Views
+     ├ ViewModel
+     └ Components
 
+------------------------------------------------------------------------
 
-⸻
-
-*Interactors*
+#### Interactors
 
 비즈니스 로직 레이어
 
 예시
-    - CollectionInteractor
-    - CommunityInteractor
-    - FieldGuideInteractor
-    - MapInteractor
-    - UserInteractor
+
+-   CollectionInteractor
+-   CommunityInteractor
+-   FieldGuideInteractor
+-   MapInteractor
+-   UserInteractor
 
 역할
-    - 유즈케이스 구현
-    - Repository 호출
-    - 데이터 변환
 
-⸻
+-   유즈케이스 구현
+-   Repository 호출
+-   데이터 변환
 
-*Repositories*
+------------------------------------------------------------------------
+
+#### Repositories
 
 데이터 접근 레이어
 
 예시
-    - BirdsRepository
-    - CollectionRepository
-    - CommunityRepository
-    - MapRepository
-    - UserRepository
+
+-   BirdsRepository
+-   CollectionRepository
+-   CommunityRepository
+-   MapRepository
+-   UserRepository
 
 역할
-    - API 호출
-    - DTO → Domain 변환
-    - 데이터 관리
 
-⸻
+-   API 호출
+-   DTO → Domain 변환
+-   데이터 관리
 
-*Network*
+------------------------------------------------------------------------
+
+#### Network
 
 네트워크 레이어
 
 구성
-    - APIClient
-    - Endpoint 정의
-    - NetworkService
-    - Error Handling
 
-⸻
+-   APIClient
+-   Endpoint 정의
+-   NetworkService
+-   Error Handling
+
+------------------------------------------------------------------------
 
 ### 데이터 흐름
 
-앱의 데이터 흐름은 다음과 같습니다.
+앱의 데이터 흐름
 
-SwiftUI View
-   ↓
-Interactor
-   ↓
-Repository
-   ↓
-Network
+    SwiftUI View
+       ↓
+    Interactor
+       ↓
+    Repository
+       ↓
+    Network
 
 이 구조는 비즈니스 로직과 UI를 분리하기 위해 설계되었습니다.
 
-⸻
+------------------------------------------------------------------------
 
 ### 리소스 구조
 
 리소스 위치
 
-saerok/Resources
+    saerok/Resources
 
 포함
-    - 이미지
-    - 아이콘
-    - Lottie 애니메이션
-    - Asset Catalog
 
-⸻
+-   이미지
+-   아이콘
+-   Lottie 애니메이션
+-   Asset Catalog
 
-개발 환경
+------------------------------------------------------------------------
+
+## 개발 환경
 
 필수 환경
-    - Xcode 15+
-    - iOS 17+
-    - Swift 5.9+
 
-⸻
+-   Xcode 15+
+-   iOS 17+
+-   Swift 5.9+
+
+------------------------------------------------------------------------
 
 ## 빌드 방법
 
-1️⃣ 저장소 클론
+### 1. 저장소 클론
 
-git clone https://github.com/DevKor-github/saerok-iOS.git
+    git clone https://github.com/DevKor-github/saerok-iOS.git
 
-2️⃣ 프로젝트 열기
+### 2. 프로젝트 열기
 
-saerok.xcodeproj
+    saerok.xcodeproj
 
-3️⃣ 실행
+### 3. 실행
 
-⌘ + R
+    ⌘ + R
 
-
-⸻
+------------------------------------------------------------------------
 
 ## 프로젝트 목표
 
 새록은 탐조 활동을 위한 기록 앱으로
-    - 관찰 기록 관리
-    - 새 도감 제공
-    - 위치 기반 탐색
+
+-   관찰 기록 관리
+-   새 도감 제공
+-   위치 기반 탐색
 
 을 통해 탐조 경험을 디지털로 기록하는 플랫폼을 목표로 합니다.
 
-⸻
+------------------------------------------------------------------------
 
-License
+## License
 
-This project is developed for the DevKor community.
-
-⸻
+This project is developed for the **DevKor community**.
