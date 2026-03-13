@@ -7,7 +7,6 @@
 
 
 import Foundation
-import UIKit
 
 extension Local {
     struct CollectionDetail: Identifiable, Equatable {

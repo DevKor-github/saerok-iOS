@@ -5,8 +5,6 @@
 //  Created by HanSeung on 4/17/25.
 //
 
-import SwiftUI
-
 enum Season: String, Codable, CaseIterable, Equatable {
     case spring = "봄"
     case summer = "여름"
@@ -83,13 +81,6 @@ extension BirdSize {
         case .kayak: "54cm 이상"
         }
     }
-    
-    var image: Image {
-        switch self {
-        case .sparrow: .init(.birdFilter1)
-        case .pigeon: .init(.birdFilter2)
-        case .duck: .init(.birdFilter3)
-        case .kayak: .init(.birdFilter4)
-        }
-    }
 }
+
+

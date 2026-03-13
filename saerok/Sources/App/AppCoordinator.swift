@@ -86,6 +86,13 @@ extension AppCoordinator {
         )
     }
     
+    func makeCommunityPostDetailViewModel(
+        post: DTO.Post,
+        comments: [Local.CollectionComment] = []
+    ) -> CommunityPostDetailView.ViewModel {
+        .init(post: post, comments: comments)
+    }
+    
     func makeCollectionViewModel() -> CollectionView.ViewModel {
         .init(
             appState: container.appState,

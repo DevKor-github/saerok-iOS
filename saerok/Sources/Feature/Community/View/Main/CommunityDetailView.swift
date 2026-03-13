@@ -83,7 +83,12 @@ struct CommunityDetailView: View {
                 #if DEBUG
                 case .board:
                     ForEach(CommunityDetailView.mockPosts, id: \.id) { post in
-                        PostCell(post: post)
+                        Button {
+                            coordinator.push(CommunityView.Route.postDetail(post: post))
+                        } label: {
+                            PostCell(post: post)
+                        }
+                        .buttonStyle(.plain)
                     }
                 #endif
                 default:
@@ -130,5 +135,15 @@ extension DTO {
     struct PostCreateRequestDTO: Encodable {
         let title: String
         let content: String
+    }
+}
+
+extension DTO.Post: Hashable {
+    static func == (lhs: DTO.Post, rhs: DTO.Post) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

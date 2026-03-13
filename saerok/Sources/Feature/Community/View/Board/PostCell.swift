@@ -30,36 +30,12 @@ struct PostCell: View {
     }
     
     var user: some View {
-        HStack(spacing: 5) {
-            ReactiveAsyncImage(
-                url: post.author.profileImageUrl,
-                scale: .small,
-                size: .init(width: 25, height: 25),
-                downsampling: true
-            )
-            .srAvatarStyle()
-            Text(post.author.nickname!)
-                .font(.SRFontSet.body3_2)
-            Text("･")
-                .font(.SRFontSet.caption3)
-                .foregroundStyle(.srGray)
-                .padding(.horizontal, 2)
-            Text(post.createdAt)
-                .font(.SRFontSet.caption3)
-                .foregroundStyle(.srGray)
-            Spacer()
-            //댓글개수
-            //메뉴버튼
-            if post.commentCount > 0 {
-                HStack(spacing: 3) {
-                    Image.SRIconSet.commentFilled
-                        .frame(.defaultIconSize, tintColor: .srLightGray)
-                    Text("\(post.commentCount)")
-                        .font(.SRFontSet.caption1_2)
-                        .foregroundStyle(.srGray)
-                }
-            }
-        }
+        CommunityPostUserSection(
+            user: post.author,
+            createdAt: post.createdAt,
+            commentCount: post.commentCount,
+            showsCommentCount: true
+        )
     }
     
     var content: some View {

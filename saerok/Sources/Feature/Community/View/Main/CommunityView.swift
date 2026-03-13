@@ -11,6 +11,9 @@ import SwiftUI
 enum CommunityRoute: AppRoute {
     case communityType(type: CommunityType)
     case detail(id: Int)
+    #if DEBUG
+    case postDetail(post: DTO.Post)
+    #endif
     case other(id: Int)
     case addCollection
 }
@@ -70,6 +73,20 @@ private extension CommunityView {
             CommunityDetailView(viewModel: coordinator.makeCommunityDetailViewModel(for: type))
         case .detail(let id):
             CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
+        #if DEBUG
+        case .postDetail(let post):
+            CommunityPostDetailView(
+                viewModel: coordinator.makeCommunityPostDetailViewModel(
+                    post: post,
+                    comments: CommunityPostDetailView.ViewModel.mockComments
+                )
+            )
+            #if RELEASE
+            CommunityPostDetailView(
+                viewModel: coordinator.makeCommunityPostDetailViewModel(post: post)
+            )
+            #endif
+        #endif
         case .other(let id):
             UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
         case .addCollection:
