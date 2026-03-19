@@ -65,3 +65,8 @@ fastlane/test_output
 # Local secret configuration
 Config/Secrets.Debug.xcconfig
 Config/Secrets.Release.xcconfig
+
+# Agent
+AGENTS.md
+repo-map.md
+feature-template.md

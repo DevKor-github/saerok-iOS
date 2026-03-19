@@ -22,6 +22,8 @@ struct CollectionDetailView: View {
         var showPopup: Bool = false
         var showSuggestPopup: Bool = false
         var showAdoptPopup: Bool = false
+        //사용자 차단
+        var showBlockUserPopup: Bool = false
         var showCommentSheet: Bool = false
         var showSuggestionSheet: Bool = false
         var showShareSheet: Bool = false
@@ -57,9 +59,13 @@ struct CollectionDetailView: View {
                 showPopup: $uiState.showPopup,
                 showSuggestPopup: $uiState.showSuggestPopup,
                 showAdoptPopup: $uiState.showAdoptPopup,
+                //사용자 차단
+                showBlockUserPopup: $uiState.showBlockUserPopup,
                 alertView: postReportAlertView,
                 adoptView: adoptAlertView,
-                suggestAlertView: suggestAlertView
+                suggestAlertView: suggestAlertView,
+                //사용자 차단
+                blockUserAlertView: blockUserAlertView
             )
             
             shareSheetSection
@@ -303,6 +309,10 @@ private extension CollectionDetailView {
             case .reportTap:
                 uiState.showPopup.toggle()
                 
+            // 사용자 차단
+            case .blockUserTap:
+                uiState.showBlockUserPopup.toggle()
+                
             case .suggestTap:
                 uiState.showSuggestionSheet.toggle()
                 viewModel.startOpinionFlow()
@@ -447,6 +457,31 @@ private extension CollectionDetailView {
         )
     }
     
+    //사용자 차단
+    var blockUserAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle> {
+        CustomPopup(
+            title: "이 사용자를 차단할까요?",
+            message: "차단한 사용자의 게시물과 댓글을\n더 이상 볼 수 없어요.",
+            leading: .init(
+                title: "차단하기",
+                action: {
+                    Task {
+                        await viewModel.blockCollectionUser()
+                        uiState.showBlockUserPopup = false
+                        coordinator.pop()
+                    }
+                },
+                style: .delete
+            ),
+            trailing: .init(
+                title: "취소",
+                action: { uiState.showBlockUserPopup = false },
+                style: .confirm
+            ),
+            center: nil
+        )
+    }
+    
     func navigateToOther(_ userId: Int) {
         coordinator.push(Route.other(userId))
     }
@@ -490,15 +525,21 @@ struct CollectionPopupLayer: View {
     @Binding var showPopup: Bool
     @Binding var showSuggestPopup: Bool
     @Binding var showAdoptPopup: Bool
+    // 사용자 차단
+    @Binding var showBlockUserPopup: Bool
     let alertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
     let adoptView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
     let suggestAlertView: CustomPopup<BorderedButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
+    // 사용자 차단
+    let blockUserAlertView: CustomPopup<DeleteButtonStyle, ConfirmButtonStyle, PrimaryButtonStyle>
 
     var body: some View {
         EmptyView()
             .customPopup(isPresented: $showPopup) { alertView }
             .customPopup(isPresented: $showSuggestPopup) { suggestAlertView }
             .customPopup(isPresented: $showAdoptPopup) { adoptView }
+            // 사용자 차단
+            .customPopup(isPresented: $showBlockUserPopup) { blockUserAlertView }
     }
 }
 

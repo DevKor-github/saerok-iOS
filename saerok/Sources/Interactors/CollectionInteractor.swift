@@ -44,7 +44,11 @@ struct CollectionInteractorImpl: CollectionInteractor {
     }
     
     func fetchCollectionDetail(id: Int) async throws -> Local.CollectionDetail {
-        return try await repository.fetchCollectionDetail(for: id)
+        let detail = try await repository.fetchCollectionDetail(for: id)
+        if isBlockableFilteringEnabled(), blockedUserIds().contains(detail.user.id) {
+            throw CollectionInteractorError.collectionNotFound
+        }
+        return detail
     }
     
     func createCollection(_ draft: Local.CollectionDraft) async throws {
@@ -71,7 +75,9 @@ struct CollectionInteractorImpl: CollectionInteractor {
     }
     
     func fetchComments(_ id: Int) async throws -> [Local.CollectionComment] {
-        return try await repository.fetchCollectionComments(id)
+        let comments = try await repository.fetchCollectionComments(id)
+        guard isBlockableFilteringEnabled() else { return comments }
+        return filterBlockedComments(comments)
     }
     
     func createComments(id: Int, parentId: Int? = nil, _ content: String) async throws {
@@ -136,6 +142,44 @@ struct CollectionInteractorImpl: CollectionInteractor {
     }
 }
 
+private extension CollectionInteractorImpl {
+    func isBlockableFilteringEnabled() -> Bool {
+        BlockedUserStorage.isBlockable()
+    }
+
+    func blockedUserIds() -> Set<Int> {
+        Set(BlockedUserStorage.readBlockedUserIds())
+    }
+
+    func filterBlockedComments(_ comments: [Local.CollectionComment]) -> [Local.CollectionComment] {
+        let blockedIds = blockedUserIds()
+        guard blockedIds.isEmpty == false else { return comments }
+
+        return comments.compactMap { comment in
+            guard blockedIds.contains(comment.user.id) == false else { return nil }
+
+            let filteredReplies = comment.replies?.filter { blockedIds.contains($0.user.id) == false }
+            if filteredReplies == comment.replies {
+                return comment
+            }
+
+            return Local.CollectionComment(
+                id: comment.id,
+                user: comment.user,
+                content: comment.content,
+                likeCount: comment.likeCount,
+                isLiked: comment.isLiked,
+                isMine: comment.isMine,
+                createdAt: comment.createdAt,
+                parentId: comment.parentId,
+                replies: filteredReplies,
+                isInteractive: comment.isInteractive,
+                isMyCollection: comment.isMyCollection
+            )
+        }
+    }
+}
+
 struct MockCollectionInteractorImpl: CollectionInteractor {
     func reportComment(collecionId: Int, commentId: Int) async throws { }
     
@@ -182,4 +226,3 @@ struct MockCollectionInteractorImpl: CollectionInteractor {
     
     func resetSuggestion(_ id: Int) async throws { }
 }
-

@@ -37,6 +37,9 @@ extension AppEnvironment {
                     AppVersionMigrator.wipeRecentSearches(context)
                     AppVersionMigrator.markMigrated(forKey: migrationKey)
                 }
+                
+                // 사용자 차단
+                await diContainer.interactors.user.syncBlockable()
             }
             .onOpenURL { url in
                 if AuthApi.isKakaoTalkLoginUrl(url) {
