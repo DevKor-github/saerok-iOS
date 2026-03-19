@@ -15,6 +15,7 @@ struct PostingView: View {
     @State private var title: String = ""
     @State private var contents: String = ""
     @State private var isUploading: Bool = false
+    let onPost: () -> Void
     
     var body: some View {
         content
@@ -37,7 +38,10 @@ struct PostingView: View {
                     .padding(.leading, 30)
                     .padding(.top, 3)
                 Spacer()
-                Button(action : { isUploading.toggle() }) {
+                Button(action : {
+                    onPost()
+                    isUploading.toggle()
+                }) {
                     if isUploading {
                         ProgressView()
                     } else {
@@ -82,8 +86,4 @@ private extension PostingView {
                 .font(.SRFontSet.body3_2)
         }
     }
-}
-
-#Preview {
-    PostingView()
 }

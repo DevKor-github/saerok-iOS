@@ -29,6 +29,8 @@ struct CommunityView: View {
 
     // MARK: UI State
     @State private var showLoginPopup: Bool = false
+    @State private var showPostingView: Bool = false
+    @State private var showToast: Bool = false
     @State private var offsetY: CGFloat = 0
     @FocusState private var isFocused: Bool
     
@@ -138,7 +140,7 @@ private extension CommunityView {
         }
         .modifier(
             FloatingMenuModifier(
-                postAction: {},
+                postAction: { showPostingView.toggle() },
                 saerokAction: {
                     if viewModel.isGuestMode {
                         showLoginPopup = true
@@ -149,6 +151,15 @@ private extension CommunityView {
                 bottomOffset: 102
             )
         )
+        #if DEBUG
+        .fullScreenCover(isPresented: $showPostingView) {
+            PostingView(onPost: { showPostingView.toggle() })
+                .onDisappear {
+                    showToast.toggle()
+                }
+        }
+        .srToast(isPresented: $showToast, type: .success, message: "게시글을 올렸어요.")
+        #endif
         .ignoresSafeArea(.all)
         .onTapGesture {
             if !viewModel.isModeIdle { isFocused = false }
