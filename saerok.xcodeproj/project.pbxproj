@@ -10,6 +10,7 @@
 		213D6B792DCA55CE00B17243 /* NMapsMap in Frameworks */ = {isa = PBXBuildFile; productRef = 213D6B782DCA55CE00B17243 /* NMapsMap */; };
 		21405C152E99265900C94754 /* AdFitSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 21405C142E99265900C94754 /* AdFitSDK */; };
 		2179235D2ECC4C7C005B8122 /* AmplitudeUnified in Frameworks */ = {isa = PBXBuildFile; productRef = 2179235C2ECC4C7C005B8122 /* AmplitudeUnified */; };
+		2183D97F2F76AFB500AD5515 /* IMPROVEMENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = 2183D97E2F76AFB500AD5515 /* IMPROVEMENTS.md */; };
 		2196C7DF2E421CD8002CFDAF /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 2196C7DE2E421CD8002CFDAF /* FirebaseMessaging */; };
 		219841772DDC18CD00919B81 /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 219841762DDC18CD00919B81 /* KakaoSDKAuth */; };
 		219841792DDC18CD00919B81 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 219841782DDC18CD00919B81 /* KakaoSDKCommon */; };
@@ -22,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2183D97E2F76AFB500AD5515 /* IMPROVEMENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = IMPROVEMENTS.md; sourceTree = "<group>"; };
 		219F722D2D89ABEB00C04738 /* saerok.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = saerok.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		21D2688D2F63C19A00942051 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		21D2688E2F63C19A00942051 /* feature-template.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "feature-template.md"; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				21D2688E2F63C19A00942051 /* feature-template.md */,
 				21D2688F2F63C19A00942051 /* repo-map.md */,
 				21D268932F63C1A800942051 /* README.md */,
+				2183D97E2F76AFB500AD5515 /* IMPROVEMENTS.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -171,6 +174,7 @@
 			files = (
 				21D268902F63C19A00942051 /* feature-template.md in Resources */,
 				21D268912F63C19A00942051 /* repo-map.md in Resources */,
+				2183D97F2F76AFB500AD5515 /* IMPROVEMENTS.md in Resources */,
 				21D268922F63C19A00942051 /* AGENTS.md in Resources */,
 				21D268942F63C1A800942051 /* README.md in Resources */,
 			);
