@@ -39,9 +39,13 @@ struct NotificationCell: View {
             case .like:
                 Text(payload.actorNickname).font(.SRFontSet.body2_3)
                 + Text("님이 나의 새록을 좋아해요.").font(.SRFontSet.body4)
-            case .comment, .replied:
+            case .comment:
                 Text(payload.actorNickname).font(.SRFontSet.body2_3)
                 + Text("님이 나의 새록에 댓글을 남겼어요. ").font(.SRFontSet.body4)
+                + Text("“\(payload.comment ?? "")”").font(.SRFontSet.body4)
+            case .replied:
+                Text(payload.actorNickname).font(.SRFontSet.body2_3)
+                + Text("님이 새록에 답글을 남겼어요. ").font(.SRFontSet.body4)
                 + Text("“\(payload.comment ?? "")”").font(.SRFontSet.body4)
             case .birdIdSuggestion:
                 Text("두근두근! 새로운 의견이 공유됐어요. 확인해볼까요?").font(.SRFontSet.body4)
