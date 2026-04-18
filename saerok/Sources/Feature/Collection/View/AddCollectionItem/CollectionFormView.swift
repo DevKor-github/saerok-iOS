@@ -74,7 +74,11 @@ extension CollectionFormView {
         }
         
         func createCollection() async {
-            try? await collectionInteractor.createCollection(collectionDraft)
+            do {
+                try await collectionInteractor.createCollection(collectionDraft)
+            } catch {
+                try? await collectionInteractor.createCollection(collectionDraft)
+            }
         }
         
         func deleteCollection() async {

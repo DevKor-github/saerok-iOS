@@ -353,6 +353,16 @@ private extension CommunityView {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 Text(type.title)
                     .font(.SRFontSet.body2_3)
+                Text("N")
+                    .font(.custom(Pretendard.bold.rawValue, size: 7))
+                    .foregroundStyle(.white)
+                    .background(
+                        Rectangle()
+                          .foregroundColor(.clear)
+                          .frame(width: 11, height: 11)
+                          .background(Color.iconRed)
+                          .cornerRadius(3)
+                    )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

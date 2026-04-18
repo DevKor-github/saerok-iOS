@@ -57,10 +57,15 @@ struct CollectionInteractorImpl: CollectionInteractor {
         else { throw CollectionInteractorError.invalidImageData }
         
         let collectionId = try await repository.createCollection(draft.toDTO())
-        let presigned = try await repository.getPresignedURL(collectionId: collectionId, contentType: "image/jpeg")
-        try await S3Uploader.uploadImage(to: presigned.presignedUrl, data: jpegData)
-        let registerRequest = DTO.RegisterImageRequest(objectKey: presigned.objectKey, contentType: "image/jpeg")
-        let _ = try await repository.registerImageMetadata(collectionId: collectionId, request: registerRequest)
+        
+        do {
+            let presigned = try await repository.getPresignedURL(collectionId: collectionId, contentType: "image/jpeg")
+            try await S3Uploader.uploadImage(to: presigned.presignedUrl, data: jpegData)
+            let registerRequest = DTO.RegisterImageRequest(objectKey: presigned.objectKey, contentType: "image/jpeg")
+            let _ = try await repository.registerImageMetadata(collectionId: collectionId, request: registerRequest)
+        } catch {
+            try await deleteCollection(collectionId)
+        }
     }
     
     func deleteCollection(_ id: Int) async throws {
