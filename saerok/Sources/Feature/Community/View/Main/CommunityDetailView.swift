@@ -94,7 +94,7 @@ struct CommunityDetailView: View {
                 default:
                     ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
                         Button {
-                            coordinator.push(CommunityView.Route.detail(id: item.id))
+                            coordinator.push(CommunityView.Route.detailFromFeed(id: item.id))
                         } label: {
                             CommunityCell(item: item, type: viewModel.type)
                         }

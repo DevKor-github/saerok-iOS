@@ -12,6 +12,8 @@ import SwiftUI
 
 enum CollectionRoute: AppRoute {
     case collectionDetail(Int)
+    case collectionDetailFromNotiCenter(Int)
+    case collectionDetailFromDeepLink(Int)
     case addCollection(bird: Local.Bird?)
     case notification
     case directToBoardDetail(Int)
@@ -42,7 +44,11 @@ struct CollectionView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .collectionDetail(let id):
-                    CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
+                    CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .`self`))
+                case .collectionDetailFromNotiCenter(let id):
+                    CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .notiCenter))
+                case .collectionDetailFromDeepLink(let id):
+                    CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .deeplink))
                 case .addCollection(let bird):
                     CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .add, bird: bird))
                 case .notification:
@@ -58,7 +64,7 @@ struct CollectionView: View {
                 case .scrollToTop:
                     scrollToTopTrigger.toggle()
                 case .navigateToDetail(let id):
-                    coordinator.push(Route.collectionDetail(id))
+                    coordinator.push(Route.collectionDetailFromDeepLink(id))
                 }
                 viewModel.resetOutput()
             }

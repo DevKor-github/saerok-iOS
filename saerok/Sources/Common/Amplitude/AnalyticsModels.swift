@@ -18,16 +18,14 @@ enum Screen: String, Codable {
 }
 
 enum EntrySource: String, Codable {
-    case collectionMap = "collection_map"
-    case collectionList = "collection_list"
+    case map
+    case `self` = "self_saerok"
     case communityFeed = "community_feed"
-    case communityDetail = "community_detail"
-    case myPage = "my_page"
+    case communitySearch = "community_search"
     case userProfile = "user_profile"
-    case fieldGuide = "field_guide"
-    case notification = "notification"
-    case deeplink = "deeplink"
-    case unknown = "unknown"
+    case notiCenter = "notification_center"
+    case deeplink
+    case unknown
 }
 
 enum ExitReason: String, Codable {
@@ -50,12 +48,15 @@ enum LikeState: String, Codable {
 }
 
 enum ServerEnvironment: String, Codable {
-    case development = "development"
-    case production = "production"
+    case development = "개발"
+    case production = "운영"
     
     static var current: ServerEnvironment {
-        let baseURL = Bundle.main.baseURL
-        return baseURL.contains("dev") || baseURL.contains("development") ? .development : .production
+        #if DEBUG
+        return .development
+        #else
+        return .production
+        #endif
     }
 }
 
@@ -74,7 +75,7 @@ struct SaerokDetailTapPayload: EventPayload {
     let detailUiVariant: DetailUIVariant
     let appVersion: String
     let platform: String
-    let serverEnvironment: ServerEnvironment
+    let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
     let listLikeCount: Int
@@ -90,7 +91,7 @@ struct SaerokDetailViewPayload: EventPayload {
     let detailUiVariant: DetailUIVariant
     let appVersion: String
     let platform: String
-    let serverEnvironment: ServerEnvironment
+    let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
     let listLikeCount: Int
@@ -110,7 +111,7 @@ struct SaerokLikeTogglePayload: EventPayload {
     let detailUiVariant: DetailUIVariant
     let appVersion: String
     let platform: String
-    let serverEnvironment: ServerEnvironment
+    let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
     let detailTapTs: String
@@ -128,7 +129,7 @@ struct SaerokCommentOpenPayload: EventPayload {
     let detailUiVariant: DetailUIVariant
     let appVersion: String
     let platform: String
-    let serverEnvironment: ServerEnvironment
+    let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
     let detailTapTs: String
@@ -146,7 +147,7 @@ struct SaerokCommentClosePayload: EventPayload {
     let detailUiVariant: DetailUIVariant
     let appVersion: String
     let platform: String
-    let serverEnvironment: ServerEnvironment
+    let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
     let detailTapTs: String
@@ -162,7 +163,7 @@ struct SaerokDetailExitPayload: EventPayload {
     let detailUiVariant: DetailUIVariant
     let appVersion: String
     let platform: String
-    let serverEnvironment: ServerEnvironment
+    let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
     let detailTapTs: String
@@ -189,7 +190,10 @@ enum AnalyticsEvent {
 
 extension Encodable {
     func toDict() -> [String: Any] {
-        guard let data = try? JSONEncoder().encode(self),
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        
+        guard let data = try? encoder.encode(self),
               let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else { return [:] }
         return obj

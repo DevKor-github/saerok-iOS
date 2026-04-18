@@ -10,7 +10,9 @@ import SwiftUI
 
 enum CommunityRoute: AppRoute {
     case communityType(type: CommunityType)
-    case detail(id: Int)
+    case detailFromFeed(id: Int)
+    case detailFromProfile(id: Int)
+    case detailFromSearch(id: Int)
     #if DEBUG
     case postDetail(post: DTO.Post)
     #endif
@@ -73,8 +75,12 @@ private extension CommunityView {
         switch route {
         case .communityType(let type):
             CommunityDetailView(viewModel: coordinator.makeCommunityDetailViewModel(for: type))
-        case .detail(let id):
-            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id))
+        case .detailFromFeed(let id):
+            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .communityFeed))
+        case .detailFromProfile(let id):
+            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .userProfile))
+        case .detailFromSearch(let id):
+            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .communitySearch))
         #if DEBUG
         case .postDetail(let post):
             CommunityPostDetailView(
@@ -251,7 +257,7 @@ private extension CommunityView {
                         .frame(width: 17)
                     ForEach(viewModel.mainItems.pendingCollections) { item in
                         Button {
-                            coordinator.push(Route.detail(id: item.id))
+                            coordinator.push(Route.detailFromFeed(id: item.id))
                         } label: {
                             CommunitySuggestionCell(item: item)
                         }
@@ -277,7 +283,7 @@ private extension CommunityView {
             VStack(spacing: 0) {
                 ForEach(items) { item in
                     Button {
-                        coordinator.push(Route.detail(id: item.id))
+                        coordinator.push(Route.detailFromFeed(id: item.id))
                     } label: {
                         CommunityCell(item: item, type: type)
                     }

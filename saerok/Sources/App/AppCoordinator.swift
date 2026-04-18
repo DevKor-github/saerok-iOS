@@ -43,9 +43,15 @@ final class AppCoordinator: ObservableObject {
 
 // MARK: - ViewModel Factory
 extension AppCoordinator {
-    func makeCollectionDetailViewModel(id: Int) -> CollectionDetailView.ViewModel {
+    func makeCollectionDetailViewModel(
+        id: Int,
+        entrySource: EntrySource = .unknown,
+        screen: Screen = .unknown
+    ) -> CollectionDetailView.ViewModel {
         .init(
             collectionID: id,
+            entrySource: entrySource,
+            screen: screen,
             appState: container.appState,
             collectionInteractor: container.interactors.collection,
             fieldGuideInteractor: container.interactors.fieldGuide,

@@ -29,8 +29,10 @@ extension CollectionDetailView {
         var newSuggesting: Local.Bird?
         var selectedPreview: Local.BirdSuggestion?
         var selectedAdopting: Local.BirdSuggestion?
-        var opinionFlow: OpinionFlow?
         var isGuest: Bool { appState[\.authStatus] == .guest }
+        
+        // MARK: Analytics
+        private(set) var detailFlow: DetailViewFlow?
         
         // MARK: Dependencies
         private let appState: Store<AppState>
@@ -41,6 +43,8 @@ extension CollectionDetailView {
         // MARK: Init
         init(
             collectionID: Int,
+            entrySource: EntrySource = .unknown,
+            screen: Screen = .unknown,
             appState: Store<AppState>,
             collectionInteractor: CollectionInteractor,
             fieldGuideInteractor: FieldGuideInteractor,
@@ -52,6 +56,16 @@ extension CollectionDetailView {
             self.fieldGuideInteractor = fieldGuideInteractor
             self.userInteractor = userInteractor
             self.collection = .mockData[0]
+            
+            // DetailViewFlow는 collection 데이터 로드 후 초기화
+            self.detailFlow = DetailViewFlow(
+                recordId: "\(collectionID)",
+                entrySource: entrySource,
+                screen: screen,
+                isOwnRecord: false, // 초기값, loadInitial에서 업데이트
+                listLikeCount: 0,
+                listCommentCount: 0
+            )
         }
     
 
@@ -67,8 +81,23 @@ extension CollectionDetailView {
                 await group.waitForAll()
             }
             loadState = .loaded
-
-            sendScreenViewEvent()
+            
+            // 데이터 로드 완료 후 DetailViewFlow 업데이트
+            if let flow = detailFlow {
+                detailFlow = DetailViewFlow(
+                    recordId: "\(collectionID)",
+                    entrySource: flow.entrySource,
+                    screen: flow.screen,
+                    isOwnRecord: collection.isMine,
+                    listLikeCount: collection.likeCount,
+                    listCommentCount: collection.commentCount
+                )
+                
+                // saerok_detail_view 이벤트
+                if let detailFlow = detailFlow {
+                    Analytics.shared.logSaerokDetailView(flow: detailFlow)
+                }
+            }
         }
 
         func fetchCollectionDetail() async {
@@ -128,13 +157,19 @@ extension CollectionDetailView {
             do {
                 let isLiked = try await collectionInteractor.toggleLike(collectionID)
                 collection.likeToggle(isLiked)
+                
+                // saerok_like_toggle 이벤트
+                if let flow = detailFlow {
+                    Analytics.shared.logSaerokLikeToggle(
+                        flow: flow,
+                        likeState: isLiked ? .on : .off
+                    )
+                }
             } catch {
             }
         }
 
         func suggestBird(birdID: Int) async {
-            guard let flow = opinionFlow else { return }
-
             do {
                 var result = try await collectionInteractor.suggestBird(collectionID, birdId: birdID)
                 let bird = try await fieldGuideInteractor.loadBirdDetails(birdID: birdID)
@@ -142,30 +177,8 @@ extension CollectionDetailView {
 
                 suggestions.append(result)
                 newSuggesting = nil
-
-                Analytics.shared.log(
-                    .opinionCreateSuccess(
-                        .init(
-                            recordId: "\(collectionID)",
-                            opinionFlowId: flow.flowId,
-                            birdId: "\(birdID)",
-                            birdName: bird.name,
-                            opinionId: "\(result.id)"
-                        )
-                    )
-                )
             } catch {
-                Analytics.shared.log(
-                    .opinionCreateFailure(
-                        .init(
-                            recordId: "\(collectionID)",
-                            opinionFlowId: flow.flowId,
-                            birdId: "\(birdID)",
-                            birdName: newSuggesting?.name ?? "",
-                            errorCode: error.localizedDescription
-                        )
-                    )
-                )
+    
             }
         }
 
@@ -179,29 +192,16 @@ extension CollectionDetailView {
         
         func selectSuggestingBird(_ bird: Local.Bird) {
             newSuggesting = bird
-            Analytics.shared.log(.birdSearchResultClick(.init(recordId: "\(collectionID)", opinionFlowId: opinionFlow!.flowId, birdId: "\(bird.id)", birdName: bird.name)))
-        }
-        
-        func startOpinionFlow() {
-            if !collection.isMine {
-                opinionFlow = OpinionFlow()
-                Analytics.shared.log(.helpIdentifyClick(.init(recordId: "\(collectionID)", opinionFlowId: opinionFlow!.flowId)))
-            }
         }
         
         func suggestingComplete() async {
-            Analytics.shared.log(.opinionConfirmClick(.init(recordId: "\(collectionID)", opinionFlowId: opinionFlow!.flowId, birdId: "\(newSuggesting!.id)", birdName: newSuggesting!.name)))
             await suggestBird(birdID: newSuggesting?.id ?? 0)
         }
         
         func suggestingCancel() {
-            Analytics.shared.log(.opinionConfirmNoClick(.init(recordId: "\(collectionID)", opinionFlowId: opinionFlow!.flowId, birdId: "\(newSuggesting!.id)", birdName: newSuggesting!.name)))
             newSuggesting = nil
         }
-        
-        func sendFindBirdLog() {
-            Analytics.shared.log(.opinionAddClick(.init(recordId: "\(collectionID)", opinionFlowId: opinionFlow!.flowId)))
-        }
+
         
         func reportCollection() async {
             try? await collectionInteractor.reportCollection(collectionID)
@@ -231,14 +231,5 @@ extension CollectionDetailView {
         func refreshLikers() async throws {
             likers = try await collectionInteractor.fetchLikeUsers(collectionID)
         }
-        
-        // MARK: - Analytics
-        private func sendScreenViewEvent() {
-            guard collection.birdID == nil else { return }
-            Analytics.shared.log(
-                .unknownDetailView(.init(recordId: "\(collectionID)"))
-            )
-        }
-        
     }
 }

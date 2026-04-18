@@ -59,7 +59,7 @@ private extension UserSummaryView {
                     header: { countView }
                 ) { bird in
                     CollectionItemView(bird) {
-                        coordinator.push(CommunityView.Route.detail(id: bird.id))
+                        coordinator.push(CommunityView.Route.detailFromProfile(id: bird.id))
                     }
                 }
                 .padding(.horizontal, 9)

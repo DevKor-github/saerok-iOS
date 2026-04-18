@@ -83,8 +83,20 @@ struct CollectionDetailView: View {
         }
         .regainSwipeBack()
         .task {
+            // saerok_detail_tap 이벤트 (화면 진입)
+            if let flow = viewModel.detailFlow {
+                Analytics.shared.logSaerokDetailTap(flow: flow)
+            }
+            
             await viewModel.loadInitial()
             downloadImage(from: viewModel.collection.imageURL)
+        }
+        .onDisappear {
+            // saerok_detail_exit 이벤트 (화면 이탈)
+            if let flow = viewModel.detailFlow {
+                let exitReason: ExitReason = coordinator.path.isEmpty ? .backButton : .navigationTap
+                Analytics.shared.logSaerokDetailExit(flow: flow, exitReason: exitReason)
+            }
         }
         .navigationDestination(for: Route.self) { route in
             routeView(for: route)
@@ -191,13 +203,11 @@ private extension CollectionDetailView {
                 selectedBird: $viewModel.newSuggesting,
                 selectedPreview: $viewModel.selectedPreview,
                 selectedAdopting: $viewModel.selectedAdopting,
-                opinionFlow: $viewModel.opinionFlow,
                 showSuggestPopup: $uiState.showSuggestPopup,
                 showAdoptPopup: $uiState.showAdoptPopup,
                 onDismiss: { uiState.showSuggestionSheet.toggle() },
                 onFindBird: {
                     coordinator.push(Route.findBird)
-                    viewModel.sendFindBirdLog()
                 }
             )
         }
@@ -210,6 +220,17 @@ private extension CollectionDetailView {
         .onChange(of: uiState.showCommentSheet) { _, new in
             if new == false {
                 uiState.selectedComment = nil
+                
+                // saerok_comment_close 이벤트
+                if let flow = viewModel.detailFlow {
+                    Analytics.shared.logSaerokCommentClose(flow: flow)
+                }
+            } else {
+                // saerok_comment_open 이벤트
+                if let flow = viewModel.detailFlow {
+                    let commentLoaded = !viewModel.comments.isEmpty
+                    Analytics.shared.logSaerokCommentOpen(flow: flow, commentLoaded: commentLoaded)
+                }
             }
         }
     }
@@ -269,7 +290,6 @@ private extension CollectionDetailView {
                 
             case .suggestTap:
                 uiState.showSuggestionSheet.toggle()
-                viewModel.startOpinionFlow()
                 
             case .navigateToFieldGuide:
                 viewModel.navigateToFieldGuide()
@@ -368,6 +388,9 @@ private extension CollectionDetailView {
             guard let data, let image = UIImage(data: data) else { return }
             Task { @MainActor in
                 uiState.collectionImage = image
+                
+                // 이미지 로드 완료 표시
+                viewModel.detailFlow?.markImageLoaded()
             }
         }.resume()
     }

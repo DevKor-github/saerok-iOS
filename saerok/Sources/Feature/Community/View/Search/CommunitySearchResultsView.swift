@@ -64,7 +64,7 @@ struct CommunitySearchResultsView: View {
         LazyVStack(spacing: 0) {
             ForEach(searchMainItems.collections) { item in
                 Button {
-                    coordinator.push(Route.detail(id: item.id))
+                    coordinator.push(Route.detailFromSearch(id: item.id))
                 } label: {
                     CommunityCell(item: item, type: .search(searchText))
                 }

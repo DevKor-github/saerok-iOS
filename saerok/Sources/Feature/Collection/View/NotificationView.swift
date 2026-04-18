@@ -31,7 +31,7 @@ struct NotificationView: View {
             ForEach(viewModel.items, id: \.id) { item in
                 NotificationCell(item: item) {
                     if case .saerok(let payload) = item.payload {
-                        coordinator.push(CollectionRoute.collectionDetail(payload.collectionId))
+                        coordinator.push(CollectionRoute.collectionDetailFromNotiCenter(payload.collectionId))
                         viewModel.readNotification(item)
                     } else if case .announcement(let payload) = item.payload {
                         guard let id = payload.announcementId else { return }
