@@ -10,15 +10,29 @@ import Foundation
 
 @Observable
 final class MapController {
-    enum Action {
+    enum Action: Equatable {
         case moveCamera(lat: Double, lng: Double, animated: Bool)
         case clearMarkers
         case refreshMarkers
+        
+        static func == (lhs: Action, rhs: Action) -> Bool {
+            switch (lhs, rhs) {
+            case (.moveCamera(let lat1, let lng1, let animated1), .moveCamera(let lat2, let lng2, let animated2)):
+                return lat1 == lat2 && lng1 == lng2 && animated1 == animated2
+            case (.clearMarkers, .clearMarkers):
+                return true
+            case (.refreshMarkers, .refreshMarkers):
+                return true
+            default:
+                return false
+            }
+        }
     }
     
     let locationManager: LocationManager
 
     var pendingActions: [Action] = []
+    var actionTrigger: UUID = UUID() // Trigger to force updates
     var selectedBird: Local.NearbyCollectionSummary? = nil
     var allBirdMarkers: [Local.NearbyCollectionSummary] = []
     var visibleRadius: Double = 1000
@@ -37,11 +51,11 @@ final class MapController {
     
     func moveCamera(lat: Double, lng: Double, animated: Bool = true) {
         pendingActions.append(.moveCamera(lat: lat, lng: lng, animated: animated))
+        actionTrigger = UUID()
     }
     
-    @MainActor
     func moveToUserLocation() {
-        Task {
+        Task { @MainActor in
             if let location = await locationManager.requestAndGetCurrentLocation() {
                 pendingActions.append(
                     .moveCamera(
@@ -49,6 +63,7 @@ final class MapController {
                         lng: location.coordinate.longitude,
                         animated: true
                     ))
+                actionTrigger = UUID()
             }
         }
     }
@@ -56,9 +71,11 @@ final class MapController {
     func refreshBirdMarkers(_ birds: [Local.NearbyCollectionSummary]) {
         allBirdMarkers = birds
         pendingActions.append(.refreshMarkers)
+        actionTrigger = UUID()
     }
     
     func clearMarkers() {
         pendingActions.append(.clearMarkers)
+        actionTrigger = UUID()
     }
 }

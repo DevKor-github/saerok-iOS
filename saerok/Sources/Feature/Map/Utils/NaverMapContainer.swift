@@ -14,6 +14,7 @@ import SwiftUI
 struct NaverMapContainer {
     @Bindable var controller: MapController
     @Binding var coord: (Double, Double)
+    let actionTrigger: UUID
 }
 
 extension NaverMapContainer: UIViewRepresentable {
@@ -42,21 +43,24 @@ extension NaverMapContainer: UIViewRepresentable {
 
     func updateUIView(_ uiView: NMFNaverMapView, context: Context) {
         let coordinator = context.coordinator
-
-        DispatchQueue.main.async {
-            while !controller.pendingActions.isEmpty {
-                let action = controller.pendingActions.removeFirst()
-                switch action {
-                case .moveCamera(let lat, let lng, let animated):
-                    coordinator.mapView(
-                        uiView.mapView,
-                        cameraMoveTo: NMGLatLng(lat: lat, lng: lng),
-                        animated: animated
-                    )
-                case .clearMarkers:
-                    coordinator.clearAllMarkers()
-                case .refreshMarkers:
-                    coordinator.refreshClusterMarkers()
+        
+        if !controller.pendingActions.isEmpty {
+            DispatchQueue.main.async {
+                while !self.controller.pendingActions.isEmpty {
+                    let action = self.controller.pendingActions.removeFirst()
+                    
+                    switch action {
+                    case .moveCamera(let lat, let lng, let animated):
+                        coordinator.mapView(
+                            uiView.mapView,
+                            cameraMoveTo: NMGLatLng(lat: lat, lng: lng),
+                            animated: animated
+                        )
+                    case .clearMarkers:
+                        coordinator.clearAllMarkers()
+                    case .refreshMarkers:
+                        coordinator.refreshClusterMarkers()
+                    }
                 }
             }
         }

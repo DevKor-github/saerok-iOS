@@ -33,7 +33,7 @@ struct NaverMapView: View {
                 .zIndex(1)
             }
             
-            NaverMapContainer(controller: controller, coord: $coord)
+            NaverMapContainer(controller: controller, coord: $coord, actionTrigger: controller.actionTrigger)
                 .edgesIgnoringSafeArea(.vertical)
         }
         .ignoresSafeArea(.keyboard)

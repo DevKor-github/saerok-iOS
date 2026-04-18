@@ -70,3 +70,5 @@ Config/Secrets.Release.xcconfig
 AGENTS.md
 repo-map.md
 feature-template.md
+CLAUDE.md
+DESIGN.md
