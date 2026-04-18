@@ -48,7 +48,8 @@ extension AppCoordinator {
             collectionID: id,
             appState: container.appState,
             collectionInteractor: container.interactors.collection,
-            fieldGuideInteractor: container.interactors.fieldGuide
+            fieldGuideInteractor: container.interactors.fieldGuide,
+            userInteractor: container.interactors.user
         )
     }
     

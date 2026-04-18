@@ -29,6 +29,11 @@ protocol UserInteractor {
     func getAnnouncements() async throws -> [DTO.Announcement]
     func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail
     func registerDeviceToken(deviceID: String, fcmToken: String) async throws
+    
+    // 사용자 차단
+    func blockUser(userId: Int) async throws
+    func syncBlockable() async
+    func isBlockable() -> Bool
 }
 
 enum UserInteractorError: Error {
@@ -157,6 +162,41 @@ struct UserInteractorImpl: UserInteractor {
     func registerDeviceToken(deviceID: String, fcmToken: String) async throws {
         try await repository.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
     }
+
+    func blockUser(userId: Int) async throws {
+        storeBlockedUserId(userId)
+        try await repository.blockUser(userId: userId)
+    }
+}
+
+//사용자 차단
+extension UserInteractorImpl {
+    static let blockable = "blockable"
+
+    func storeBlockedUserId(_ id: Int) {
+        BlockedUserStorage.addBlockedUserId(id)
+    }
+
+    func readBlockedUserIds() -> [Int] {
+        BlockedUserStorage.readBlockedUserIds()
+    }
+    
+    func syncBlockable() async {
+        do {
+            try await repository.blockUser(userId: 0)
+            UserDefaults.standard.set(true, forKey: Self.blockable)
+        } catch {
+            UserDefaults.standard.set(false, forKey: Self.blockable)
+        }
+        // TODO: - 사용자 차단 테스트
+        #if DEBUG
+        UserDefaults.standard.set(true, forKey: Self.blockable)
+        #endif
+    }
+    
+    func isBlockable() -> Bool {
+        UserDefaults.standard.bool(forKey: Self.blockable)
+    }
 }
 
 struct MockUserInteractorImpl: UserInteractor {
@@ -165,6 +205,13 @@ struct MockUserInteractorImpl: UserInteractor {
     func checkNicknameAvailability(_ nickname: String) async throws -> (Bool, String?) { (false, nil) }
     
     func registerDeviceToken(deviceID: String, fcmToken: String) async throws { }
+
+    // 사용자 차단
+    func blockUser(userId: Int) async throws { }
+    
+    func syncBlockable() async {}
+    
+    func isBlockable() -> Bool { true }
     
     func getAnnouncements() async throws -> [DTO.Announcement] { [] }
     

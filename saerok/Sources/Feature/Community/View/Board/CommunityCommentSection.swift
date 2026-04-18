@@ -15,6 +15,7 @@ struct CommunityCommentSection: View {
     let onReply: (Local.CollectionComment) -> Void
     let onDelete: (Int) async -> Void
     let onReport: (Int) -> Void
+    let onBlock: (Int) -> Void
 
     init(
         comments: [Local.CollectionComment],
@@ -23,7 +24,8 @@ struct CommunityCommentSection: View {
         onUserTap: @escaping (Int) -> Void = { _ in },
         onReply: @escaping (Local.CollectionComment) -> Void = { _ in },
         onDelete: @escaping (Int) async -> Void = { _ in },
-        onReport: @escaping (Int) -> Void = { _ in }
+        onReport: @escaping (Int) -> Void = { _ in },
+        onBlock: @escaping (Int) -> Void = { _ in }
     ) {
         self.comments = comments
         self.postUserId = postUserId
@@ -32,6 +34,7 @@ struct CommunityCommentSection: View {
         self.onReply = onReply
         self.onDelete = onDelete
         self.onReport = onReport
+        self.onBlock = onBlock
     }
 
     var body: some View {
@@ -97,7 +100,8 @@ struct CommunityCommentSection: View {
             onTap: { onUserTap(item.user.id) },
             onReply: { onReply(item) },
             onDelete: onDelete,
-            onReport: { onReport(item.id) }
+            onReport: { onReport(item.id) },
+            onBlock: { onBlock(item.user.id) }
         )
         .contentShape(Rectangle())
     }
@@ -116,7 +120,8 @@ struct CommunityCommentSection: View {
                         onTap: { onUserTap(reply.user.id) },
                         onReply: {},
                         onDelete: onDelete,
-                        onReport: { onReport(reply.id) }
+                        onReport: { onReport(reply.id) },
+                        onBlock: { onBlock(item.user.id) }
                     )
                 }
             }

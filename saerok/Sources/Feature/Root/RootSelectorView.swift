@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import AppTrackingTransparency
 
 struct RootSelectorView: View {
     @Environment(\.injected) private var injected
@@ -32,6 +33,7 @@ struct RootSelectorView: View {
         .animation(.spring(), value: networkMonitor.isConnected)
         .onReceive(authStatusUpdate) { authStatus = $0 }
         .onChange(of: scenePhase) { before, after in
+            ATTrackingManager.requestTrackingAuthorization { _ in }
             if before == .background && after == .inactive {
                 Task { @MainActor in
                    injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()

@@ -7,15 +7,20 @@
 
 import SwiftUI
 
+//develop
 struct CollectionDescriptionSection: View {
     typealias Route = CollectionDetailRoute
-    
+    //사용자 차단
+    @AppStorage("blockable") var isBlockable: Bool = false
+
     enum Action {
         case reportTap
         case suggestTap
         case navigateToFieldGuide
         case navigateToOther(_ userId: Int)
         case navigateToMap
+        //사용자 차단
+        case blockUserTap
     }
     
     @EnvironmentObject private var coordinator: AppCoordinator
@@ -243,6 +248,13 @@ private extension CollectionDescriptionSection {
             Menu {
                 Button { onAction(.reportTap) } label: {
                     Label("신고하기", systemImage: "light.beacon.max")
+                }
+                
+                //사용자 차단
+                if isBlockable {
+                    Button { onAction(.blockUserTap) } label: {
+                        Label("사용자 차단하기", systemImage: "person.fill.xmark")
+                    }
                 }
             } label: {
                 Image.SRIconSet.option.frame(.defaultIconSizeLarge)

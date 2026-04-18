@@ -36,18 +36,21 @@ extension CollectionDetailView {
         private let appState: Store<AppState>
         private let collectionInteractor: CollectionInteractor
         private let fieldGuideInteractor: FieldGuideInteractor
+        private let userInteractor: UserInteractor
 
         // MARK: Init
         init(
             collectionID: Int,
             appState: Store<AppState>,
             collectionInteractor: CollectionInteractor,
-            fieldGuideInteractor: FieldGuideInteractor
+            fieldGuideInteractor: FieldGuideInteractor,
+            userInteractor: UserInteractor
         ) {
             self.collectionID = collectionID
             self.appState = appState
             self.collectionInteractor = collectionInteractor
             self.fieldGuideInteractor = fieldGuideInteractor
+            self.userInteractor = userInteractor
             self.collection = .mockData[0]
         }
     
@@ -202,6 +205,14 @@ extension CollectionDetailView {
         
         func reportCollection() async {
             try? await collectionInteractor.reportCollection(collectionID)
+        }
+
+        func blockCollectionUser() async {
+            try? await userInteractor.blockUser(userId: collection.user.id)
+        }
+
+        func blockUser(userId: Int) async {
+            try? await userInteractor.blockUser(userId: userId)
         }
         
         func navigateToMap() {

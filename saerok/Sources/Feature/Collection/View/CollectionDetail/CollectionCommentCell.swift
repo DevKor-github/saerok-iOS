@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct CollectionCommentCell: View {
+    //사용자 차단
+    @AppStorage("blockable") var isBlockable: Bool = false
+    
     let collectionUserId: Int
     let isMyCollection: Bool
     let isReply: Bool
@@ -18,6 +21,7 @@ struct CollectionCommentCell: View {
     let onReply: () -> Void
     let onDelete: (Int) async -> Void
     let onReport: () -> Void
+    let onBlock: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 6) {
@@ -102,6 +106,12 @@ struct CollectionCommentCell: View {
             if !item.isMine {
                 Button(action: onReport) {
                     Label("신고하기", systemImage: "light.beacon.max")
+                }
+                //사용자 차단
+                if isBlockable {
+                    Button(action: onBlock) {
+                        Label("사용자 차단하기", systemImage: "person.fill.xmark")
+                    }
                 }
             }
         } label: {

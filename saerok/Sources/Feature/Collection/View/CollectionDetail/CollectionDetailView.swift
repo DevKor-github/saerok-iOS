@@ -23,6 +23,8 @@ struct CollectionDetailView: View {
         var showPopup: Bool = false
         var showSuggestPopup: Bool = false
         var showAdoptPopup: Bool = false
+        //사용자 차단
+        var showBlockUserPopup: Bool = false
         var showCommentSheet: Bool = false
         var showSuggestionSheet: Bool = false
         var showShareSheet: Bool = false
@@ -57,9 +59,11 @@ struct CollectionDetailView: View {
                 showPopup: $uiState.showPopup,
                 showSuggestPopup: $uiState.showSuggestPopup,
                 showAdoptPopup: $uiState.showAdoptPopup,
+                showBlockPopup: $uiState.showBlockUserPopup,
                 alertConfig: uiState.showPopup ? postReportPopupConfig : nil,
                 adoptConfig: uiState.showAdoptPopup ? adoptPopupConfig : nil,
-                suggestConfig: uiState.showSuggestPopup ? suggestPopupConfig : nil
+                suggestConfig: uiState.showSuggestPopup ? suggestPopupConfig : nil,
+                blockUserConfig: uiState.showBlockUserPopup ? blockUserPopupConfig : nil
             )
             
             if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
@@ -259,6 +263,10 @@ private extension CollectionDetailView {
             case .reportTap:
                 uiState.showPopup.toggle()
                 
+            // 사용자 차단
+            case .blockUserTap:
+                uiState.showBlockUserPopup.toggle()
+                
             case .suggestTap:
                 uiState.showSuggestionSheet.toggle()
                 viewModel.startOpinionFlow()
@@ -348,6 +356,10 @@ private extension CollectionDetailView {
             }
         }
     }
+            
+    func navigateToOther(_ userId: Int) {
+        coordinator.push(Route.other(userId))
+    }
     
     func downloadImage(from urlString: String) {
         guard let url = URL(string: urlString) else { return }
@@ -367,10 +379,12 @@ private extension CollectionDetailView {
         @Binding var showPopup: Bool
         @Binding var showSuggestPopup: Bool
         @Binding var showAdoptPopup: Bool
+        @Binding var showBlockPopup: Bool
 
         let alertConfig: PopupConfig?
         let adoptConfig: PopupConfig?
         let suggestConfig: PopupConfig?
+        let blockUserConfig: PopupConfig?
         
         var body: some View {
             EmptyView()
@@ -385,6 +399,10 @@ private extension CollectionDetailView {
                 .srPopup(
                     isPresented: $showAdoptPopup,
                     config: adoptConfig
+                )
+                .srPopup(
+                    isPresented: $showBlockPopup,
+                    config: blockUserConfig
                 )
         }
     }
@@ -497,6 +515,33 @@ private extension CollectionDetailView {
                             await viewModel.adoptBird()
                             uiState.showAdoptPopup = false
                         }
+                    }
+                )
+            )
+        )
+    }
+    
+    var blockUserPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "이 사용자를 차단할까요?",
+            message: "차단한 사용자의 게시물과 댓글을\n더 이상 볼 수 없어요.",
+            buttons: .double(
+                .init(
+                    title: "차단하기",
+                    style: .delete,
+                    action: {
+                        Task {
+                            await viewModel.blockCollectionUser()
+                            uiState.showBlockUserPopup = false
+                            coordinator.pop()
+                        }
+                    }
+                ),
+                .init(
+                    title: "취소",
+                    style: .confirm,
+                    action: {
+                        uiState.showBlockUserPopup = false
                     }
                 )
             )

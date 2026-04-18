@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct CollectionCommentSheet: View {
+    //사용자 차단
+    @AppStorage("blockable") var isBlockable: Bool = false
+    
     @Bindable var viewModel: CollectionDetailView.ViewModel
     let collectionId: Int
     let collectionUserId: Int
@@ -103,6 +106,7 @@ struct CollectionCommentSheet: View {
             )
         )
     }
+
     
     func reportComment() {
         guard let reportId = reportId else { return }
@@ -111,6 +115,13 @@ struct CollectionCommentSheet: View {
             await viewModel.reportComment(id: reportId)
             self.reportId = nil
             showReportCommentPopup = false
+        }
+    }
+
+    func blockUser(userId: Int) {
+        Task {
+            await viewModel.blockUser(userId: userId)
+            await viewModel.fetchComments()
         }
     }
     
@@ -134,6 +145,9 @@ struct CollectionCommentSheet: View {
             onReport: {
                 reportId = item.id
                 showReportCommentPopup.toggle()
+            },
+            onBlock: {
+                blockUser(userId: item.user.id)
             }
         )
         .contentShape(Rectangle())
@@ -156,6 +170,9 @@ struct CollectionCommentSheet: View {
                         onReport: {
                             reportId = item.id
                             showReportCommentPopup.toggle()
+                        },
+                        onBlock: {
+                            blockUser(userId: reply.user.id)
                         }
                     )
                 }
