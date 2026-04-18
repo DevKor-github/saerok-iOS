@@ -129,6 +129,7 @@ struct CommunityCell: View {
             Text(item.createdAt.timeAgoText)
             comma
             Text("\(item.locationAlias)에서")
+                .lineLimit(1)
         }
         .foregroundStyle(.srGray)
         .font(.SRFontSet.caption3)
