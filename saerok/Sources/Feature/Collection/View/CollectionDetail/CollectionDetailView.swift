@@ -9,8 +9,6 @@ import SwiftUI
 
 enum CollectionDetailRoute: AppRoute {
     case edit
-    case findBird
-    case preview
     case bird(_ id: Int)
     case other(_ id: Int)
 }
@@ -27,6 +25,7 @@ struct CollectionDetailView: View {
         var showBlockUserPopup: Bool = false
         var showCommentSheet: Bool = false
         var showSuggestionSheet: Bool = false
+        var showFindBird: Bool = false
         var showShareSheet: Bool = false
         var showLikerSheet: Bool = false
         var showFullImage = false
@@ -101,6 +100,14 @@ struct CollectionDetailView: View {
         .navigationDestination(for: Route.self) { route in
             routeView(for: route)
         }
+        .fullScreenCover(isPresented: $uiState.showFindBird) {
+            CollectionSearchView(
+                onSelect: { bird in
+                    viewModel.selectSuggestingBird(bird)
+                    uiState.showFindBird = false
+                }
+            )
+        }
     }
 }
 
@@ -113,16 +120,6 @@ private extension CollectionDetailView {
             CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .edit(viewModel.collection)))
         case .bird(let id):
             BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: id))
-        case .findBird:
-            CollectionSearchView(
-                onSelect: { bird in
-                    viewModel.selectSuggestingBird(bird)
-                    coordinator.pop()
-                })
-        case .preview:
-            if let suggestion = viewModel.selectedPreview {
-                BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: suggestion.bird.id))
-            }
         case .other(let id):
             UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
         }
@@ -207,7 +204,7 @@ private extension CollectionDetailView {
                 showAdoptPopup: $uiState.showAdoptPopup,
                 onDismiss: { uiState.showSuggestionSheet.toggle() },
                 onFindBird: {
-                    coordinator.push(Route.findBird)
+                    uiState.showFindBird = true
                 }
             )
         }
@@ -365,7 +362,7 @@ private extension CollectionDetailView {
                 
                 if !coordinator.path.isEmpty {
                     Button {
-                        coordinator.push(Route.preview)
+                        coordinator.push(Route.bird(suggestion.bird.id))
                     } label: {
                         Image.SRIconSet.chevronRight
                             .frame(.defaultIconSize)

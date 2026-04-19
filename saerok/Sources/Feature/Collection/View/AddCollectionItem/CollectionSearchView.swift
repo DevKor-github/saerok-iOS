@@ -15,7 +15,7 @@ struct CollectionSearchView: View {
     
     @Environment(\.injected) private var injected
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var coordinator: AppCoordinator
+    @Environment(\.dismiss) private var dismiss
     
     // MARK: View State
         
@@ -84,7 +84,7 @@ private extension CollectionSearchView {
                 .font(.SRFontSet.subtitle2)
         }, leading: {
             Button {
-                coordinator.pop()
+                dismiss()
             } label: {
                 Image.SRIconSet.chevronLeft.frame(.defaultIconSizeSmall)
             }
