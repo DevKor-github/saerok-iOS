@@ -51,13 +51,9 @@ private extension KakaoLoginView {
     }
 
     private func handleLoginResult(_ oauthToken: OAuthToken?, error: Error?) {
-        if let error = error {
-            print("❌ Kakao login failed:", error)
-            return
-        }
+        guard error == nil else { return }
         
         guard let token = oauthToken else {
-            print("❌ Failed to get idToken from Kakao")
             return
         }
         
@@ -81,9 +77,7 @@ private extension KakaoLoginView {
 
                 injected.appState[\.authStatus] = .signedIn(isRegistered: response.signupStatus == .completed)
             }
-        } catch {
-            print("❌ Kakao login failed2:", error)
-        }
+        } catch { }
     }
     
     func fetchKakaoUserInfo() async throws -> KakaoUserInfo {

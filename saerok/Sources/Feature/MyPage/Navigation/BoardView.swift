@@ -23,9 +23,7 @@ extension BoardView {
         func loadAnnouncements() async {
             do {
                 announcements = try await interactor.getAnnouncements()
-            } catch {
-                print(error.localizedDescription)
-            }
+            } catch { }
         }
         
         func loadAnnouncementDetail(id: Int) async throws -> DTO.AnnouncementDetail {

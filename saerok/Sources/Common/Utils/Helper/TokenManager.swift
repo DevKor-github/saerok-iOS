@@ -21,9 +21,7 @@ actor TokenManager {
             if let refreshToken {
                 try KeyChain.create(key: .refreshToken, token: refreshToken)
             }
-        } catch {
-            print("🔒 Token 저장 실패: \(error)")
-        }
+        } catch { }
     }
 
     // MARK: - 불러오기
@@ -42,9 +40,7 @@ actor TokenManager {
             let newID = UUID().uuidString
             do {
                 try KeyChain.create(key: .deviceId, token: newID)
-            } catch {
-                print("🔒 고유번호 생성 실패: \(error)")
-            }
+            } catch { }
             return newID
         }
     }
@@ -54,9 +50,7 @@ actor TokenManager {
         do {
             try KeyChain.delete(key: .accessToken)
             try KeyChain.delete(key: .refreshToken)
-        } catch {
-            print("🔒 Token 삭제 실패: \(error)")
-        }
+        } catch { }
     }
 
     // MARK: - 쿠키에서 Refresh Token 추출

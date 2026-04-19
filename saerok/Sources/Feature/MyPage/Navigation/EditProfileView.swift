@@ -67,7 +67,6 @@ extension EditProfileView {
         
         func updateProfileImage(_ uiImage: UIImage) async throws {
             guard let originalData = uiImage.jpegData(compressionQuality: 1.0) else {
-                print("이미지 변환 실패")
                 return
             }
             
@@ -136,9 +135,7 @@ struct EditProfileView: View {
                         do {
                             try await viewModel.deleteProfileImage()
                             updateProfileImage()
-                        } catch {
-                            print(error.localizedDescription)
-                        }
+                        } catch { }
                         showOption.toggle()
                     }
                 } label: {
@@ -303,9 +300,7 @@ struct EditProfileView: View {
                 do {
                     try await viewModel.updateProfileImage(image)
                     imageReloadKey = UUID()
-                } catch {
-                    print("이미지 업데이트 실패: \(error)")
-                }
+                } catch { }
             }
         }
     }

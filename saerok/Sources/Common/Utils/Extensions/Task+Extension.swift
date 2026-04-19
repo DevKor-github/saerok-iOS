@@ -19,11 +19,7 @@ extension Task where Failure == Never {
             do {
                 try await Task<Never, Never>.sleep(nanoseconds: delay)
                 try await action()
-            } catch {
-                if !(error is CancellationError) {
-                    print("Debounce Error:", error)
-                }
-            }
+            } catch { }
         }
         debounceTasks[id] = task
         return task

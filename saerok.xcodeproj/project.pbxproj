@@ -28,6 +28,16 @@
 		21F0CAE22DBE427E004F03F4 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 21F0CAE12DBE427E004F03F4 /* Lottie */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		21DA2D542F9508EE00A5A97C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 219F72252D89ABEB00C04738 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 219F722C2D89ABEB00C04738;
+			remoteInfo = saerok;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		219F722D2D89ABEB00C04738 /* saerok.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = saerok.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		21D2688D2F63C19A00942051 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
@@ -35,6 +45,7 @@
 		21D2688F2F63C19A00942051 /* repo-map.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "repo-map.md"; sourceTree = "<group>"; };
 		21D268932F63C1A800942051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		21DA2D482F95052B00A5A97C /* improvements.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = improvements.md; sourceTree = "<group>"; };
+		21DA2D502F9508EE00A5A97C /* saerokTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = saerokTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		21E5E4832F94EF500018A0F2 /* data-layer.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "data-layer.md"; sourceTree = "<group>"; };
 		21E5E4842F94EF500018A0F2 /* dependency-injection.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "dependency-injection.md"; sourceTree = "<group>"; };
 		21E5E4852F94EF500018A0F2 /* design-system.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "design-system.md"; sourceTree = "<group>"; };
@@ -80,6 +91,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		21DA2D4D2F9508EE00A5A97C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -100,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				219F722D2D89ABEB00C04738 /* saerok.app */,
+				21DA2D502F9508EE00A5A97C /* saerokTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -159,6 +178,26 @@
 			productReference = 219F722D2D89ABEB00C04738 /* saerok.app */;
 			productType = "com.apple.product-type.application";
 		};
+		21DA2D4F2F9508EE00A5A97C /* saerokTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21DA2D562F9508EE00A5A97C /* Build configuration list for PBXNativeTarget "saerokTests" */;
+			buildPhases = (
+				21DA2D4C2F9508EE00A5A97C /* Sources */,
+				21DA2D4D2F9508EE00A5A97C /* Frameworks */,
+				21DA2D4E2F9508EE00A5A97C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				21DA2D552F9508EE00A5A97C /* PBXTargetDependency */,
+			);
+			name = saerokTests;
+			packageProductDependencies = (
+			);
+			productName = saerokTests;
+			productReference = 21DA2D502F9508EE00A5A97C /* saerokTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -166,11 +205,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					219F722C2D89ABEB00C04738 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					21DA2D4F2F9508EE00A5A97C = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 219F722C2D89ABEB00C04738;
 					};
 				};
 			};
@@ -197,6 +240,7 @@
 			projectRoot = "";
 			targets = (
 				219F722C2D89ABEB00C04738 /* saerok */,
+				21DA2D4F2F9508EE00A5A97C /* saerokTests */,
 			);
 		};
 /* End PBXProject section */
@@ -220,6 +264,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		21DA2D4E2F9508EE00A5A97C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -230,7 +281,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		21DA2D4C2F9508EE00A5A97C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		21DA2D552F9508EE00A5A97C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 219F722C2D89ABEB00C04738 /* saerok */;
+			targetProxy = 21DA2D542F9508EE00A5A97C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		215783062F4E334C000972D9 /* Release */ = {
@@ -476,6 +542,55 @@
 			};
 			name = Debug;
 		};
+		21DA2D572F9508EE00A5A97C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B6AJR944A6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hazed.saerokTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/saerok.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/saerok";
+			};
+			name = Debug;
+		};
+		21DA2D582F9508EE00A5A97C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = B6AJR944A6;
+				ENABLE_NS_ASSERTIONS = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hazed.saerokTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/saerok.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/saerok";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -493,6 +608,15 @@
 			buildConfigurations = (
 				219F723E2D89ABEC00C04738 /* Debug */,
 				215783072F4E334C000972D9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		21DA2D562F9508EE00A5A97C /* Build configuration list for PBXNativeTarget "saerokTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21DA2D572F9508EE00A5A97C /* Debug */,
+				21DA2D582F9508EE00A5A97C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

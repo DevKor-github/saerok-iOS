@@ -118,7 +118,6 @@ extension ImagePicker {
             let newStatus = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
             return newStatus == .authorized || newStatus == .limited
         case .denied, .restricted:
-            print("⚠️ 사진 라이브러리 접근 권한이 거부되었습니다")
             return false
         case .authorized, .limited:
             return true

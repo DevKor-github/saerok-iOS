@@ -42,9 +42,7 @@ final class UserManager: ObservableObject {
         Task {
             do {
                 self.user = try await interactor?.getUser()
-            } catch {
-                print("❌ User 로드 실패: \(error)")
-            }
+            } catch { }
         }
     }
 }

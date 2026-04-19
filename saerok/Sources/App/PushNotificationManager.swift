@@ -100,9 +100,7 @@ extension PushNotificationManager: @MainActor UNUserNotificationCenterDelegate {
             Task {
                 do {
                     try await interactor.readNotification(notificationId)
-                } catch {
-                    print("알림 읽음 처리 실패: \(error)")
-                }
+                } catch { }
             }
         }
         
@@ -159,9 +157,7 @@ extension PushNotificationManager: @MainActor MessagingDelegate {
             do {
                 try await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
                 try await interactor.toggleAllNotificationSetting()
-            } catch {
-                print(error.localizedDescription)
-            }
+            } catch { }
         }
     }
 }

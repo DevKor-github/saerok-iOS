@@ -75,7 +75,7 @@ struct CollectionDetailView: View {
                 shareButton
             }
             
-            if viewModel.loadState == .invalid {
+            if viewModel.loadState.inError {
                 InvalidAlertView(action: { coordinator.pop() })
                     .ignoresSafeArea(.all)
             }
@@ -136,7 +136,7 @@ private extension CollectionDetailView {
                         .frame(height: 57)
                     
                     imageSection
-                        .shimmerIfLoading(viewModel.loadState != .loaded)
+                        .shimmerIfLoading(viewModel.loadState.value == nil)
                     
                     descriptionSection
                         .padding(.horizontal, SRDesignConstant.defaultPadding)
@@ -393,97 +393,17 @@ private extension CollectionDetailView {
     }
 }
 
-// MARK: - Popup layer
+// MARK: - Popup Configs
 private extension CollectionDetailView {
-    struct CollectionPopupLayer: View {
-        @Binding var showPopup: Bool
-        @Binding var showSuggestPopup: Bool
-        @Binding var showAdoptPopup: Bool
-        @Binding var showBlockPopup: Bool
-
-        let alertConfig: PopupConfig?
-        let adoptConfig: PopupConfig?
-        let suggestConfig: PopupConfig?
-        let blockUserConfig: PopupConfig?
-        
-        var body: some View {
-            EmptyView()
-                .srPopup(
-                    isPresented: $showPopup,
-                    config: alertConfig
-                )
-                .srPopup(
-                    isPresented: $showSuggestPopup,
-                    config: suggestConfig
-                )
-                .srPopup(
-                    isPresented: $showAdoptPopup,
-                    config: adoptConfig
-                )
-                .srPopup(
-                    isPresented: $showBlockPopup,
-                    config: blockUserConfig
-                )
-        }
-    }
-    
-    struct InvalidAlertView: View {
-        let action: () -> Void
-        
-        private var popupConfig: PopupConfig {
-            PopupConfig(
-                title: "존재하지 않는 새록이에요",
-                message: "새록이 삭제되었거나\n데이터를 불러올 수 없어요.",
-                buttons: .single(
-                    .init(
-                        title: "확인",
-                        style: .confirm,
-                        action: action
-                    )
-                )
-            )
-        }
-        
-        var body: some View {
-            ZStack {
-                Color.black.opacity(0.4)
-                    .transition(.opacity)
-                    .zIndex(1)
-
-                SRPopup(
-                    title: popupConfig.title,
-                    message: popupConfig.message,
-                    buttons: popupConfig.buttons
-                )
-                .zIndex(10)
-                .transition(.scale)
-            }
-        }
-    }
-
-    
     var postReportPopupConfig: PopupConfig {
         PopupConfig(
             title: "게시물을 신고하시겠어요?",
             message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
             buttons: .double(
-                .init(
-                    title: "신고하기",
-                    style: .delete,
-                    action: {
-                        Task {
-                            await viewModel.reportCollection()
-                            uiState.showPopup = false
-                        }
-                    }
-                ),
-                .init(
-                    title: "돌아가기",
-                    style: .confirm,
-                    action: {
-                        uiState.showPopup = false
-                    }
-                )
+                .init(title: "신고하기", style: .delete, action: {
+                    Task { await viewModel.reportCollection(); uiState.showPopup = false }
+                }),
+                .init(title: "돌아가기", style: .confirm, action: { uiState.showPopup = false })
             )
         )
     }
@@ -493,24 +413,12 @@ private extension CollectionDetailView {
             title: "'\(viewModel.newSuggesting?.name ?? "딱새")'가 맞나요?",
             message: "정확하지 않은 이름의 제안은 사용자들에게\n혼란을 일으킬 수 있어요.",
             buttons: .double(
-                .init(
-                    title: "취소",
-                    style: .bordered,
-                    action: {
-                        uiState.showSuggestPopup = false
-                        viewModel.suggestingCancel()
-                    }
-                ),
-                .init(
-                    title: "동정돕기",
-                    style: .confirm,
-                    action: {
-                        Task {
-                            await viewModel.suggestingComplete()
-                            uiState.showSuggestPopup = false
-                        }
-                    }
-                )
+                .init(title: "취소", style: .bordered, action: {
+                    uiState.showSuggestPopup = false; viewModel.suggestingCancel()
+                }),
+                .init(title: "동정돕기", style: .confirm, action: {
+                    Task { await viewModel.suggestingComplete(); uiState.showSuggestPopup = false }
+                })
             )
         )
     }
@@ -520,50 +428,27 @@ private extension CollectionDetailView {
             title: "'\(viewModel.selectedAdopting?.bird.name ?? "딱새")'로 채택하시겠어요?",
             message: "채택된 이후 동정 돕기 창은 사라지며,\n다시 이름 모를 새로 전환하면\n보이게 할 수 있어요.",
             buttons: .double(
-                .init(
-                    title: "취소",
-                    style: .bordered,
-                    action: {
-                        uiState.showAdoptPopup = false
-                    }
-                ),
-                .init(
-                    title: "채택하기",
-                    style: .confirm,
-                    action: {
-                        Task {
-                            await viewModel.adoptBird()
-                            uiState.showAdoptPopup = false
-                        }
-                    }
-                )
+                .init(title: "취소", style: .bordered, action: { uiState.showAdoptPopup = false }),
+                .init(title: "채택하기", style: .confirm, action: {
+                    Task { await viewModel.adoptBird(); uiState.showAdoptPopup = false }
+                })
             )
         )
     }
-    
+
     var blockUserPopupConfig: PopupConfig {
         PopupConfig(
             title: "이 사용자를 차단할까요?",
             message: "차단한 사용자의 게시물과 댓글을\n더 이상 볼 수 없어요.",
             buttons: .double(
-                .init(
-                    title: "차단하기",
-                    style: .delete,
-                    action: {
-                        Task {
-                            await viewModel.blockCollectionUser()
-                            uiState.showBlockUserPopup = false
-                            coordinator.pop()
-                        }
-                    }
-                ),
-                .init(
-                    title: "취소",
-                    style: .confirm,
-                    action: {
+                .init(title: "차단하기", style: .delete, action: {
+                    Task {
+                        await viewModel.blockCollectionUser()
                         uiState.showBlockUserPopup = false
+                        coordinator.pop()
                     }
-                )
+                }),
+                .init(title: "취소", style: .confirm, action: { uiState.showBlockUserPopup = false })
             )
         )
     }

@@ -171,9 +171,7 @@ extension MapView {
                     if !Task.isCancelled {
                         try await action()
                     }
-                } catch {
-                    print(error.localizedDescription)
-                }
+                } catch { }
             }
         }
 

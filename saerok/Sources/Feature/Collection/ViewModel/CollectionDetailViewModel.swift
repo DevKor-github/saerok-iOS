@@ -13,14 +13,8 @@ extension CollectionDetailView {
         
         let collectionID: Int
 
-        enum LoadState {
-            case loading
-            case loaded
-            case invalid
-        }
-        
         // MARK: State
-        private(set) var loadState: LoadState = .loading
+        private(set) var loadState: LoadState<Void> = .loading
         private(set) var collection: Local.CollectionDetail
         private(set) var comments: [Local.CollectionComment] = []
         private(set) var likers: [Local.UserSummary] = []
@@ -71,7 +65,7 @@ extension CollectionDetailView {
 
         // MARK: Side Effect
         func loadInitial() async {
-            guard loadState != .loaded else { return }
+            guard loadState.value == nil else { return }
             loadState = .loading
 
             await withTaskGroup(of: Void.self) { group in
@@ -80,7 +74,7 @@ extension CollectionDetailView {
                 group.addTask { await self.fetchSuggestions() }
                 await group.waitForAll()
             }
-            loadState = .loaded
+            loadState = .success(())
             
             // 데이터 로드 완료 후 DetailViewFlow 업데이트
             if let flow = detailFlow {
@@ -104,9 +98,9 @@ extension CollectionDetailView {
             do {
                 let result = try await collectionInteractor.fetchCollectionDetail(id: collectionID)
                 collection = result
-                loadState = .loaded
+                loadState = .success(())
             } catch {
-                loadState = .invalid
+                loadState = .failure(error)
             }
         }
 

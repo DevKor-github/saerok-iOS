@@ -42,7 +42,7 @@ extension CommunityView {
         }
         
         func createPost(title: String, content: String) async {
-            
+            // TODO: 자유게시판 API 연동 시 구현 예정
         }
         
         func loadPosts() async {

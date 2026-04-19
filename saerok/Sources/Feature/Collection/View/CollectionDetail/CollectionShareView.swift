@@ -129,7 +129,7 @@ private extension CollectionShareView {
     func handleShareAction(for type: ShareType) {
         switch type {
         case .export:
-            print("공유하기")
+            break
         case .instagram:
             shareToInstagram(background: self.snapshot, sticker: snapshot)
         case .imageSave:

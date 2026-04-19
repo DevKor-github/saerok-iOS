@@ -53,7 +53,6 @@ private extension AppleLoginView {
         switch result {
         case .success(let authorization):
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                print("❌ Failed to get identityToken")
                 return
             }
             
@@ -68,8 +67,8 @@ private extension AppleLoginView {
                 )
             }
 
-        case .failure(let error):
-            print("❌ Apple Authorization failed: \(error.localizedDescription)")
+        case .failure:
+            break
         }
     }
     
@@ -87,8 +86,6 @@ private extension AppleLoginView {
                 
                 injected.appState[\.authStatus] = .signedIn(isRegistered: response.signupStatus == .completed)
             }
-        } catch {
-            print("❌ Apple login failed:", error)
-        }
+        } catch { }
     }
 }

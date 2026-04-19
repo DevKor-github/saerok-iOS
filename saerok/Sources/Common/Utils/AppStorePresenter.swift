@@ -45,8 +45,6 @@ final class AppVersionChecker: ObservableObject {
                     showUpdateAlert = true
                 }
             }
-        } catch {
-            print("버전 체크 실패:", error)
-        }
+        } catch { }
     }
 }
