@@ -72,3 +72,12 @@ repo-map.md
 feature-template.md
 CLAUDE.md
 DESIGN.md
+.claude/data-layer.md
+.claude/dependency-injection.md
+.claude/design-system.md
+.claude/networking.md
+.claude/state-management.md
+.claude/view-viewmodel.md
+.claude
+
+

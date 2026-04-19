@@ -19,6 +19,12 @@
 		21D268922F63C19A00942051 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D2688D2F63C19A00942051 /* CLAUDE.md */; };
 		21D268942F63C1A800942051 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D268932F63C1A800942051 /* README.md */; };
 		21E25FB92F939E67006ADC01 /* DESIGN.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E25FB82F939E67006ADC01 /* DESIGN.md */; };
+		21E5E48B2F94EF500018A0F2 /* dependency-injection.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4842F94EF500018A0F2 /* dependency-injection.md */; };
+		21E5E48C2F94EF500018A0F2 /* state-management.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4872F94EF500018A0F2 /* state-management.md */; };
+		21E5E48D2F94EF500018A0F2 /* view-viewmodel.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4882F94EF500018A0F2 /* view-viewmodel.md */; };
+		21E5E48E2F94EF500018A0F2 /* design-system.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4852F94EF500018A0F2 /* design-system.md */; };
+		21E5E48F2F94EF500018A0F2 /* networking.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4862F94EF500018A0F2 /* networking.md */; };
+		21E5E4902F94EF500018A0F2 /* data-layer.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4832F94EF500018A0F2 /* data-layer.md */; };
 		21F0CAE22DBE427E004F03F4 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 21F0CAE12DBE427E004F03F4 /* Lottie */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +35,12 @@
 		21D2688F2F63C19A00942051 /* repo-map.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "repo-map.md"; sourceTree = "<group>"; };
 		21D268932F63C1A800942051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		21E25FB82F939E67006ADC01 /* DESIGN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DESIGN.md; sourceTree = "<group>"; };
+		21E5E4832F94EF500018A0F2 /* data-layer.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "data-layer.md"; sourceTree = "<group>"; };
+		21E5E4842F94EF500018A0F2 /* dependency-injection.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "dependency-injection.md"; sourceTree = "<group>"; };
+		21E5E4852F94EF500018A0F2 /* design-system.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "design-system.md"; sourceTree = "<group>"; };
+		21E5E4862F94EF500018A0F2 /* networking.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = networking.md; sourceTree = "<group>"; };
+		21E5E4872F94EF500018A0F2 /* state-management.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "state-management.md"; sourceTree = "<group>"; };
+		21E5E4882F94EF500018A0F2 /* view-viewmodel.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "view-viewmodel.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -74,6 +86,7 @@
 		219F72242D89ABEB00C04738 = {
 			isa = PBXGroup;
 			children = (
+				21E5E48A2F94EF500018A0F2 /* .claude */,
 				219F722F2D89ABEB00C04738 /* saerok */,
 				219F722E2D89ABEB00C04738 /* Products */,
 				21D2688D2F63C19A00942051 /* CLAUDE.md */,
@@ -90,6 +103,27 @@
 				219F722D2D89ABEB00C04738 /* saerok.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		21E5E4892F94EF500018A0F2 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				21E5E4832F94EF500018A0F2 /* data-layer.md */,
+				21E5E4842F94EF500018A0F2 /* dependency-injection.md */,
+				21E5E4852F94EF500018A0F2 /* design-system.md */,
+				21E5E4862F94EF500018A0F2 /* networking.md */,
+				21E5E4872F94EF500018A0F2 /* state-management.md */,
+				21E5E4882F94EF500018A0F2 /* view-viewmodel.md */,
+			);
+			path = docs;
+			sourceTree = "<group>";
+		};
+		21E5E48A2F94EF500018A0F2 /* .claude */ = {
+			isa = PBXGroup;
+			children = (
+				21E5E4892F94EF500018A0F2 /* docs */,
+			);
+			path = .claude;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -175,6 +209,12 @@
 				21D268902F63C19A00942051 /* feature-template.md in Resources */,
 				21D268912F63C19A00942051 /* repo-map.md in Resources */,
 				21E25FB92F939E67006ADC01 /* DESIGN.md in Resources */,
+				21E5E48B2F94EF500018A0F2 /* dependency-injection.md in Resources */,
+				21E5E48C2F94EF500018A0F2 /* state-management.md in Resources */,
+				21E5E48D2F94EF500018A0F2 /* view-viewmodel.md in Resources */,
+				21E5E48E2F94EF500018A0F2 /* design-system.md in Resources */,
+				21E5E48F2F94EF500018A0F2 /* networking.md in Resources */,
+				21E5E4902F94EF500018A0F2 /* data-layer.md in Resources */,
 				21D268922F63C19A00942051 /* CLAUDE.md in Resources */,
 				21D268942F63C1A800942051 /* README.md in Resources */,
 			);
