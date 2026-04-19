@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import SwiftUI
 
 extension MapView {
@@ -42,7 +41,7 @@ extension MapView {
         var isNavigating: Bool = false
 
         private var searchDebounceTask: Task<Void, Error>? = nil
-        private var cancellables = Set<AnyCancellable>()
+        private let cancelBag = CancelBag()
 
         var isModeIdle: Bool { mode == .idle }
         
@@ -62,7 +61,7 @@ extension MapView {
                 .weakSink(on: self) { viewModel, coord in
                     viewModel.output = .navigateTo(coord: coord)
                 }
-                .store(in: &cancellables)
+                .store(in: cancelBag)
         }
         
         @MainActor
@@ -100,8 +99,8 @@ extension MapView {
 
         @MainActor
         func searchCellTapped(_ item: Local.KakaoPlace) {
-            position = (item.latitude, item.longtitude)
-            mapController.moveCamera(lat: item.latitude, lng: item.longtitude, animated: true)
+            position = (item.latitude, item.longitude)
+            mapController.moveCamera(lat: item.latitude, lng: item.longitude, animated: true)
             mode = .idle
         }
 

@@ -176,8 +176,8 @@ private extension FindPlaceView {
     }
     
     func searchItemTapped(_ item: Local.KakaoPlace) {
-        collectionDraft.coordinate = (item.latitude, item.longtitude)
-        mapController.moveCamera(lat: item.latitude, lng: item.longtitude)
+        collectionDraft.coordinate = (item.latitude, item.longitude)
+        mapController.moveCamera(lat: item.latitude, lng: item.longitude)
         mode = .idle
     }
     

@@ -49,13 +49,12 @@ extension FieldGuideView {
             cancelBag.collect {
                 appState
                     .updates(for: \.routing.fieldGuideView.birdName)
-                    .sink { [weak self] name in
-                        guard let self,
-                              let name,
-                              let bird = self.fieldGuide.first(where: { $0.name == name })
+                    .weakSink(on: self) { viewModel, name in
+                        guard let name,
+                              let bird = viewModel.fieldGuide.first(where: { $0.name == name })
                         else { return }
                         
-                        self.output = .showBirdDetail(bird)
+                        viewModel.output = .showBirdDetail(bird)
                     }
                 
                 appState

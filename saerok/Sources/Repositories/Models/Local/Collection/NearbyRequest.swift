@@ -8,7 +8,7 @@
 extension Local {
     struct NearbyRequest {
         let latitude: Double
-        let longtitude: Double
+        let longitude: Double
         let radius: Double
         let isMineOnly: Bool
         let isGuest: Bool

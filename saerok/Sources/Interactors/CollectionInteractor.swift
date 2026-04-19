@@ -17,7 +17,7 @@ protocol CollectionInteractor {
     func toggleLike(_ id: Int) async throws -> Bool
     func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary]
     func reportCollection(_ id: Int) async throws
-    func reportComment(collecionId: Int, commentId: Int) async throws
+    func reportComment(collectionId: Int, commentId: Int) async throws
 
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion]
     func suggestBird(_ id: Int, birdId: Int) async throws -> Local.BirdSuggestion
@@ -108,8 +108,8 @@ struct CollectionInteractorImpl: CollectionInteractor {
         try await repository.reportCollection(id)
     }
     
-    func reportComment(collecionId: Int, commentId: Int) async throws {
-        try await repository.reportComment(collecionId, commentId: commentId)
+    func reportComment(collectionId: Int, commentId: Int) async throws {
+        try await repository.reportComment(collectionId, commentId: commentId)
     }
 
     func fetchBirdSuggestions(_ id: Int) async throws -> [Local.BirdSuggestion] {
@@ -186,7 +186,7 @@ private extension CollectionInteractorImpl {
 }
 
 struct MockCollectionInteractorImpl: CollectionInteractor {
-    func reportComment(collecionId: Int, commentId: Int) async throws { }
+    func reportComment(collectionId: Int, commentId: Int) async throws { }
     
     func fetchLikeUsers(_ id: Int) async throws -> [Local.UserSummary] { [] }
     

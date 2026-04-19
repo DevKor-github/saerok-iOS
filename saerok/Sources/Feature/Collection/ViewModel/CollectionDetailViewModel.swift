@@ -148,7 +148,7 @@ extension CollectionDetailView {
         
         func reportComment(id: Int) async {
             try? await collectionInteractor.reportComment(
-                collecionId: collectionID,
+                collectionId: collectionID,
                 commentId: id
             )
         }

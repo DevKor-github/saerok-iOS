@@ -26,7 +26,7 @@ extension MainRepository: MapRepository {
         let dtos: DTO.NearbyCollectionsResponse = try await networkService.performSRRequest(
             .nearbyCollections(
                 lat: request.latitude,
-                lng: request.longtitude,
+                lng: request.longitude,
                 radius: request.radius,
                 isMineOnly: request.isMineOnly,
                 isGuest: request.isGuest

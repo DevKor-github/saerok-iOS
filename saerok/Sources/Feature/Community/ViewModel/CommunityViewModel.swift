@@ -34,9 +34,10 @@ extension CommunityView {
             self.interactor = interactor
             self.cancelBag = .init()
             cancelBag.collect {
-                appState.sink { [weak self] in
-                    self?.isGuestMode = $0.authStatus == .guest
-                }
+                appState
+                    .weakSink(on: self) { viewModel, state in
+                        viewModel.isGuestMode = state.authStatus == .guest
+                    }
             }            
         }
         

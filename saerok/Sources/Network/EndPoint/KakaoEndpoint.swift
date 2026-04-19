@@ -53,10 +53,10 @@ extension KakaoEndpoint {
                 "query": keyword,
                 "size": "5",
             ]
-        case .address(let longtitude, let latitude):
+        case .address(let longitude, let latitude):
             return [
                 "x": String(latitude),
-                "y": String(longtitude)
+                "y": String(longitude)
             ]
         }
     }

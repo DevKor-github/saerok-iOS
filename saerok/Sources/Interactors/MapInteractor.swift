@@ -26,7 +26,7 @@ struct MapInteractorImpl: MapInteractor {
     func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] {
         let request = Local.NearbyRequest(
             latitude: lat,
-            longtitude: lng,
+            longitude: lng,
             radius: rad,
             isMineOnly: isMineOnly,
             isGuest: isGuest

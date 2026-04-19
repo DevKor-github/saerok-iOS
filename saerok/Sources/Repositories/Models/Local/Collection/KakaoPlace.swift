@@ -14,7 +14,7 @@ extension Local {
         let roadAddress: String
         let category: String
         let latitude: Double
-        let longtitude: Double
+        let longitude: Double
         
         static func toLocal(dto: DTO.KakaoPlace) -> Local.KakaoPlace {
             Local.KakaoPlace(
@@ -24,7 +24,7 @@ extension Local {
                 roadAddress: dto.roadAddressName,
                 category: dto.categoryGroupName,
                 latitude: Double(dto.y) ?? 0,
-                longtitude: Double(dto.x) ?? 0
+                longitude: Double(dto.x) ?? 0
             )
         }
     }
