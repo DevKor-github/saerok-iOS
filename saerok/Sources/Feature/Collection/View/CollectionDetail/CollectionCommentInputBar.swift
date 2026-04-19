@@ -22,10 +22,17 @@ struct CollectionCommentInputBar: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            Divider()
-                .frame(height: 1)
-
+        ZStack(alignment: .bottom) {
+//            LinearGradient(
+//                stops: [
+//                    Gradient.Stop(color: .white.opacity(0), location: 0.00),
+//                    Gradient.Stop(color: .white, location: 1.00),
+//                ],
+//                startPoint: UnitPoint(x: 0.5, y: 0),
+//                endPoint: UnitPoint(x: 0.5, y: 1)
+//            )
+//            .frame(height: 195)
+            
             HStack(alignment: .bottom) {
                 TextField(
                     isGuest
@@ -60,14 +67,19 @@ struct CollectionCommentInputBar: View {
             }
             .padding(.leading, 23)
             .frame(maxWidth: .infinity, alignment: .topLeading)
-            .background(Color(red: 0.95, green: 0.95, blue: 0.95))
+            .background(Color.srWhite)
+            .overlay(
+                RoundedRectangle(cornerRadius: 23)
+                    .inset(by: 0.5)
+                    .stroke(Color(red: 0.85, green: 0.88, blue: 0.87), lineWidth: 1)
+                
+            )
             .cornerRadius(23)
             .padding(.horizontal, 9)
             .padding(.top, 19)
             .padding(.bottom, isFocused ? 20 : 40)
             .frame(maxWidth: UIScreen.main.bounds.width)
         }
-        .background(.srWhite)
         .padding(.bottom, keyboard.keyboardHeight)
         .animation(.smooth(duration: 0.25), value: keyboard.keyboardHeight)
         .disabled(isGuest)
