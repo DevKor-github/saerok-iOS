@@ -35,7 +35,7 @@ struct SuggestionSheet: View {
         }
         .srbottomSheetStyle(presentationDetent: [.medium])
         .onChange(of: selectedBird) { _, newValue in
-            guard let newBird = newValue else { return }
+            guard let _ = newValue else { return }
             showSuggestPopup = true
         }
     }

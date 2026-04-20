@@ -71,12 +71,13 @@ final class DefaultAPIClient: APIClient {
     
     func validateStatusCode(_ statusCode: Int) -> NetworkError {
         switch statusCode {
-        case 400..<500:
-            return NetworkError.clientError(statusCode)
-        case 500..<600:
-            return NetworkError.serverError(statusCode)
-        default:
-            return NetworkError.unknownError
+        case 401: return .unauthorized
+        case 403: return .forbidden
+        case 404: return .notFound
+        case 429: return .rateLimited
+        case 400..<500: return .clientError(statusCode)
+        case 500..<600: return .serverError(statusCode)
+        default:  return .unknownError
         }
     }
 }

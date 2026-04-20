@@ -40,7 +40,7 @@ extension MapView {
         var item: [Local.NearbyCollectionSummary] = []
         var isNavigating: Bool = false
 
-        private var searchDebounceTask: Task<Void, Error>? = nil
+        private var searchDebounceTask: Task<Void, Never>? = nil
         private let cancelBag = CancelBag()
 
         var isModeIdle: Bool { mode == .idle }
@@ -163,18 +163,6 @@ extension MapView {
             mapController.refreshBirdMarkers(items)
         }
 
-        func debounceTask(delay: UInt64 = 800_000_000, action: @escaping @Sendable () async throws -> Void) {
-            searchDebounceTask?.cancel()
-            searchDebounceTask = Task { @MainActor in 
-                do {
-                    try? await Task.sleep(nanoseconds: delay)
-                    if !Task.isCancelled {
-                        try await action()
-                    }
-                } catch { }
-            }
-        }
-
         func performSearch() async {
             do {
                 let places = try await mapInteractor.search(keyword: text)
@@ -183,8 +171,14 @@ extension MapView {
             } catch { }
         }
 
+        func performSearchDebounced() {
+            searchDebounceTask = Task.debounce(task: searchDebounceTask) {
+                await self.performSearch()
+            }
+        }
+
         func reloadAddress() {
-            debounceTask {
+            searchDebounceTask = Task.debounce(task: searchDebounceTask) {
                 let addr = try await self.mapInteractor.address(for: self.position.0, latitude: self.position.1)
                 await MainActor.run {
                     self.address = addr

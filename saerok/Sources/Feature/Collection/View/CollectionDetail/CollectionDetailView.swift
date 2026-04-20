@@ -88,7 +88,7 @@ struct CollectionDetailView: View {
             }
             
             await viewModel.loadInitial()
-            downloadImage(from: viewModel.collection.imageURL)
+            downloadImage(from: viewModel.collection?.imageURL ?? "")
         }
         .onDisappear {
             // saerok_detail_exit 이벤트 (화면 이탈)
@@ -117,7 +117,9 @@ private extension CollectionDetailView {
     func routeView(for route: Route) -> some View {
         switch route {
         case .edit:
-            CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .edit(viewModel.collection)))
+            if let collection = viewModel.collection {
+                CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .edit(collection)))
+            }
         case .bird(let id):
             BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: id))
         case .other(let id):
@@ -155,8 +157,8 @@ private extension CollectionDetailView {
             CollectionCommentSheet(
                 viewModel: viewModel,
                 collectionId: viewModel.collectionID,
-                collectionUserId: viewModel.collection.user.id,
-                isMyCollection: viewModel.collection.isMine,
+                collectionUserId: viewModel.collection?.user.id ?? 0,
+                isMyCollection: viewModel.collection?.isMine ?? false,
                 comments: viewModel.comments,
                 selectedComment: $uiState.selectedComment,
                 onTap: { userId in coordinator.push(Route.other(userId)) },
@@ -178,7 +180,7 @@ private extension CollectionDetailView {
             CollectionCommentInputBar(
                 text: $uiState.text,
                 selectedNickname: uiState.selectedComment?.user.nickname,
-                nickname: viewModel.collection.user.nickname,
+                nickname: viewModel.collection?.user.nickname ?? "",
                 onSubmit: {
                     await viewModel.postComment(
                         text: uiState.text,
@@ -193,9 +195,9 @@ private extension CollectionDetailView {
         }
         .bottomSheet(isShowing: $uiState.showSuggestionSheet, keyboard: keyboard, isExtendable: false) {
             SuggestionSheet(
-                isMine: viewModel.collection.isMine,
-                collectionID: viewModel.collection.id,
-                nickname: viewModel.collection.user.nickname,
+                isMine: viewModel.collection?.isMine ?? false,
+                collectionID: viewModel.collectionID,
+                nickname: viewModel.collection?.user.nickname ?? "",
                 suggestions: $viewModel.suggestions,
                 selectedBird: $viewModel.newSuggesting,
                 selectedPreview: $viewModel.selectedPreview,
@@ -254,7 +256,7 @@ private extension CollectionDetailView {
     @ViewBuilder
     var imageSection: some View {
         let image = ReactiveAsyncImageWithMetadata(
-            url: viewModel.collection.imageURL,
+            url: viewModel.collection?.imageURL ?? "",
             scale: .medium,
             downsampling: true,
             isCachingEnabled: true
@@ -273,9 +275,11 @@ private extension CollectionDetailView {
             }
     }
     
+    @ViewBuilder
     var descriptionSection: some View {
+        if let collection = viewModel.collection {
         CollectionDescriptionSection(
-            collection: viewModel.collection,
+            collection: collection,
         ) { action in
             switch action {
             case .reportTap:
@@ -298,31 +302,36 @@ private extension CollectionDetailView {
                 coordinator.push(Route.other(userId))
             }
         }
+        }
     }
     
+    @ViewBuilder
     private var interactionZone: some View {
-        InteractionZone(
-            variant: variant,
-            collection: viewModel.collection,
-            onLikeTap: {
-                Task {
-                    HapticManager.shared.trigger(.light)
-                    await viewModel.toggleLike()
-                }
-            },
-            onLikeCountTap: { uiState.showLikerSheet.toggle() },
-            onCommentTap: {uiState.showCommentSheet.toggle() }
-        )
-        .frame(maxWidth: .infinity, alignment: variant == .a ? .bottom : .bottomTrailing)
+        if let collection = viewModel.collection {
+            InteractionZone(
+                variant: variant,
+                collection: collection,
+                onLikeTap: {
+                    Task {
+                        HapticManager.shared.trigger(.light)
+                        await viewModel.toggleLike()
+                    }
+                },
+                onLikeCountTap: { uiState.showLikerSheet.toggle() },
+                onCommentTap: {uiState.showCommentSheet.toggle() }
+            )
+            .frame(maxWidth: .infinity, alignment: variant == .a ? .bottom : .bottomTrailing)
+        }
     }
     
     @ViewBuilder
     var shareSheetSection: some View {
         if let image = uiState.collectionImage,
-           uiState.showShareSheet
+           uiState.showShareSheet,
+           let collection = viewModel.collection
         {
             CollectionShareView(
-                collection: viewModel.collection,
+                collection: collection,
                 isPresented: $uiState.showShareSheet,
                 image: image
             )
@@ -331,7 +340,7 @@ private extension CollectionDetailView {
     
     @ViewBuilder
     var shareButton: some View {
-        if viewModel.collection.isMine {
+        if viewModel.collection?.isMine == true {
             Button(action: { uiState.showShareSheet.toggle() }) {
                 Image.SRIconSet.airplane
                     .frame(.floatingButton)

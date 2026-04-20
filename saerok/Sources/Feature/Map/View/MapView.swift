@@ -106,9 +106,7 @@ private extension MapView {
                     viewModel.mode = .searching
                 },
                 onTextChange: { new in
-                    viewModel.debounceTask {
-                        await viewModel.performSearch()
-                    }
+                    viewModel.performSearchDebounced()
                     viewModel.mode = (new.isEmpty ? .searching : (viewModel.mode == .idle ? .idle : viewModel.mode))
                 }
             )

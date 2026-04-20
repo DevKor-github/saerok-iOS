@@ -15,7 +15,7 @@ extension CollectionDetailView {
 
         // MARK: State
         private(set) var loadState: LoadState<Void> = .loading
-        private(set) var collection: Local.CollectionDetail
+        private(set) var collection: Local.CollectionDetail?
         private(set) var comments: [Local.CollectionComment] = []
         private(set) var likers: [Local.UserSummary] = []
 
@@ -49,7 +49,6 @@ extension CollectionDetailView {
             self.collectionInteractor = collectionInteractor
             self.fieldGuideInteractor = fieldGuideInteractor
             self.userInteractor = userInteractor
-            self.collection = .mockData[0]
             
             // DetailViewFlow는 collection 데이터 로드 후 초기화
             self.detailFlow = DetailViewFlow(
@@ -82,9 +81,9 @@ extension CollectionDetailView {
                     recordId: "\(collectionID)",
                     entrySource: flow.entrySource,
                     screen: flow.screen,
-                    isOwnRecord: collection.isMine,
-                    listLikeCount: collection.likeCount,
-                    listCommentCount: collection.commentCount
+                    isOwnRecord: collection?.isMine ?? false,
+                    listLikeCount: collection?.likeCount ?? 0,
+                    listCommentCount: collection?.commentCount ?? 0
                 )
                 
                 // saerok_detail_view 이벤트
@@ -125,7 +124,7 @@ extension CollectionDetailView {
             do {
                 try await collectionInteractor.createComments(id: collectionID, parentId: parentId, text)
                 comments = try await collectionInteractor.fetchComments(collectionID)
-                collection.commentCount += 1
+                collection?.commentCount += 1
             } catch {
                 // 실패해도 UI 유지
             }
@@ -134,8 +133,21 @@ extension CollectionDetailView {
         func deleteComment(id: Int) async {
             do {
                 try await collectionInteractor.deleteComment(collectionId: collectionID, commentId: id)
-                comments = try await collectionInteractor.fetchComments(collectionID)
-                collection.commentCount -= 1
+                // 최상위 댓글 제거
+                comments.removeAll { $0.id == id }
+                // 대댓글 제거
+                comments = comments.map { parent in
+                    guard let replies = parent.replies else { return parent }
+                    let filtered = replies.filter { $0.id != id }
+                    return Local.CollectionComment(
+                        id: parent.id, user: parent.user, content: parent.content,
+                        likeCount: parent.likeCount, isLiked: parent.isLiked, isMine: parent.isMine,
+                        createdAt: parent.createdAt, parentId: parent.parentId,
+                        replies: filtered, isInteractive: parent.isInteractive,
+                        isMyCollection: parent.isMyCollection
+                    )
+                }
+                collection?.commentCount -= 1
             } catch {
             }
         }
@@ -150,7 +162,7 @@ extension CollectionDetailView {
         func toggleLike() async {
             do {
                 let isLiked = try await collectionInteractor.toggleLike(collectionID)
-                collection.likeToggle(isLiked)
+                collection?.likeToggle(isLiked)
                 
                 // saerok_like_toggle 이벤트
                 if let flow = detailFlow {
@@ -202,6 +214,7 @@ extension CollectionDetailView {
         }
 
         func blockCollectionUser() async {
+            guard let collection else { return }
             try? await userInteractor.blockUser(userId: collection.user.id)
         }
 
@@ -210,6 +223,7 @@ extension CollectionDetailView {
         }
         
         func navigateToMap() {
+            guard let collection else { return }
             appState[\.routing.contentView.tabSelection] = .map
             appState[\.routing.mapView.navigation] = .init(
                 latitude: collection.coordinate.latitude,
@@ -218,6 +232,7 @@ extension CollectionDetailView {
         }
         
         func navigateToFieldGuide() {
+            guard let collection else { return }
             appState[\.routing.contentView.tabSelection] = .fieldGuide
             appState[\.routing.fieldGuideView.birdName] = collection.birdName
         }

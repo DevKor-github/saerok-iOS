@@ -79,16 +79,13 @@ private extension FindPlaceView {
                 mode = .searching
             }
             .onChange(of: searchText) { _, new in
-                searchDebounceTask?.cancel()
-                searchDebounceTask = Task {
-                    try? await Task.sleep(nanoseconds: 800_000_000)
-                    if !Task.isCancelled && !new.isEmpty {
+                if new.isEmpty {
+                    searchDebounceTask?.cancel()
+                    mode = .idle
+                    response = []
+                } else {
+                    searchDebounceTask = Task.debounce(task: searchDebounceTask) {
                         await performSearch()
-                    } else if new.isEmpty {
-                        await MainActor.run {
-                            mode = .idle
-                            response = []
-                        }
                     }
                 }
             }
