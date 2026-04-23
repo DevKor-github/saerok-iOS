@@ -5,10 +5,7 @@
 //  Created by HanSeung on 5/22/25.
 //
 
-import Combine
 import SwiftUI
-import SwiftData
-import Foundation
 
 enum MapRoute: AppRoute {
     case detail(_ collectionID: Int)
@@ -61,12 +58,12 @@ struct MapView: View {
     @ViewBuilder
     var content: some View {
         switch viewModel.mapViewState {
-        case .notRequested:
-            Text("")
+        case .notRequested, .loading:
+            ProgressView()
         case .success:
             loadedContent
-        default:
-            Text("")
+        case .failure:
+            locationPermissionDeniedView
         }
     }
 }
@@ -74,6 +71,34 @@ struct MapView: View {
 // MARK: - Subviews
 
 private extension MapView {
+    var locationPermissionDeniedView: some View {
+        VStack(spacing: 16) {
+            Image.SRIconSet.pin
+                .frame(.defaultIconSizeLarge)
+                .foregroundStyle(.srGray)
+            VStack(spacing: 6) {
+                Text("위치 접근이 필요해요")
+                    .font(.SRFontSet.subtitle1_2)
+                Text("설정에서 위치 권한을 허용하면\n주변 새록을 지도에서 볼 수 있어요")
+                    .font(.SRFontSet.body2)
+                    .foregroundStyle(.srDarkGray)
+                    .multilineTextAlignment(.center)
+            }
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                Text("설정 열기")
+                    .font(.SRFontSet.body2)
+                    .frame(width: 120)
+            }
+            .srStyled(.primaryButton)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.srWhite)
+    }
+
     var loadedContent: some View {
         ZStack(alignment: .top) {
             resultSection

@@ -7,13 +7,12 @@
 
 
 import CoreLocation
-import Combine
 
-final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+@Observable
+final class LocationManager: NSObject, CLLocationManagerDelegate {
     @MainActor static let shared = LocationManager()
     private let manager = CLLocationManager()
 
-    @Published var currentLocation: CLLocation?
     private var locationContinuation: CheckedContinuation<CLLocation?, Never>?
 
     private override init() {

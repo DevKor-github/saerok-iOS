@@ -169,6 +169,11 @@ final class BirdClusterManager {
         self.clusterer.mapView = mapView
     }
     
+    func clearAllMarkers() {
+        refreshTask?.cancel()
+        clusterer.clear()
+    }
+
     func refreshBirdMarkers(
         _ birds: [Local.NearbyCollectionSummary],
         touchHandlerGenerator: @escaping (Local.NearbyCollectionSummary) -> NMFOverlayTouchHandler

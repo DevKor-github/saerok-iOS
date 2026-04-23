@@ -127,7 +127,7 @@ extension NaverMapContainer {
         }
 
         func clearAllMarkers() {
-//            birdClusterMarkerManager.refreshBirdMarkers([], touchHandlerGenerator: <#(Local.NearbyCollectionSummary) -> NMFOverlayTouchHandler#>)
+            birdClusterMarkerManager.clearAllMarkers()
         }
         
         func currentVisibleRadius(latitude: Double) -> Double {

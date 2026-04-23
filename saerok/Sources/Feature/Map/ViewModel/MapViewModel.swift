@@ -1,6 +1,16 @@
 import Foundation
 import SwiftUI
 
+enum MapError: LocalizedError {
+    case locationUnavailable
+
+    var errorDescription: String? {
+        switch self {
+        case .locationUnavailable: "위치 권한이 필요합니다. 설정에서 위치 접근을 허용해 주세요."
+        }
+    }
+}
+
 extension MapView {
     struct Routing: Equatable {
         var navigation: Coordinate?
@@ -41,6 +51,7 @@ extension MapView {
         var isNavigating: Bool = false
 
         private var searchDebounceTask: Task<Void, Never>? = nil
+        private var addressDebounceTask: Task<Void, Never>? = nil
         private let cancelBag = CancelBag()
 
         var isModeIdle: Bool { mode == .idle }
@@ -83,7 +94,7 @@ extension MapView {
         }
 
         func initialLoad() async {
-            guard case .notRequested = mapViewState else { return }
+            guard !mapViewState.isLoading, mapViewState.value == nil else { return }
 
             mapViewState = .loading
             if let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
@@ -93,7 +104,7 @@ extension MapView {
                 mapViewState = .success(())
                 try? await fetchNearby(mineOnly: isMineOnly)
             } else {
-                mapViewState = .notRequested
+                mapViewState = .failure(MapError.locationUnavailable)
             }
         }
 
@@ -178,7 +189,7 @@ extension MapView {
         }
 
         func reloadAddress() {
-            searchDebounceTask = Task.debounce(task: searchDebounceTask) {
+            addressDebounceTask = Task.debounce(task: addressDebounceTask) {
                 let addr = try await self.mapInteractor.address(for: self.position.0, latitude: self.position.1)
                 await MainActor.run {
                     self.address = addr
