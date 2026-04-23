@@ -9,7 +9,6 @@ import SwiftUI
 
 struct PostingView: View {
 //    @EnvironmentObject private var coordinator: AppCoordinator
-    
     let me: Local.User = .init(userId: 1, nickname: "비둘기", profileImageUrl: "https://stickershop.line-scdn.net/stickershop/v1/product/1665280/LINEStorePC/main.png?v=1")
     
     @State private var title: String = ""
@@ -38,9 +37,10 @@ struct PostingView: View {
                     .padding(.leading, 30)
                     .padding(.top, 3)
                 Spacer()
-                Button(action : {
-                    onPost()
-                    isUploading.toggle()
+                Button(
+                    action : {
+                        onPost()
+                        isUploading.toggle()
                 }) {
                     if isUploading {
                         ProgressView()

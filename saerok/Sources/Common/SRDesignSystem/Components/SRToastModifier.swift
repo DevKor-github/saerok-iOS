@@ -1,90 +1,66 @@
+//
+//  SRToastModifier.swift
+//  saerok
+//
+//  Created by HanSeung on 4/21/26.
+//
 
 import SwiftUI
 
 struct SRToastModifier: ViewModifier {
-    enum ToastType {
-        case success
-        case failure
-        case normal
-        
-        var image: Image? {
-            switch self {
-            case .success:
-                return Image(.toastSuccess)
-            case .failure:
-                return Image(.toastFailure)
-            case .normal:
-                return nil
-            }
-        }
-        
-        var color: Color {
-            switch self {
-            case .success: .splash
-            case .failure: .iconRed
-            case .normal: .srGray
-            }
-        }
-        
-        var strokeColor: Color {
-            switch self {
-            case .success: .accent
-            case .failure: .fire
-            case .normal: .srGray
-            }
-        }
-    }
-    
-    @Binding var isPresented: Bool
-    
-    let type: ToastType
-    let message: String
-    let duration: TimeInterval
+    @State var activeToast: Toast?
+    @State private var toastDismissWorkItem: DispatchWorkItem?
     
     func body(content: Content) -> some View {
-        ZStack {
-            content
-            
-            VStack {
-                Spacer()
-                
-                if isPresented {
-                    toastView
-                        .padding(.bottom, 110)
-                        .transition(
-                            .move(edge: .bottom)
-                            .combined(with: .opacity)
-                        )
-                        .task {
-                            try? await Task.sleep(for: .seconds(duration))
-                            guard isPresented else { return }
-                            
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                isPresented = false
-                            }
-                        }
+        content
+            .overlay(alignment: .bottom) {
+                if let activeToast {
+                    toastView(activeToast)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .ignoresSafeArea(edges: .bottom)
-            .animation(.easeInOut(duration: 0.25), value: isPresented)
-        }
+            .environment(\.showToast) { toast in
+                withAnimation(
+                    animation.logicallyComplete(after: 0.17),
+                    completionCriteria: .logicallyComplete
+                ) {
+                    if activeToast != nil {
+                        activeToast = nil
+                    }
+                    
+                } completion: {
+                    toastDismissWorkItem?.cancel()
+                    withAnimation(animation) {
+                        activeToast = toast
+                    }
+                    toastDismissWorkItem = .init(block: dismiss)
+                    let duration = max(toast.duration, 1)
+                    if let toastDismissWorkItem {
+                        DispatchQueue.main.asyncAfter(
+                            deadline: .now() + duration,
+                            execute: toastDismissWorkItem
+                        )
+                    }
+                }
+            }
     }
     
-    private var toastView: some View {
+    private let animation: Animation = .interpolatingSpring(duration: 0.35, bounce: 0, initialVelocity: 0)
+    
+    private func toastView(_ toast: Toast) -> some View {
         HStack(alignment: .center, spacing: 7) {
-            if let image = type.image {
+            if let image = toast.type.image {
                 image
                     .resizable()
                     .foregroundStyle(.srWhite)
                     .padding(2)
                     .frame(width: 25, height: 25, alignment: .center)
                     .cornerRadius(8)
+                    .transition(.identity)
             } else {
                 Color.clear.frame(width: 1, height: 10)
             }
             
-            Text(message)
+            Text(toast.message)
                 .font(.SRFontSet.body2)
                 .multilineTextAlignment(.center)
                 .frame(height: 28)
@@ -93,11 +69,8 @@ struct SRToastModifier: ViewModifier {
                 .resizable()
                 .frame(width: 10, height: 10)
                 .foregroundStyle(.srGray)
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        isPresented = false
-                    }
-                }
+                .onTapGesture(perform: dismiss)
+                .transition(.identity)
         }
         .padding(.leading, 6)
         .padding(.trailing, 13)
@@ -109,25 +82,79 @@ struct SRToastModifier: ViewModifier {
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .inset(by: 0.5)
-                .stroke(type.strokeColor, lineWidth: 1)
+                .stroke(toast.type.strokeColor, lineWidth: 1)
         )
+        .offset(y: toast.placementOffset)
+        .gesture(
+            DragGesture()
+                .onEnded { value in
+                    let endTranslation = value.translation.height
+                    if endTranslation > 30 {
+                        dismiss()
+                    }
+                }
+        )
+        .transition(.offset(y: toast.transitionOffset))
+    }
+    
+    private func dismiss() {
+        withAnimation(animation) {
+            activeToast = nil
+        }
+        toastDismissWorkItem?.cancel()
+    }
+}
+
+struct Toast {
+    let id = UUID().uuidString
+    let type: ToastType
+    let message: String
+    let placementOffset: CGFloat
+    let transitionOffset: CGFloat
+    let duration: CGFloat
+}
+
+enum ToastType {
+    case success
+    case failure
+    case normal
+    
+    var image: Image? {
+        switch self {
+        case .success:
+            return Image(.toastSuccess)
+        case .failure:
+            return Image(.toastFailure)
+        case .normal:
+            return nil
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .success: .splash
+        case .failure: .iconRed
+        case .normal: .srGray
+        }
+    }
+    
+    var strokeColor: Color {
+        switch self {
+        case .success: .accent
+        case .failure: .fire
+        case .normal: .srGray
+        }
     }
 }
 
 extension View {
-    func srToast(
-        isPresented: Binding<Bool>,
-        type: SRToastModifier.ToastType,
-        message: String,
-        duration: TimeInterval = 3.0
-    ) -> some View {
+    func srToast() -> some View {
         modifier(
-            SRToastModifier(
-                isPresented: isPresented,
-                type: type,
-                message: message,
-                duration: duration
-            )
+            SRToastModifier()
         )
     }
+}
+
+extension EnvironmentValues {
+    @Entry var showToast: (Toast) -> () = { _ in }
 }

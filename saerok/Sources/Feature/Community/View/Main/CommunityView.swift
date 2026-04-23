@@ -25,6 +25,7 @@ struct CommunityView: View {
 
     // MARK: Dependency
     @EnvironmentObject private var coordinator: AppCoordinator
+    @Environment(\.showToast) var showToast
 
     // MARK: ViewModel
     @Bindable private var viewModel: ViewModel
@@ -32,7 +33,6 @@ struct CommunityView: View {
     // MARK: UI State
     @State private var showLoginPopup: Bool = false
     @State private var showPostingView: Bool = false
-    @State private var showToast: Bool = false
     @State private var offsetY: CGFloat = 0
     @FocusState private var isFocused: Bool
     
@@ -158,13 +158,21 @@ private extension CommunityView {
             )
         )
         #if DEBUG
-        .fullScreenCover(isPresented: $showPostingView) {
-            PostingView(onPost: { showPostingView.toggle() })
-                .onDisappear {
-                    showToast.toggle()
-                }
+        .sheet(isPresented: $showPostingView) {
+            PostingView(onPost: {
+                showToast(
+                    .init(
+                        type: .success,
+                        message: "포스팅 성공!",
+                        placementOffset: -120,
+                        transitionOffset: 160,
+                        duration: 3.0
+                    )
+                )
+                showPostingView.toggle()
+            })
+            .presentationDetents([.large])
         }
-        .srToast(isPresented: $showToast, type: .success, message: "게시글을 올렸어요.")
         #endif
         .ignoresSafeArea(.all)
         .onTapGesture {

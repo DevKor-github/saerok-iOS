@@ -33,6 +33,7 @@ struct ContentView: View {
                 TabbarView(selectedTab: selectedTab)
             }
             .onboardingOverlay(type: selectedTab.onboardingType)
+            .srToast()
             .ignoresSafeArea(.all)
         }
         .ignoresSafeArea(.all)
