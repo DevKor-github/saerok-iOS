@@ -22,9 +22,10 @@ struct AppStorePresenter {
     }
 }
 
+@Observable
 @MainActor
-final class AppVersionChecker: ObservableObject {
-    @Published var showUpdateAlert = false
+final class AppVersionChecker {
+    var showUpdateAlert = false
     var appStoreURL = "https://apps.apple.com/us/app/%EC%83%88%EB%A1%9D-%EC%9D%BC%EC%83%81-%EC%86%8D%EC%9D%98-%ED%83%90%EC%A1%B0-%EC%9D%BC%EC%A7%80/id6744866662"
     
     func checkVersion() async {
@@ -40,7 +41,7 @@ final class AppVersionChecker: ObservableObject {
                let trackViewUrl = appInfo["trackViewUrl"] as? String
             {
                 let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-                if currentVersion.compare(latestVersion, options: .numeric) == .orderedAscending {
+                if currentVersion.compare(latestVersion, options: .numeric) == .orderedSame {
                     appStoreURL = trackViewUrl
                     showUpdateAlert = true
                 }
