@@ -41,7 +41,7 @@ final class AppVersionChecker {
                let trackViewUrl = appInfo["trackViewUrl"] as? String
             {
                 let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-                if currentVersion.compare(latestVersion, options: .numeric) == .orderedSame {
+                if currentVersion.compare(latestVersion, options: .numeric) == .orderedAscending {
                     appStoreURL = trackViewUrl
                     showUpdateAlert = true
                 }
