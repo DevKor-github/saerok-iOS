@@ -65,13 +65,13 @@ struct CollectionDetailView: View {
                 blockUserConfig: uiState.showBlockUserPopup ? blockUserPopupConfig : nil
             )
             
-            if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
+            if !(uiState.showCommentSheet || uiState.showSuggestionSheet || uiState.showFullImage) {
                 interactionZone
             }
-            
+
             shareSheetSection
-            
-            if !(uiState.showCommentSheet || uiState.showSuggestionSheet) {
+
+            if !(uiState.showCommentSheet || uiState.showSuggestionSheet || uiState.showFullImage) {
                 shareButton
             }
             

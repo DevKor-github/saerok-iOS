@@ -24,7 +24,7 @@ struct NotificationCell: View {
         }
         .padding(10)
         .frame(minHeight: 78)
-        .frame(maxHeight: item.type == .system ? 100 : 78)
+        .frame(maxHeight: (item.type == .system || item.type == .adminMessage) ? 300 : 78)
         .background(Color.srWhite)
         .cornerRadius(20)
         .overlay(overlayStroke)
@@ -49,12 +49,11 @@ struct NotificationCell: View {
                 + Text("“\(payload.comment ?? "")”").font(.SRFontSet.body4)
             case .birdIdSuggestion:
                 Text("두근두근! 새로운 의견이 공유됐어요. 확인해볼까요?").font(.SRFontSet.body4)
-            case .system:
+            case .system, .adminMessage:
                 Text("")
             }
         case .announcement(let payload):
             Text(payload.body).font(.SRFontSet.body4)
-                .lineLimit(2)
         }
     }
     
@@ -78,9 +77,9 @@ struct NotificationCell: View {
     private var payloadContent: some View {
         VStack(alignment: .leading, spacing: 3) {
             if case .announcement = item.payload {
-                noticeTag
+                announcementTag
             }
-            
+                        
             notificationText
                 .font(.SRFontSet.body4)
                 .foregroundStyle(item.isRead ? .srGray : .black)
@@ -110,15 +109,18 @@ struct NotificationCell: View {
         }
     }
     
-    private let noticeTag: some View = {
-        Text("공지사항")
+    private var announcementTag: some View {
+        let label = item.type == .adminMessage ? "새록 운영팀" : "공지사항"
+        let color: Color = item.type == .adminMessage ? .srGray : .pointtext
+        
+        return Text(label)
             .font(.SRFontSet.caption3_2)
             .padding(.horizontal, 3)
             .padding(.vertical, 1)
             .foregroundStyle(.srWhite)
-            .background(.pointtext)
+            .background(item.isRead ? .whiteGray : color)
             .cornerRadius(5)
-    }()
+    }
     
     private var overlayStroke: some View {
         ZStack(alignment: .topLeading) {

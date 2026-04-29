@@ -187,9 +187,9 @@ struct EditProfileView: View {
     private var unsavedChangesPopupConfig: PopupConfig {
         PopupConfig(
             title: "변경사항이 저장되지 않았어요",
-            message: "수정 완료를 누르지 않으면 변경사항이 반영되지 않아요.",
+            message: "'수정 완료'를 눌러야 변경사항이 저장돼요.",
             buttons: .double(
-                PopupButtonConfig(title: "계속 수정", style: .bordered) {
+                PopupButtonConfig(title: "계속 수정하기", style: .confirm) {
                     showUnsavedChangesAlert = false
                 },
                 PopupButtonConfig(title: "나가기", style: .delete) {

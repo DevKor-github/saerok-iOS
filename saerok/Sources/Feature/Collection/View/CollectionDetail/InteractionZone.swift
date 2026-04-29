@@ -86,7 +86,8 @@ private extension InteractionZone {
         .padding(.top, 12)
         .padding(.bottom, 15)
         .background {
-            BackdropView().blur(radius: 4)
+            BackdropView()
+                .blur(radius: 4)
         }
         .cornerRadius(40)
         .shadow(color: .black.opacity(0.07), radius: 5, x: 0, y: 0)

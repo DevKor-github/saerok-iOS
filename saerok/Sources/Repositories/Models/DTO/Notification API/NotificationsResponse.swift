@@ -29,6 +29,7 @@ extension DTO {
         case likedOnCollection = "LIKED_ON_COLLECTION"
         case commentedOnCollection = "COMMENTED_ON_COLLECTION"
         case systemPublishedAnnouncement = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
+        case systemAdminMessage = "SYSTEM_ADMIN_MESSAGE"
         case repliedToComment = "REPLIED_TO_COMMENT"
     }
     

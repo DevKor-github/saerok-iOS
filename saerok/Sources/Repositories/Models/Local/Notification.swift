@@ -96,7 +96,15 @@ extension Local.Notification {
             self.payload = .announcement(
                 .init(
                     announcementId: dto.payload.announcementId,
-                    body: dto.payload.inAppBody!
+                    body: dto.payload.inAppBody ?? dto.payload.body ?? ""
+                )
+            )
+        case .systemAdminMessage:
+            self.type = .adminMessage
+            self.payload = .announcement(
+                .init(
+                    announcementId: nil,
+                    body: dto.payload.body ?? ""
                 )
             )
         }

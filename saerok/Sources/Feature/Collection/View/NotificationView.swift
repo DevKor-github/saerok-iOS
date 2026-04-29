@@ -34,10 +34,9 @@ struct NotificationView: View {
                         coordinator.push(CollectionRoute.collectionDetailFromNotiCenter(payload.collectionId))
                         viewModel.readNotification(item)
                     } else if case .announcement(let payload) = item.payload {
-                        guard let id = payload.announcementId else { return }
-                        
-                        coordinator.push(CollectionRoute.directToBoardDetail(id))
                         viewModel.readNotification(item)
+                        guard let id = payload.announcementId else { return }
+                        coordinator.push(CollectionRoute.directToBoardDetail(id))
                     }
                 }
                 .listRowSeparator(.hidden)
