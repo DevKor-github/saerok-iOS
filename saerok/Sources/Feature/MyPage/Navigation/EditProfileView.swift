@@ -20,7 +20,7 @@ extension EditProfileView {
             self.userManager = userManager
             self.interactor = interactor
         }
-        
+
         func checkNicknameAvailability(nickname: String) async {
             nicknameStatus = .checking
             do {
@@ -31,7 +31,7 @@ extension EditProfileView {
                 nicknameStatus = .invalid("네트워크 오류가 발생했어요")
             }
         }
-        
+
        func saveNickname(nickname: String) async {
             do {
                 try await UserManager.shared.updateNickname(to: nickname)
@@ -39,10 +39,10 @@ extension EditProfileView {
                 nicknameStatus = .invalid("닉네임 변경에 실패했어요.")
             }
         }
-        
+
         func updateNicknameStatus(_ nickname: String) {
             let trimmed = nickname.trimmingCharacters(in: .whitespaces)
-            
+
             if trimmed.isEmpty {
                 nicknameStatus = .empty
                 return
@@ -55,27 +55,28 @@ extension EditProfileView {
                 nicknameStatus = .invalid("닉네임은 최대 8글자까지 가능해요")
                 return
             }
-            
+
             let regex = "^[가-힣a-zA-Z0-9]+$"
             if !NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: trimmed) {
                 nicknameStatus = .invalid("닉네임은 한글, 영어, 숫자만 쓸 수 있어요")
                 return
             }
-            
+
             nicknameStatus = .notChecked
         }
-        
+
         func updateProfileImage(_ uiImage: UIImage) async throws {
             guard let originalData = uiImage.jpegData(compressionQuality: 1.0) else {
                 return
             }
-            
+
             let _ = try await interactor.updateProfileImage(originalData)
             await userManager.refreshUser()
         }
-        
+
         func deleteProfileImage() async throws {
             try await interactor.deleteProfileImage()
+            await userManager.refreshUser()
         }
     }
 }
@@ -84,29 +85,45 @@ struct EditProfileView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @Environment(\.dismiss) private var dismiss
     private var viewModel: ViewModel
-    
+
     @FocusState private var isFocused: Bool
     @State private var nickname: String = ""
     @State private var profileImage: UIImage?
+    @State private var pendingProfileImage: UIImage?
+    @State private var pendingDeleteImage: Bool = false
     @State private var isShowingImagePicker = false
     @State private var isLoadingImage = false
     @State private var showOption = false
-    @State var imageReloadKey = UUID()
-    
+    @State private var showUnsavedChangesAlert = false
+
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
-    
+
+    private var hasUnsavedChanges: Bool {
+        pendingProfileImage != nil || pendingDeleteImage || viewModel.nicknameStatus == .available || !nickname.isEmpty
+    }
+
+    // 닉네임을 입력했다면 중복확인까지 완료해야 저장 가능
+    private var canSave: Bool {
+        let hasImageChange = pendingProfileImage != nil || pendingDeleteImage
+        let hasValidNickname = viewModel.nicknameStatus == .available
+        let nicknameIsBlocking = !nickname.isEmpty && !hasValidNickname
+        return (hasImageChange || hasValidNickname) && !nicknameIsBlocking
+    }
+
     var body: some View {
         content
-            .onChange(of: nickname) { _, newValue in
+            .onChange(of: nickname) { _, _ in
                 viewModel.updateNicknameStatus(nickname)
             }
-            .onChange(of: profileImage) { _, newValue in
-                updateProfileImage()
+            .onChange(of: profileImage) { _, newImage in
+                guard let newImage else { return }
+                pendingProfileImage = newImage
+                pendingDeleteImage = false
             }
     }
-    
+
     private var content: some View {
         VStack(alignment: .leading, spacing: 28) {
             navigationBar
@@ -129,15 +146,12 @@ struct EditProfileView: View {
                         .font(.SRFontSet.subtitle3)
                         .bold()
                 }
-                
+
                 Button {
-                    Task {
-                        do {
-                            try await viewModel.deleteProfileImage()
-                            updateProfileImage()
-                        } catch { }
-                        showOption.toggle()
-                    }
+                    pendingDeleteImage = true
+                    pendingProfileImage = nil
+                    profileImage = nil
+                    showOption.toggle()
                 } label: {
                     Text("삭제하기")
                         .font(.SRFontSet.subtitle3)
@@ -154,7 +168,7 @@ struct EditProfileView: View {
             ZStack {
                 ImagePicker(image: $profileImage, isLoading: $isLoadingImage)
                     .disabled(isLoadingImage)
-                
+
                 ZStack {
                     Color.black.opacity(0.4).ignoresSafeArea()
                     ProgressView("이미지 불러오는 중…")
@@ -167,8 +181,24 @@ struct EditProfileView: View {
             }
         }
         .regainSwipeBack()
+        .srPopup(isPresented: $showUnsavedChangesAlert, config: unsavedChangesPopupConfig)
     }
-    
+
+    private var unsavedChangesPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "변경사항이 저장되지 않았어요",
+            message: "수정 완료를 누르지 않으면 변경사항이 반영되지 않아요.",
+            buttons: .double(
+                PopupButtonConfig(title: "계속 수정", style: .bordered) {
+                    showUnsavedChangesAlert = false
+                },
+                PopupButtonConfig(title: "나가기", style: .delete) {
+                    coordinator.pop()
+                }
+            )
+        )
+    }
+
     private var navigationBar: some View {
         NavigationBar(
             center: {
@@ -176,7 +206,11 @@ struct EditProfileView: View {
                     .font(.SRFontSet.subtitle2)
             }, leading: {
                 Button {
-                    coordinator.pop()
+                    if hasUnsavedChanges {
+                        showUnsavedChangesAlert = true
+                    } else {
+                        coordinator.pop()
+                    }
                 } label: {
                     Image.SRIconSet.chevronLeft
                         .frame(.defaultIconSize)
@@ -184,15 +218,22 @@ struct EditProfileView: View {
                 .srStyled(.borderedIconButton)
             })
     }
-    
+
     private var profileImageSection: some View {
         VStack(alignment: .center, spacing: 12) {
-            ReactiveAsyncImage(
-                url: viewModel.user?.imageURL ?? "",
-                scale: .small,
-                size: .init(width: 100, height: 100),
-                downsampling: true
-            )
+            Group {
+                if let pendingImage = pendingProfileImage {
+                    Image(uiImage: pendingImage)
+                        .resizable()
+                } else {
+                    ReactiveAsyncImage(
+                        url: pendingDeleteImage ? "" : (viewModel.user?.imageURL ?? ""),
+                        scale: .small,
+                        size: .init(width: 100, height: 100),
+                        downsampling: true
+                    )
+                }
+            }
             .aspectRatio(contentMode: .fill)
             .frame(width: 100, height: 100)
             .clipShape(Circle())
@@ -218,16 +259,15 @@ struct EditProfileView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .id(imageReloadKey)
     }
-    
+
     private var nicknameSection: some View {
         VStack(alignment: .leading) {
             HStack(spacing: 6) {
                 nicknameTextField
                 nicknameCheckButton
             }
-            
+
             errorSection
                 .font(.SRFontSet.caption1)
                 .padding(.horizontal, 10)
@@ -235,7 +275,7 @@ struct EditProfileView: View {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     private var nicknameTextField: some View {
         TextField("\(viewModel.user?.nickname ?? "사용할 닉네임을 입력해주세요.")", text: $nickname)
             .padding(.horizontal, 18)
@@ -243,7 +283,7 @@ struct EditProfileView: View {
             .srStyled(.textField(isFocused: $isFocused))
             .frame(maxWidth: .infinity)
     }
-    
+
     private var nicknameCheckButton: some View {
         Button(action: nicknameCheckButtonTapped) {
             Text("중복확인")
@@ -254,54 +294,52 @@ struct EditProfileView: View {
         .frame(width: 83)
         .srStyled(.alert(.confirm))
     }
-    
+
     @ViewBuilder
     private var errorSection: some View {
         switch viewModel.nicknameStatus {
         case .invalid(let message):
             Text(message).foregroundColor(.red)
-            
+
         case .available:
             Text("사용 가능한 닉네임입니다.").foregroundColor(.splash)
-            
+
         case .notAvailable(let reason):
             Text(reason).foregroundColor(.red)
-            
+
         default:
             EmptyView()
         }
     }
-    
+
     private var saveButton: some View {
         Button(action: saveButtonTapped) {
-            Text("닉네임 수정하기")
+            Text("수정 완료")
         }
         .srStyled(.primaryButton)
-        .disabled(viewModel.nicknameStatus != .available)
+        .disabled(!canSave)
         .padding(.bottom, 16)
     }
-    
+
     private func nicknameCheckButtonTapped() {
         Task {
             await viewModel.checkNicknameAvailability(nickname: nickname)
         }
     }
-    
+
     private func saveButtonTapped() {
         Task {
-            await viewModel.saveNickname(nickname: nickname)
-            coordinator.pop()
-        }
-    }
-    
-    private func updateProfileImage() {
-        if let image = profileImage {
-            Task {
-                do {
-                    try await viewModel.updateProfileImage(image)
-                    imageReloadKey = UUID()
-                } catch { }
+            if pendingDeleteImage {
+                try? await viewModel.deleteProfileImage()
+            } else if let image = pendingProfileImage {
+                try? await viewModel.updateProfileImage(image)
             }
+
+            if viewModel.nicknameStatus == .available {
+                await viewModel.saveNickname(nickname: nickname)
+            }
+
+            coordinator.pop()
         }
     }
 }
