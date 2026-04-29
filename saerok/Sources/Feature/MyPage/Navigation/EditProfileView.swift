@@ -11,14 +11,15 @@ import SwiftUI
 extension EditProfileView {
     @Observable
     final class ViewModel {
-        private var userManager = UserManager.shared
+        private let appState: Store<AppState>
         private let interactor: UserInteractor
-        var user: User? { userManager.user }
+        private(set) var user: AppState.UserProfile?
         var nicknameStatus: NicknameStatus = .empty
 
-        init(userManager: UserManager = UserManager.shared, interactor: UserInteractor) {
-            self.userManager = userManager
+        init(appState: Store<AppState>, interactor: UserInteractor) {
+            self.appState = appState
             self.interactor = interactor
+            self.user = appState[\.currentUser]
         }
 
         func checkNicknameAvailability(nickname: String) async {
@@ -32,9 +33,13 @@ extension EditProfileView {
             }
         }
 
-       func saveNickname(nickname: String) async {
+        func saveNickname(nickname: String) async {
             do {
-                try await UserManager.shared.updateNickname(to: nickname)
+                try await interactor.updateNickname(nickname)
+                let fetched = try await interactor.getUser()
+                let profile = AppState.UserProfile(fetched)
+                appState[\.currentUser] = profile
+                self.user = profile
             } catch {
                 nicknameStatus = .invalid("닉네임 변경에 실패했어요.")
             }
@@ -66,17 +71,20 @@ extension EditProfileView {
         }
 
         func updateProfileImage(_ uiImage: UIImage) async throws {
-            guard let originalData = uiImage.jpegData(compressionQuality: 1.0) else {
-                return
-            }
-
+            guard let originalData = uiImage.jpegData(compressionQuality: 1.0) else { return }
             let _ = try await interactor.updateProfileImage(originalData)
-            await userManager.refreshUser()
+            let fetched = try await interactor.getUser()
+            let profile = AppState.UserProfile(fetched)
+            appState[\.currentUser] = profile
+            self.user = profile
         }
 
         func deleteProfileImage() async throws {
             try await interactor.deleteProfileImage()
-            await userManager.refreshUser()
+            let fetched = try await interactor.getUser()
+            let profile = AppState.UserProfile(fetched)
+            appState[\.currentUser] = profile
+            self.user = profile
         }
     }
 }

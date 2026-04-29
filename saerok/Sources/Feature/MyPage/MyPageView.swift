@@ -29,17 +29,16 @@ extension MyPageView {
             case navigateToBoardDetail(_ id: Int)
         }
         
-        private let userManager = UserManager.shared
-        var user: User? { userManager.user }
+        private(set) var user: AppState.UserProfile? = nil
         var output: Output?
 
         // MARK: Dependencies
         private let appState: Store<AppState>
         private let interactor: UserInteractor
         var isGuest: Bool { appState[\.authStatus] == .guest }
-        
+
         private let cancelBag: CancelBag
-        
+
         init(appState: Store<AppState>, interactor: UserInteractor) {
             self.appState = appState
             self.interactor = interactor
@@ -52,6 +51,13 @@ extension MyPageView {
                     viewModel.output = .navigateToBoardDetail(id)
                 }
                 .store(in: cancelBag)
+
+            appState
+                .updates(for: \.currentUser)
+                .weakSink(on: self) { viewModel, profile in
+                    viewModel.user = profile
+                }
+                .store(in: cancelBag)
         }
         
         func changeStatusToLogout() {
@@ -61,10 +67,8 @@ extension MyPageView {
         func syncUser() {
             Task {
                 if !isGuest, user != nil { return }
-                do {
-                    let me = try await interactor.getUser()
-                    userManager.syncUser(from: me)
-                }
+                guard let me = try? await interactor.getUser() else { return }
+                appState[\.currentUser] = .init(me)
             }
         }
         

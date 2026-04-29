@@ -5,10 +5,13 @@
 //  Created by HanSeung on 4/8/25.
 //
 
+import Foundation
+
 struct AppState: Equatable {
     var routing = ViewRouting()
     var system = System()
     var authStatus: AuthStatus = .notDetermined
+    var currentUser: UserProfile? = nil
 }
 
 extension AppState {
@@ -34,8 +37,25 @@ extension AppState {
     }
 }
 
+extension AppState {
+    struct UserProfile: Equatable {
+        var nickname: String
+        var email: String
+        var imageURL: String?
+        var joinedDate: Date
+
+        init(_ user: User) {
+            self.nickname = user.nickname
+            self.email = user.email
+            self.imageURL = user.imageURL
+            self.joinedDate = user.joinedDate
+        }
+    }
+}
+
 func == (lhs: AppState, rhs: AppState) -> Bool {
     lhs.routing == rhs.routing &&
     lhs.system == rhs.system &&
-    lhs.authStatus == rhs.authStatus
+    lhs.authStatus == rhs.authStatus &&
+    lhs.currentUser == rhs.currentUser
 }

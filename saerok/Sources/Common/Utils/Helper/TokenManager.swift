@@ -70,21 +70,12 @@ actor TokenManager {
         let newRefreshToken = extractRefreshTokenFromCookies() ?? refreshToken
         saveTokens(accessToken: response.accessToken, refreshToken: newRefreshToken)
         
-        if response.signupStatus == .completed {
-            syncUserData()
-        }
         return .signedIn(isRegistered: response.signupStatus == .completed)
     }
-    
+
     func trySocialLogin(accessToken: String) {
         let newRefreshToken = extractRefreshTokenFromCookies()
         saveTokens(accessToken: accessToken, refreshToken: newRefreshToken)
-    }
-    
-    private func syncUserData() {
-        Task {
-            await UserManager.shared.refreshUser()
-        }
     }
 }
 

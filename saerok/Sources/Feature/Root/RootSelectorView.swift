@@ -37,7 +37,11 @@ struct RootSelectorView: View {
             if before == .background && after == .inactive {
                 Task { @MainActor in
                     do {
-                        injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()
+                        let status = try await TokenManager.shared.tryAutoLogin()
+                        injected.appState[\.authStatus] = status
+                        if case .signedIn(let isRegistered) = status, isRegistered {
+                            await loadCurrentUser()
+                        }
                     } catch {
                         injected.appState[\.authStatus] = .notDetermined
                     }
@@ -56,13 +60,24 @@ struct RootSelectorView: View {
 }
 
 private extension RootSelectorView {
+    func loadCurrentUser() async {
+        guard let user = try? await injected.interactors.user.getUser() else { return }
+        injected.appState[\.currentUser] = .init(user)
+    }
+}
+
+private extension RootSelectorView {
     var content: some View {
         Group {
             if showSplash {
                 SplashView(showSplash: $showSplash) {
                     Task {
                         do {
-                            injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()
+                            let status = try await TokenManager.shared.tryAutoLogin()
+                            injected.appState[\.authStatus] = status
+                            if case .signedIn(let isRegistered) = status, isRegistered {
+                                await loadCurrentUser()
+                            }
                         } catch {
                             injected.appState[\.authStatus] = .notDetermined
                         }

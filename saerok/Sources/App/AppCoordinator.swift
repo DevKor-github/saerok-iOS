@@ -82,6 +82,7 @@ final class AppCoordinator: ObservableObject {
         _mapViewModel = nil
         _myPageViewModel = nil
         path = .init()
+        container.appState[\.currentUser] = nil
     }
 }
 
@@ -203,6 +204,7 @@ extension AppCoordinator {
     
     func makeEditProfileViewModel() -> EditProfileView.ViewModel {
         .init(
+            appState: container.appState,
             interactor: container.interactors.user
         )
     }

@@ -14,26 +14,25 @@ extension AccountView {
     final class ViewModel {
         private let appState: Store<AppState>
         private let interactor: UserInteractor
-        private let userManager: UserManager
-        private let tokenmanager: TokenManager
-        
-        var user: User? { userManager.user }
-        
+        private let tokenManager: TokenManager
+
+        private(set) var user: AppState.UserProfile?
+
         init(appState: Store<AppState>, interactor: UserInteractor) {
             self.appState = appState
             self.interactor = interactor
-            self.userManager = .shared
-            self.tokenmanager = .shared
+            self.tokenManager = .shared
+            self.user = appState[\.currentUser]
         }
-        
+
         func logout() async throws {
-            await tokenmanager.clearTokens()
-            try await userManager.deleteUser()
+            await tokenManager.clearTokens()
+            try await interactor.deleteUser()
             Task { @MainActor in
                 appState[\.authStatus] = .notDetermined
             }
         }
-        
+
         func deleteAccount() async throws {
             try await interactor.deleteAccount()
             appState[\.authStatus] = .notDetermined
