@@ -23,16 +23,6 @@ struct CollectionCommentInputBar: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-//            LinearGradient(
-//                stops: [
-//                    Gradient.Stop(color: .white.opacity(0), location: 0.00),
-//                    Gradient.Stop(color: .white, location: 1.00),
-//                ],
-//                startPoint: UnitPoint(x: 0.5, y: 0),
-//                endPoint: UnitPoint(x: 0.5, y: 1)
-//            )
-//            .frame(height: 195)
-            
             HStack(alignment: .bottom) {
                 TextField(
                     isGuest
@@ -76,9 +66,13 @@ struct CollectionCommentInputBar: View {
             )
             .cornerRadius(23)
             .padding(.horizontal, 9)
-            .padding(.top, 19)
             .padding(.bottom, isFocused ? 20 : 40)
             .frame(maxWidth: UIScreen.main.bounds.width)
+        }
+        .background {
+            BackdropView()
+                .blur(radius: 10)
+                .ignoresSafeArea()
         }
         .padding(.bottom, keyboard.keyboardHeight)
         .animation(.smooth(duration: 0.25), value: keyboard.keyboardHeight)
