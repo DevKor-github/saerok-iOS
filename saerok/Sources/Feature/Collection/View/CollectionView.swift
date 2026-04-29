@@ -162,7 +162,7 @@ private extension CollectionView {
                         )
                     }
                 }
-                .refreshable { await viewModel.loadPosts() }
+                .refreshable { await viewModel.refresh() }
                 .onChange(of: scrollToTopTrigger) { _, _ in
                     withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
                 }
