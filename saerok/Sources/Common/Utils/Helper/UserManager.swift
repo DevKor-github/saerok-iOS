@@ -8,10 +8,11 @@
 import Foundation
 import SwiftData
 
-final class UserManager: ObservableObject {
+@Observable
+final class UserManager {
     static let shared = UserManager()
-    
-    @Published private(set) var user: User? = nil
+
+    private(set) var user: User? = nil
     private var interactor: UserInteractor?
 
     func configure(with interactor: UserInteractor) {

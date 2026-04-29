@@ -23,9 +23,7 @@ extension AppState {
 }
 
 extension AppState {
-    struct System: Equatable {
-        var isSignedIn: Bool = false
-    }
+    struct System: Equatable {}
 }
 
 extension AppState {

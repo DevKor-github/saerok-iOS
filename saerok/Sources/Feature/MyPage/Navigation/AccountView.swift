@@ -29,7 +29,9 @@ extension AccountView {
         func logout() async throws {
             await tokenmanager.clearTokens()
             try await userManager.deleteUser()
-            appState[\.authStatus] = .notDetermined
+            Task { @MainActor in
+                appState[\.authStatus] = .notDetermined
+            }
         }
         
         func deleteAccount() async throws {

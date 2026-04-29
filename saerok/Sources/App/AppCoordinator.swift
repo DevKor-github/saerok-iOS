@@ -5,6 +5,7 @@
 //  Created by HanSeung on 1/12/26.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 
@@ -14,29 +15,72 @@ protocol AppRoute: Hashable {}
 final class AppCoordinator: ObservableObject {
     private let container: DIContainer
     @Published var path = NavigationPath()
-    
-    lazy var fieldGuideViewModel = makeFieldGuideViewModel()
-    lazy var collectionViewModel = makeCollectionViewModel()
-    lazy var communityViewModel = makeCommunityViewModel()
-    lazy var mapViewModel = makeMapViewModel()
-    lazy var myPageViewModel = makeMyPageViewModel()
-    
+    private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Resettable lazy ViewModels
+    private var _fieldGuideViewModel: FieldGuideView.ViewModel?
+    var fieldGuideViewModel: FieldGuideView.ViewModel {
+        if _fieldGuideViewModel == nil { _fieldGuideViewModel = makeFieldGuideViewModel() }
+        return _fieldGuideViewModel!
+    }
+
+    private var _collectionViewModel: CollectionView.ViewModel?
+    var collectionViewModel: CollectionView.ViewModel {
+        if _collectionViewModel == nil { _collectionViewModel = makeCollectionViewModel() }
+        return _collectionViewModel!
+    }
+
+    private var _communityViewModel: CommunityView.ViewModel?
+    var communityViewModel: CommunityView.ViewModel {
+        if _communityViewModel == nil { _communityViewModel = makeCommunityViewModel() }
+        return _communityViewModel!
+    }
+
+    private var _mapViewModel: MapView.ViewModel?
+    var mapViewModel: MapView.ViewModel {
+        if _mapViewModel == nil { _mapViewModel = makeMapViewModel() }
+        return _mapViewModel!
+    }
+
+    private var _myPageViewModel: MyPageView.ViewModel?
+    var myPageViewModel: MyPageView.ViewModel {
+        if _myPageViewModel == nil { _myPageViewModel = makeMyPageViewModel() }
+        return _myPageViewModel!
+    }
+
     init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {
         self.container = container
         self.path = navigationPath
+
+        container.appState
+            .updates(for: \.authStatus)
+            .filter { $0 == .notDetermined }
+            .sink { [weak self] _ in self?.reset() }
+            .store(in: &cancellables)
     }
-    
+
     func push(_ route: any AppRoute) {
         path.append(route)
     }
-    
+
     func pop() {
         if !path.isEmpty {
             path.removeLast()
         }
     }
-    
+
     func clear() {
+        path = .init()
+    }
+
+    // 로그아웃/세션 만료 시 모든 탭 ViewModel과 네비게이션 스택을 초기화
+    @MainActor
+    func reset() {
+        _fieldGuideViewModel = nil
+        _collectionViewModel = nil
+        _communityViewModel = nil
+        _mapViewModel = nil
+        _myPageViewModel = nil
         path = .init()
     }
 }

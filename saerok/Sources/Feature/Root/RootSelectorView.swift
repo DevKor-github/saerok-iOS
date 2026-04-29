@@ -36,7 +36,11 @@ struct RootSelectorView: View {
             ATTrackingManager.requestTrackingAuthorization { _ in }
             if before == .background && after == .inactive {
                 Task { @MainActor in
-                   injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()
+                    do {
+                        injected.appState[\.authStatus] = try await TokenManager.shared.tryAutoLogin()
+                    } catch {
+                        injected.appState[\.authStatus] = .notDetermined
+                    }
                 }
             }
         }
