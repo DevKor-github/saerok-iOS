@@ -72,7 +72,8 @@ struct CollectionCommentInputBar: View {
         .background {
             BackdropView()
                 .blur(radius: 10)
-                .ignoresSafeArea()
+                .scaleEffect(1.2, anchor: .top)
+                .ignoresSafeArea(.all)
         }
         .padding(.bottom, keyboard.keyboardHeight)
         .animation(.smooth(duration: 0.25), value: keyboard.keyboardHeight)
