@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct ScrollPreferenceKey: @preconcurrency PreferenceKey {
-    @MainActor static var defaultValue: CGFloat = .zero
+struct ScrollPreferenceKey: PreferenceKey {
+    nonisolated(unsafe) static var defaultValue: CGFloat = .zero
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value += nextValue()
     }

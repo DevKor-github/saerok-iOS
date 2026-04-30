@@ -30,6 +30,7 @@ extension DTO {
         case commentedOnCollection = "COMMENTED_ON_COLLECTION"
         case systemPublishedAnnouncement = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
         case systemAdminMessage = "SYSTEM_ADMIN_MESSAGE"
+        case systemContentDeleted = "SYSTEM_CONTENT_DELETED"
         case repliedToComment = "REPLIED_TO_COMMENT"
     }
     

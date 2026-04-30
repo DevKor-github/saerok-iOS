@@ -36,6 +36,15 @@ final class PushNotificationManager: NSObject {
         let status = await checkNotificationAuthorization()
         return status == .denied
     }
+
+    func reRegisterDevice() async {
+        guard let fcmToken = Messaging.messaging().fcmToken,
+              let interactor = injected?.interactors.user
+        else { return }
+
+        try? await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
+        try? await interactor.toggleAllNotificationSetting()
+    }
     
     func setAPNSToken(_ token: Data) {
         Messaging.messaging().apnsToken = token
