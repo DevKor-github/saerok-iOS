@@ -34,7 +34,7 @@ final class User: Sendable {
     
     convenience init(dto: DTO.MeResponse) {
         self.init()
-        self.nickname = dto.nickname
+        self.nickname = dto.nickname ?? ""
         self.email = dto.email
         self.joinedDate = Date.fromSimpleDateString(dto.joinedDate ?? "2025-06-25") ?? .now
         self.imageURL = dto.profileImageUrl

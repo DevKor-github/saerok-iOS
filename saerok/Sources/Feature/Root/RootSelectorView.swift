@@ -43,13 +43,7 @@ struct RootSelectorView: View {
                 Task { @MainActor in
                     do {
                         let status = try await TokenManager.shared.tryAutoLogin()
-                        if case .signedIn(let isRegistered) = status, !isRegistered {
-                            try? await injected.interactors.user.deleteUser()
-                        }
-                        injected.appState[\.authStatus] = status
-                        if case .signedIn(let isRegistered) = status, isRegistered {
-                            await loadCurrentUser()
-                        }
+                        await applyAuthStatus(status)
                     } catch {
                         injected.appState[\.authStatus] = .notDetermined
                     }
@@ -68,9 +62,32 @@ struct RootSelectorView: View {
 }
 
 private extension RootSelectorView {
-    func loadCurrentUser() async {
-        guard let user = try? await injected.interactors.user.getUser() else { return }
+    func loadCurrentUser() async throws {
+        let user = try await injected.interactors.user.getUser()
         injected.appState[\.currentUser] = .init(user)
+    }
+
+    func applyAuthStatus(_ status: AppState.AuthStatus) async {
+        switch status {
+        case .signedIn(let isRegistered):
+            if isRegistered {
+                do {
+                    try await loadCurrentUser()
+                    injected.appState[\.authStatus] = status
+                } catch UserInteractorError.invalidUser {
+                    try? await injected.interactors.user.deleteUser()
+                    await TokenManager.shared.clearTokens()
+                    injected.appState[\.authStatus] = .notDetermined
+                } catch {
+                    injected.appState[\.authStatus] = status
+                }
+            } else {
+                try? await injected.interactors.user.deleteUser()
+                injected.appState[\.authStatus] = status
+            }
+        default:
+            injected.appState[\.authStatus] = status
+        }
     }
 }
 
@@ -82,13 +99,7 @@ private extension RootSelectorView {
                     Task {
                         do {
                             let status = try await TokenManager.shared.tryAutoLogin()
-                            if case .signedIn(let isRegistered) = status, !isRegistered {
-                                try? await injected.interactors.user.deleteUser()
-                            }
-                            injected.appState[\.authStatus] = status
-                            if case .signedIn(let isRegistered) = status, isRegistered {
-                                await loadCurrentUser()
-                            }
+                            await applyAuthStatus(status)
                         } catch {
                             injected.appState[\.authStatus] = .notDetermined
                         }

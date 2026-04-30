@@ -41,16 +41,15 @@ extension MainRepository: UserRepository {
         let _: EmptyResponse = try await networkService.performSRRequest(
             .signUp_complete(body: .init(nickname: nickname, signupSource: source))
         )
-        let me: DTO.MeResponse = try await networkService.performSRRequest(
-            .me
-        )
-        let user = User(dto: me)
-        modelContext.insert(user)
-        try modelContext.save()
+        _ = try await getMeResponse()
     }
-    
+
     func getMeResponse() async throws -> User {
         let userDTO: DTO.MeResponse = try await networkService.performSRRequest(.me)
+
+        guard let nickname = userDTO.nickname, !nickname.isEmpty else {
+            throw UserInteractorError.invalidUser
+        }
 
         if let existing = try await getUser() {
             try await deleteUser(existing)
