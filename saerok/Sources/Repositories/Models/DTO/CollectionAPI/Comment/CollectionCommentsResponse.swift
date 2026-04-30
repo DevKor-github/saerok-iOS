@@ -10,11 +10,22 @@ extension DTO {
         let items: [Comment]
         let isMyCollection: Bool
         let hasNext: Bool?
-        
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            isMyCollection = try container.decode(Bool.self, forKey: .isMyCollection)
+            hasNext = try container.decodeIfPresent(Bool.self, forKey: .hasNext)
+            items = try container.decode([Failable<Comment>].self, forKey: .items).compactMap(\.value)
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case items, isMyCollection, hasNext
+        }
+
         struct Comment: Decodable {
             let commentId: Int
             let userId: Int
-            let nickname: String
+            let nickname: String?
             let profileImageUrl: String
             let thumbnailProfileImageUrl: String
             let content: String
@@ -27,5 +38,12 @@ extension DTO {
             let updatedAt: String
             let replies: [Comment]?
         }
+    }
+}
+
+private struct Failable<T: Decodable>: Decodable {
+    let value: T?
+    init(from decoder: Decoder) throws {
+        value = try? T(from: decoder)
     }
 }

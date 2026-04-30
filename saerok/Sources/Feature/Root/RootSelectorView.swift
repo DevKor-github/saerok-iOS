@@ -31,13 +31,21 @@ struct RootSelectorView: View {
             }
         }
         .animation(.spring(), value: networkMonitor.isConnected)
-        .onReceive(authStatusUpdate) { authStatus = $0 }
+        .onReceive(authStatusUpdate) { newStatus in
+            authStatus = newStatus
+            if case .notDetermined = newStatus {
+                Task { try? await injected.interactors.user.deleteUser() }
+            }
+        }
         .onChange(of: scenePhase) { before, after in
             ATTrackingManager.requestTrackingAuthorization { _ in }
             if before == .background && after == .inactive {
                 Task { @MainActor in
                     do {
                         let status = try await TokenManager.shared.tryAutoLogin()
+                        if case .signedIn(let isRegistered) = status, !isRegistered {
+                            try? await injected.interactors.user.deleteUser()
+                        }
                         injected.appState[\.authStatus] = status
                         if case .signedIn(let isRegistered) = status, isRegistered {
                             await loadCurrentUser()
@@ -74,6 +82,9 @@ private extension RootSelectorView {
                     Task {
                         do {
                             let status = try await TokenManager.shared.tryAutoLogin()
+                            if case .signedIn(let isRegistered) = status, !isRegistered {
+                                try? await injected.interactors.user.deleteUser()
+                            }
                             injected.appState[\.authStatus] = status
                             if case .signedIn(let isRegistered) = status, isRegistered {
                                 await loadCurrentUser()

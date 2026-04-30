@@ -46,7 +46,10 @@ struct NotificationSettingView: View {
     @ViewBuilder
     private var toggleSection: some View {
         VStack(spacing: 0) {
-            ForEach(Local.NotificationType.allCases, id: \.self) { type in
+            ForEach(
+                Local.NotificationType.allCases.filter { $0 != .adminMessage},
+                id: \.self
+            ) { type in
                 notificationSettingItem(type)
             }
         }

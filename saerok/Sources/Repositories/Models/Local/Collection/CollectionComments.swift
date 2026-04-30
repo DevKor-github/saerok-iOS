@@ -33,7 +33,7 @@ extension Local.CollectionComment {
                 id: $0.commentId,
                 user: Local.UserSummary(
                     id: $0.userId,
-                    nickname: $0.nickname,
+                    nickname: $0.nickname ?? "탈퇴한 사용자",
                     profileImageUrl: $0.thumbnailProfileImageUrl
                 ),
                 content: $0.content,
@@ -59,7 +59,7 @@ extension Local.CollectionComment {
             id: dto.commentId,
             user: Local.UserSummary(
                 id: dto.userId,
-                nickname: dto.nickname,
+                nickname: dto.nickname ?? "탈퇴한 사용자",
                 profileImageUrl: dto.thumbnailProfileImageUrl
             ),
             content: dto.content,

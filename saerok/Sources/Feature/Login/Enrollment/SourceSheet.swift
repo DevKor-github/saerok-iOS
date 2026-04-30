@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct SourceSheet: View {
-    let nextButtonTapped: () async -> Void
+    let nextButtonTapped: () async throws -> Void
     @State var enrollStatus: EnrollStatus = .editing
+    @State private var showError: Bool = false
     @Binding var singupSource: SignUpSource?
     
     var body: some View {
@@ -69,19 +70,32 @@ struct SourceSheet: View {
     }
     
     private var completeButton: some View {
-        Button {
-            Task {
-                enrollStatus = .loading
-                await nextButtonTapped()
+        VStack(spacing: 12) {
+            if showError {
+                Text("오류가 발생했어요. 다시 시도해주세요.")
+                    .font(.SRFontSet.caption1)
+                    .foregroundStyle(.red)
             }
-        } label: {
-            if enrollStatus == .loading {
-                ProgressView()
-            } else {
-                Text("완료")
+            Button {
+                Task {
+                    showError = false
+                    enrollStatus = .loading
+                    do {
+                        try await nextButtonTapped()
+                    } catch {
+                        enrollStatus = .editing
+                        showError = true
+                    }
+                }
+            } label: {
+                if enrollStatus == .loading {
+                    ProgressView()
+                } else {
+                    Text("완료")
+                }
             }
+            .srStyled(.primaryButton)
+            .disabled(singupSource == nil || enrollStatus == .loading)
         }
-        .srStyled(.primaryButton)
-        .disabled(singupSource == nil || enrollStatus == .loading)
     }
 }

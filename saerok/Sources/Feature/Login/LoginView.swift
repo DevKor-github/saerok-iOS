@@ -7,7 +7,6 @@
 
 import Combine
 import SwiftUI
-import SwiftData
 import KakaoSDKAuth
 import KakaoSDKUser
 
@@ -17,21 +16,21 @@ enum LoginRoute: AppRoute {
 
 struct LoginView: View {
     typealias Route = LoginRoute
-    
+
     @Environment(\.injected) var injected
     @State var showingAlert: Bool = false
     @State private var user: User = .init()
-    @Query private var users: [User]
+    @State private var enrollmentCompleted: Bool = false
     @Binding private var authStatus: AppState.AuthStatus
-    
+
     var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
         injected.appState.updates(for: \.authStatus)
     }
-    
+
     init(authStatus: Binding<AppState.AuthStatus>) {
         self._authStatus = authStatus
     }
-    
+
     var body: some View {
         content
             .onReceive(authStatusUpdate) { authStatus = $0 }
@@ -47,10 +46,12 @@ private extension LoginView {
         case .notDetermined:
             loginView
         case .signedIn:
-            if users.isEmpty {
-                EnrollView(user: $user)
-            } else {
+            if enrollmentCompleted {
                 EnrollView.EnrollSubmittedView()
+            } else {
+                EnrollView(user: $user, onEnrollmentComplete: {
+                    enrollmentCompleted = true
+                })
             }
         default:
             EmptyView()

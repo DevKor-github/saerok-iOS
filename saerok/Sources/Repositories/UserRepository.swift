@@ -184,6 +184,7 @@ extension MainRepository: UserRepository {
         } else if let user = try await getUser() {
             modelContext.delete(user)
         }
+        try modelContext.save()
     }
     
     func getAnnouncements() async throws -> DTO.Announcements {

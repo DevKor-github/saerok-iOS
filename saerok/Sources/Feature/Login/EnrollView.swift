@@ -12,6 +12,7 @@ import SwiftData
 struct EnrollView: View {
     @Environment(\.injected) private var injected: DIContainer
     @Binding var user: User
+    let onEnrollmentComplete: () -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -20,7 +21,7 @@ struct EnrollView: View {
                 headerSection
                 Rectangle().fill(.clear)
                     .frame(height: 40)
-                EnrollFirstFormView(user: $user)
+                EnrollFirstFormView(user: $user, onEnrollmentComplete: onEnrollmentComplete)
             }
             .padding(.horizontal, SRDesignConstant.defaultPadding)
         }

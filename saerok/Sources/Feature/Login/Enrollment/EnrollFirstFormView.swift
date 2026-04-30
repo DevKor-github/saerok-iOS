@@ -26,15 +26,16 @@ extension EnrollView {
     struct EnrollFirstFormView: View {
         @Environment(\.injected) var injected
         @Environment(\.modelContext) var modelContext
-        
+
         @State private var nicknameStatus: NicknameStatus = .empty
         @State private var enrollStatus: EnrollStatus = .editing
         @State private var signupSource: SignUpSource?
         @State private var showstermSheet: Bool = false
         @State private var showsSourceSheet: Bool = false
-        
+
         @FocusState private var isFocused: Bool
         @Binding var user: User
+        let onEnrollmentComplete: () -> Void
         
         var body: some View {
             VStack {
@@ -60,10 +61,11 @@ extension EnrollView {
             .fullScreenCover(isPresented: $showsSourceSheet) {
                 SourceSheet(
                     nextButtonTapped: {
-                        try? await injected.interactors.user.signupComplete(
+                        try await injected.interactors.user.signupComplete(
                             nickname: user.nickname,
                             source: signupSource ?? .etc
                         )
+                        onEnrollmentComplete()
                     },
                     singupSource: $signupSource
                 )
