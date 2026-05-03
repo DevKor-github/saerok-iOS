@@ -27,10 +27,10 @@ struct NotificationSettingView: View {
             isDenied ? showDeniedAlert.toggle() : ()
             do {
                 self.settings = try await injected.interactors.user.fetchNotificationSetting()
-            } catch NetworkError.notFound {
+            } catch {
                 await PushNotificationManager.shared.reRegisterDevice()
                 self.settings = (try? await injected.interactors.user.fetchNotificationSetting()) ?? .init()
-            } catch { }
+            } 
         }
         .alert("알림 권한이 꺼져 있습니다", isPresented: $showDeniedAlert) {
             Button("설정으로 이동") {

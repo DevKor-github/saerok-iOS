@@ -10,7 +10,7 @@ import SwiftUI
 struct NotificationView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: ViewModel
-    
+
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }

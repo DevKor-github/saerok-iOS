@@ -165,7 +165,6 @@ extension PushNotificationManager: @MainActor MessagingDelegate {
         Task { @MainActor in
             do {
                 try await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
-                try await interactor.toggleAllNotificationSetting()
             } catch { }
         }
     }
