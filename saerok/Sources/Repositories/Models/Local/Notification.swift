@@ -107,8 +107,6 @@ extension Local.Notification {
                     body: dto.payload.body ?? ""
                 )
             )
-        case .systemContentDeleted:
-            throw NetworkError.decodingError("unsupported notification type: systemContentDeleted")
         }
     }
 }

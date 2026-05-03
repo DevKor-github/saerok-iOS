@@ -61,7 +61,7 @@ extension Local {
                     dict[.system] = item.enabled
                 case .repliedToComment:
                     dict[.replied] = item.enabled
-                case .systemAdminMessage, .systemContentDeleted:
+                case .systemAdminMessage:
                     break
                 }
             }
