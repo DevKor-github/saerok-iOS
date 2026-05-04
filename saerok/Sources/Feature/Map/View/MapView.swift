@@ -74,7 +74,7 @@ private extension MapView {
     var locationPermissionDeniedView: some View {
         VStack(spacing: 16) {
             Image.SRIconSet.pin
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
                 .foregroundStyle(.srGray)
             VStack(spacing: 6) {
                 Text("위치 접근이 필요해요")
@@ -212,7 +212,7 @@ private extension MapView {
     
     func searchCell(_ item: Local.KakaoPlace) -> some View {
         HStack(spacing: 15) {
-            Image.SRIconSet.pin.frame(.defaultIconSizeLarge)
+            Image.SRIconSet.pin.frame(.large)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.placeName)
                     .font(.SRFontSet.body3_2)
@@ -222,7 +222,7 @@ private extension MapView {
             }
             Spacer()
             Image.SRIconSet.chevronRight
-                .frame(.defaultIconSizeSmall)
+                .frame(.small)
                 .foregroundStyle(.black)
         }
         .padding(SRDesignConstant.defaultPadding)
@@ -264,7 +264,7 @@ struct SearchInputBar: View {
                 (isModeIdle
                  ? Image.SRIconSet.searchSecondary
                  : Image.SRIconSet.chevronLeft)
-                .frame(.defaultIconSize, tintColor: tintColor)
+                .frame(.default, tintColor: tintColor)
             }
             TextField(placeHolder, text: $text)
                 .onTapGesture { onTap() }
@@ -292,7 +292,7 @@ extension MapView {
             } label: {
                 HStack {
                     Image.SRIconSet.reset
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                         .foregroundStyle(.splash)
                     Text("이 지역 재검색하기")
                         .font(.SRFontSet.body2)

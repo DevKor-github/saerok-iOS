@@ -86,7 +86,7 @@ private extension CollectionSearchView {
             Button {
                 dismiss()
             } label: {
-                Image.SRIconSet.chevronLeft.frame(.defaultIconSizeSmall)
+                Image.SRIconSet.chevronLeft.frame(.small)
             }
         })
         .frame(height: 66)
@@ -131,7 +131,7 @@ private extension CollectionSearchView {
                 (bird.isBookmarked
                  ? Image.SRIconSet.bookmarkFilled
                  : Image.SRIconSet.bookmark)
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
             }
             .frame(width: 24)
             
@@ -148,7 +148,7 @@ private extension CollectionSearchView {
                     }
                     Spacer()
                     Image.SRIconSet.chevronRight
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                         .foregroundStyle(.secondary)
                 }
                 .contentShape(Rectangle())

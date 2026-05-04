@@ -46,7 +46,7 @@ struct CollectionCommentInputBar: View {
                     }
                 } label: {
                     Image.SRIconSet.upperArrow
-                        .frame(.defaultIconSizeLarge)
+                        .frame(.large)
                         .padding(8)
                         .background(
                             Circle().fill(!isInputValid ? .whiteGray : .splash)

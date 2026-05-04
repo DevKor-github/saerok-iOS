@@ -8,12 +8,16 @@
 import SwiftUI
 
 struct PostingView: View {
-//    @EnvironmentObject private var coordinator: AppCoordinator
+    @EnvironmentObject private var coordinator: AppCoordinator
+    
+    // test (실제  내 정보로 뜨게해야함)
     let me: Local.User = .init(userId: 1, nickname: "비둘기", profileImageUrl: "https://stickershop.line-scdn.net/stickershop/v1/product/1665280/LINEStorePC/main.png?v=1")
     
     @State private var title: String = ""
     @State private var contents: String = ""
     @State private var isUploading: Bool = false
+    @Binding var isPresented: Bool
+    
     let onPost: () -> Void
     
     var body: some View {
@@ -27,7 +31,7 @@ struct PostingView: View {
         VStack(alignment: .leading, spacing: 0) {
             navigationBar
             Divider()
-                .background(Color.whiteGray)
+                .background(Color.srLightGray)
                 .frame(height: 1)
             Group {
                 userView
@@ -50,6 +54,7 @@ struct PostingView: View {
                 }
                 .srStyled(.primaryButton)
                 .disabled(isUploading)
+                .safeAreaPadding(.bottom, 17)
             }
             .padding(.horizontal, 24)
         }
@@ -59,18 +64,19 @@ struct PostingView: View {
 private extension PostingView {
     var navigationBar: some View {
         NavigationBar(
-            center: {
+            leading: {
                 Text("자유게시판")
                     .font(.SRFontSet.subtitle2)
-            }, leading: {
+            },
+            trailing: {
                 Button {
-//                    coordinator.pop()
+                    isPresented.toggle()
                 } label: {
-                    Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                    Image.SRIconSet.x
+                        .frame(.small, tintColor: .srGray)
                 }
-                .srStyled(.borderedIconButton)
-            })
+            }
+        )
     }
     
     var userView: some View {

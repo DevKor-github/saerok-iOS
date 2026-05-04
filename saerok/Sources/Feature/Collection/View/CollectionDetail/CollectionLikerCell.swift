@@ -33,7 +33,7 @@ struct CollectionLikerCell: View {
             Spacer()
             
             Image.SRIconSet.chevronRight
-                .frame(.defaultIconSize)
+                .frame(.default)
                 .foregroundStyle(.srGray)
         }
         .frame(height: 61)

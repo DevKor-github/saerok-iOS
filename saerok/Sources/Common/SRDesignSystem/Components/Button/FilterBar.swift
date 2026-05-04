@@ -59,7 +59,7 @@ struct FilterBar: View {
                         filterKey.reset()
                     } label: {
                         Image.SRIconSet.reset
-                            .frame(.defaultIconSize)
+                            .frame(.default)
                     }
                     .srStyled(.filterButton(isActive: false, isResetButton: true))
                 }

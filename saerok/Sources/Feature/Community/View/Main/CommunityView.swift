@@ -13,9 +13,7 @@ enum CommunityRoute: AppRoute {
     case detailFromFeed(id: Int)
     case detailFromProfile(id: Int)
     case detailFromSearch(id: Int)
-    #if DEBUG
     case postDetail(post: DTO.Post)
-    #endif
     case other(id: Int)
     case addCollection
 }
@@ -81,20 +79,10 @@ private extension CommunityView {
             CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .userProfile))
         case .detailFromSearch(let id):
             CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .communitySearch))
-        #if DEBUG
         case .postDetail(let post):
-            CommunityPostDetailView(
-                viewModel: coordinator.makeCommunityPostDetailViewModel(
-                    post: post,
-                    comments: CommunityPostDetailView.ViewModel.mockComments
-                )
-            )
-            #if RELEASE
             CommunityPostDetailView(
                 viewModel: coordinator.makeCommunityPostDetailViewModel(post: post)
             )
-            #endif
-        #endif
         case .other(let id):
             UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
         case .addCollection:
@@ -137,12 +125,6 @@ private extension CommunityView {
                     .allowsHitTesting(!viewModel.isModeIdle)
                 }
             }
-            
-            #if RELEASE // TODO: 자유게시판 배포 시 삭제 예정
-            addButton
-                .padding(.bottom, 106)
-                .padding(.trailing, 24)
-            #endif
         }
         .modifier(
             FloatingMenuModifier(
@@ -157,9 +139,10 @@ private extension CommunityView {
                 bottomOffset: 102
             )
         )
-        #if DEBUG
         .sheet(isPresented: $showPostingView) {
-            PostingView(onPost: {
+            PostingView(
+                isPresented: $showPostingView,
+                onPost: {
                 showToast(
                     .init(
                         type: .success,
@@ -172,8 +155,8 @@ private extension CommunityView {
                 showPostingView.toggle()
             })
             .presentationDetents([.large])
+            .presentationCornerRadius(20)
         }
-        #endif
         .ignoresSafeArea(.all)
         .onTapGesture {
             if !viewModel.isModeIdle { isFocused = false }
@@ -241,19 +224,40 @@ private extension CommunityView {
 
     // MARK: Sections
     var boardSection: some View {
-        VStack(alignment: .leading, spacing: 13) {
-            iconButton(type: .recent, icon: .commentCommunity, background: .accent)
-            iconButton(type: .popular, icon: .fire, background: .fire)
-            iconButton(type: .suggestion, icon: .unknown, background: .pointtext)
-            #if DEBUG
-            iconButton(type: .board, icon: .post, background: .srGreen)
-            #endif
+        VStack(alignment: .leading, spacing: 0) {
+            bb(title: "새록 모아보기") {
+                iconButton(type: .recent, icon: .commentCommunity, background: .accent)
+                iconButton(type: .popular, icon: .fire, background: .fire)
+                iconButton(type: .suggestion, icon: .unknown, background: .pointtext)
+            }
+            Divider()
+                .hidden()
+                .frame(height: 1)
+                .background(Color.srLightGray)
+            bb(title: "자유게시판") {
+                iconButton(type: .board, icon: .post, background: .srGreen)
+            }
         }
-        .padding(15)
         .cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.srLightGray, lineWidth: 1))
         .padding(.horizontal, 24)
         .padding(.top, 13)
+    }
+    
+    func bb(
+        title: String,
+        @ViewBuilder content: @escaping () -> some View
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.SRFontSet.caption1)
+                .foregroundStyle(.srGray)
+                .padding(.bottom, 10)
+            VStack(alignment: .leading, spacing: 13) {
+                content()
+            }
+        }
+        .padding(15)
     }
 
     var suggestionListSection: some View {
@@ -350,7 +354,7 @@ private extension CommunityView {
                         .font(.SRFontSet.caption0)
                         .foregroundStyle(.srDarkGray)
                     Image.SRIconSet.chevronRight
-                        .frame(.defaultIconSizeSmall, tintColor: .srDarkGray)
+                        .frame(.small, tintColor: .srDarkGray)
                 }
             }
         }
@@ -361,7 +365,7 @@ private extension CommunityView {
         Button { coordinator.push(Route.communityType(type: type)) } label: {
             HStack(spacing: 9) {
                 icon
-                    .frame(.defaultIconSize, tintColor: icon == .unknown ? .srWhite : nil)
+                    .frame(.default, tintColor: icon == .unknown ? .srWhite : nil)
                     .padding(4)
                     .background(background)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -377,6 +381,10 @@ private extension CommunityView {
                           .background(Color.iconRed)
                           .cornerRadius(3)
                     )
+                Spacer()
+                Image.SRIconSet.chevronRight
+                    .frame(.xSmall)
+                    .foregroundStyle(.srDarkGray)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

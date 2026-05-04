@@ -51,7 +51,7 @@ private extension SuggestionSheet {
                 Spacer()
                 Button(action: onDismiss) {
                     Image.SRIconSet.delete
-                        .frame(.defaultIconSizeSmall, tintColor: .srGray)
+                        .frame(.small, tintColor: .srGray)
                 }
             }
             .font(.SRFontSet.subtitle2)
@@ -136,7 +136,7 @@ private extension SuggestionSheet {
                     Spacer()
                     
                     Image.SRIconSet.plus
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                         .padding(8)
                         .background(
                             Circle().fill(.glassWhite)

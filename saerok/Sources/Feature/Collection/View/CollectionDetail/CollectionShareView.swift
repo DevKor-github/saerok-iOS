@@ -52,7 +52,7 @@ struct CollectionShareView: View {
                 isPresented.toggle()
             } label: {
                 Image.SRIconSet.delete
-                    .frame(.defaultIconSize)
+                    .frame(.default)
                     .foregroundColor(.black)
             }
             .srStyled(.iconButton)
@@ -112,7 +112,7 @@ private extension CollectionShareView {
         Button(action: action) {
             HStack {
                 type.image
-                    .frame(.defaultIconSize)
+                    .frame(.default)
                     .foregroundStyle(.accent)
                 Text(type.title)
                     .font(.SRFontSet.button2)

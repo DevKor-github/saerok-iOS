@@ -153,7 +153,7 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
                 Spacer()
             }
             (isSelected ? Image.SRIconSet.checkboxMiniCheckedReverse : .checkboxMiniDefault)
-                .frame(.defaultIconSize)
+                .frame(.default)
         }
         .padding()
         .background(isSelected ? Color.main : Color(.srLightGray))

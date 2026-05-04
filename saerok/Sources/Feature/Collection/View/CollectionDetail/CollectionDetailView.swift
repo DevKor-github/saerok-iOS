@@ -247,7 +247,7 @@ private extension CollectionDetailView {
         if !coordinator.path.isEmpty {
             Button { coordinator.pop() } label: {
                 Image.SRIconSet.chevronLeft
-                    .frame(.defaultIconSize)
+                    .frame(.default)
             }
             .srStyled(.iconButton)
         }
@@ -374,7 +374,7 @@ private extension CollectionDetailView {
                         coordinator.push(Route.bird(suggestion.bird.id))
                     } label: {
                         Image.SRIconSet.chevronRight
-                            .frame(.defaultIconSize)
+                            .frame(.default)
                     }
                     .srStyled(.iconButton)
                     .padding(4)

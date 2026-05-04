@@ -38,7 +38,7 @@ struct FullImageOverlayModifier: ViewModifier {
                     leading: {
                         Button(action: close) {
                             Image.SRIconSet.xmark
-                                .frame(.defaultIconSize)
+                                .frame(.default)
                         }
                         .srStyled(.iconButton)
                     },

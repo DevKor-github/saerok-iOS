@@ -58,7 +58,7 @@ private extension FindPlaceView {
             Button {
                 coordinator.pop()
             } label: {
-                Image.SRIconSet.chevronLeft.frame(.defaultIconSizeSmall)
+                Image.SRIconSet.chevronLeft.frame(.small)
             }
         })
         .frame(height: 66)
@@ -151,7 +151,7 @@ private extension FindPlaceView {
     
     func searchCell(_ item: Local.KakaoPlace) -> some View {
         HStack(spacing: 15) {
-            Image.SRIconSet.pin.frame(.defaultIconSizeLarge)
+            Image.SRIconSet.pin.frame(.large)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.placeName)
                     .font(.SRFontSet.body3)

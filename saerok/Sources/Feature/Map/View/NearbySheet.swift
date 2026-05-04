@@ -17,7 +17,7 @@ struct NearbySheet: View {
         VStack(alignment: .center, spacing: 0) {
             HStack(spacing: 4) {
                 Image.SRIconSet.pin
-                    .frame(.defaultIconSize)
+                    .frame(.default)
                 Text("\(address.isEmpty ? "위치 로딩중입니다" : address)")
                     .font(.SRFontSet.subtitle2)
                     .lineLimit(1)

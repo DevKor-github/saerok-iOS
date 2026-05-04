@@ -106,7 +106,7 @@ private extension BirdDetailView {
         HStack(spacing: 7) {
             Button(action: backButtonTapped) {
                 Image.SRIconSet.chevronLeft
-                    .frame(.defaultIconSize)
+                    .frame(.default)
             }
             
             Spacer()
@@ -118,14 +118,14 @@ private extension BirdDetailView {
                     (bird.isBookmarked
                      ? Image.SRIconSet.bookmarkFilled
                      : Image.SRIconSet.bookmark)
-                    .frame(.defaultIconSizeLarge)
+                    .frame(.large)
                 }
                 .foregroundStyle(bird.isBookmarked ? Color.main : Color.black)
             }
             
             Button(action: { saerokButtonTapped(bird: bird) }) {
                 Image.SRIconSet.jongchuMini
-                    .frame(.defaultIconSizeLarge)
+                    .frame(.large)
                     .padding(.top, Constants.penIconTopPadding)
             }
         }
@@ -181,7 +181,7 @@ private extension BirdDetailView {
         
         var body: some View {
             HStack {
-                icon.frame(.defaultIconSizeLarge)
+                icon.frame(.large)
                 
                 if list.isEmpty {
                     Text("정보 없음")

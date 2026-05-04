@@ -203,7 +203,7 @@ struct CommunityCell: View {
     
     private let popularBadge: some View = {
         Image.SRIconSet.fire
-            .frame(.defaultIconSize, tintColor: .srWhite)
+            .frame(.default, tintColor: .srWhite)
             .padding(4)
             .background(Circle().fill(Color.fire))
     }()

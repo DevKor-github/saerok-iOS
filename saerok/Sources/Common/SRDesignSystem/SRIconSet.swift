@@ -100,22 +100,25 @@ extension Image {
         // MARK: - Metric
         
         enum Metric {
-            case defaultIconSizeSmall
-            case defaultIconSize
-            case defaultIconSizeLarge
-            case defaultIconSizeVeryLarge
+            case xSmall
+            case small
+            case `default`
+            case large
+            case xLarge
             case floatingButton
             case custom(_ size: CGSize)
             
             func toCGSize() -> CGSize {
                 switch self {
-                case .defaultIconSizeSmall:
+                case .xSmall:
+                    return CGSize(width: 9, height: 9)
+                case .small:
                     return CGSize(width: 13, height: 13)
-                case .defaultIconSize:
+                case .default:
                     return CGSize(width: 17, height: 17)
-                case .defaultIconSizeLarge:
+                case .large:
                     return CGSize(width: 24, height: 24)
-                case .defaultIconSizeVeryLarge:
+                case .xLarge:
                     return CGSize(width: 40, height: 40)
                 case .floatingButton:
                     return CGSize(width: 61, height: 61)

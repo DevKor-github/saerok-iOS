@@ -63,7 +63,7 @@ struct SRPopup: View {
             
             /// 상단 경고 아이콘
             Image.SRIconSet.alert
-                .frame(.defaultIconSizeLarge, tintColor: .splash)
+                .frame(.large, tintColor: .splash)
                 .padding(.bottom, 15)
             
             /// 제목 + 메시지 영역

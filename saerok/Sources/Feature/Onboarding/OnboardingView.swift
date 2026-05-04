@@ -19,7 +19,7 @@ struct OnboardingView: View {
             
             Button(action: onSkip) {
                 Image.SRIconSet.delete
-                    .frame(.defaultIconSize, tintColor: .srGray)
+                    .frame(.default, tintColor: .srGray)
             }
             .padding(12)
             

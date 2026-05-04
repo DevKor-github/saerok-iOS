@@ -37,7 +37,7 @@ private extension CommunityPostDetailView {
     var navigationBar: some View {
         NavigationBar(
             center: {
-                Text("자유게시판")
+                Text("도란도란")
                     .font(.SRFontSet.subtitle2)
             },
             leading: {
@@ -45,7 +45,7 @@ private extension CommunityPostDetailView {
                     coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
                 .srStyled(.borderedIconButton)
             }

@@ -31,7 +31,7 @@ extension MyPageView {
             Button(action: onTap) {
                 HStack {
                     HStack {
-                        icon.frame(.defaultIconSizeLarge, tintColor: .pointtext)
+                        icon.frame(.large, tintColor: .pointtext)
                         Text(title)
                             .font(.SRFontSet.body2)
                     }
@@ -45,7 +45,7 @@ extension MyPageView {
                         trailing
                     } else {
                         Image.SRIconSet.chevronRight
-                            .frame(.defaultIconSizeSmall)
+                            .frame(.small)
                             .foregroundStyle(.secondary)
                     }
                 }

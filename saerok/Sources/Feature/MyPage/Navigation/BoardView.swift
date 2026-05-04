@@ -64,7 +64,7 @@ struct BoardView: View {
                     coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
                 .srStyled(.borderedIconButton)
             })
@@ -102,7 +102,7 @@ struct BoardCell: View {
             }
             Spacer()
             Image.SRIconSet.chevronRight
-                .frame(.defaultIconSize, tintColor: .primary)
+                .frame(.default, tintColor: .primary)
         }
         .padding(.vertical, 15)
         .padding(.horizontal, SRDesignConstant.defaultPadding)

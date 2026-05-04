@@ -101,7 +101,7 @@ struct CommunitySearchResultsView: View {
                         .font(.SRFontSet.caption1)
                         .foregroundStyle(.srDarkGray)
                     Image.SRIconSet.chevronRight
-                        .frame(.defaultIconSizeSmall, tintColor: .srDarkGray)
+                        .frame(.small, tintColor: .srDarkGray)
                 }
             }
         }

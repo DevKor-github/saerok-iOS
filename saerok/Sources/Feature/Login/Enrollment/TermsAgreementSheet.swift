@@ -63,7 +63,7 @@ private extension TermsAgreementSheet {
             Spacer()
             Button(action: { onDismiss() }) {
                 Image.SRIconSet.delete
-                    .frame(.defaultIconSizeSmall, tintColor: .srGray)
+                    .frame(.small, tintColor: .srGray)
             }
             .contentShape(Rectangle())
         }
@@ -136,7 +136,7 @@ private extension TermsAgreementSheet {
             (isChecked.wrappedValue
              ? Image.SRIconSet.checkboxChecked
              : Image.SRIconSet.checkboxDefault)
-            .frame(.defaultIconSizeLarge)
+            .frame(.large)
             .onTapGesture {
                 isChecked.wrappedValue.toggle()
             }

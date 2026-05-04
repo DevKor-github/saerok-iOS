@@ -213,7 +213,7 @@ private extension CollectionFormView {
                     ? Image.SRIconSet.checkboxDefault
                     : Image.SRIconSet.checkboxChecked
                 )
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
             }
             Text("새록 비공개하기")
                 .font(.SRFontSet.body2)
@@ -255,7 +255,7 @@ private extension CollectionFormView {
                             activePopup = .addModeExitConfirm
                         }
                     } label: {
-                        Image.SRIconSet.delete.frame(.defaultIconSizeLarge)
+                        Image.SRIconSet.delete.frame(.large)
                     }
                     .buttonStyle(.plain)
                 }

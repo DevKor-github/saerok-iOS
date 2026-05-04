@@ -42,7 +42,7 @@ extension CollectionFormView {
                     .foregroundStyle(draft.bird != nil ? .primary : .tertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Image.SRIconSet.searchSecondary
-                    .frame(.defaultIconSize)
+                    .frame(.default)
                     .foregroundStyle(.border)
                     .padding(.trailing, 4)
             }
@@ -65,7 +65,7 @@ extension CollectionFormView {
                 } label: {
                     HStack(spacing: 5) {
                         (draft.isUnknownBird ? Image.SRIconSet.checkboxMiniChecked : Image.SRIconSet.checkboxMiniDefault)
-                            .frame(.defaultIconSize)
+                            .frame(.default)
                         Text("모르겠어요")
                             .font(.SRFontSet.body2)
                             .foregroundStyle(.secondary)

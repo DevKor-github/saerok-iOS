@@ -116,7 +116,7 @@ struct CollectionCommentCell: View {
             }
         } label: {
             Image.SRIconSet.option
-                .frame(.defaultIconSize, tintColor: .srGray)
+                .frame(.default, tintColor: .srGray)
         }
     }
     

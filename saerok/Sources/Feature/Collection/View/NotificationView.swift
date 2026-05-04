@@ -66,7 +66,7 @@ struct NotificationView: View {
                     coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
                 .srStyled(.borderedIconButton)
             }, trailing: {
@@ -84,7 +84,7 @@ struct NotificationView: View {
                     }
                 } label: {
                     Image.SRIconSet.option
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
             }
         )

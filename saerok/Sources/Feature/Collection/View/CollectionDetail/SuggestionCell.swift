@@ -67,7 +67,7 @@ struct SuggestionCell: View {
                         
                         Image.SRIconSet.o
                             .frame(
-                                .defaultIconSizeLarge,
+                                .large,
                                 tintColor: item.isAgreed ? .srWhite : .splash
                             )
                     }
@@ -89,7 +89,7 @@ struct SuggestionCell: View {
                             )
                         Image.SRIconSet.x
                             .frame(
-                                .defaultIconSize,
+                                .default,
                                 tintColor: item.isDisagreed ? .srWhite : .iconRed
                             )
                     }
@@ -138,7 +138,7 @@ struct SuggestionCell: View {
             } label: {
                 HStack(spacing: 8) {
                     Image.SRIconSet.adopt
-                        .frame(.defaultIconSize, tintColor: isOn ? .white : .black)
+                        .frame(.default, tintColor: isOn ? .white : .black)
                     
                     Text("채택")
                         .font(.SRFontSet.button2)

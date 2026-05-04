@@ -58,7 +58,7 @@ private extension CollectionDescriptionSection {
                 .padding(.trailing, isUnknownBird ? 3.5 : 0)
             if !isUnknownBird {
                 Image.SRIconSet.chevronRight
-                    .frame(.defaultIconSize, tintColor: .srGray)
+                    .frame(.default, tintColor: .srGray)
                     .padding(.bottom, 1)
             }
         }
@@ -162,7 +162,7 @@ private extension CollectionDescriptionSection {
                     .font(.SRFontSet.caption1)
                 Spacer()
                 Image.SRIconSet.chevronRight
-                    .frame(.defaultIconSize, tintColor: .srGray)
+                    .frame(.default, tintColor: .srGray)
             }
             .padding(.vertical, 14)
             .padding(.horizontal, 16)
@@ -175,7 +175,7 @@ private extension CollectionDescriptionSection {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 5) {
                 Image.SRIconSet.pin
-                    .frame(.defaultIconSize, tintColor: .pointtext)
+                    .frame(.default, tintColor: .pointtext)
                 
                 Button(action: {
                     coordinator.clear()
@@ -193,7 +193,7 @@ private extension CollectionDescriptionSection {
                         Spacer()
                         
                         Image.SRIconSet.chevronRight
-                            .frame(.defaultIconSize, tintColor: .srGray)
+                            .frame(.default, tintColor: .srGray)
                     }
                 }
                 .buttonStyle(.plain)
@@ -201,7 +201,7 @@ private extension CollectionDescriptionSection {
             
             HStack(spacing: 5) {
                 Image.SRIconSet.clock
-                    .frame(.defaultIconSize, tintColor: .pointtext)
+                    .frame(.default, tintColor: .pointtext)
                 
                 Text("\(collection.discoveredDate.toFullString) 발견")
                     .font(.SRFontSet.body4)
@@ -211,7 +211,7 @@ private extension CollectionDescriptionSection {
                 let isPublic = collection.accessLevel == .publicAccess
                 HStack(spacing: 5) {
                     (isPublic ? Image.SRIconSet.unlock : Image.SRIconSet.lockFilled)
-                        .frame(.defaultIconSize, tintColor: isPublic ? .pointtext : .srLightGray)
+                        .frame(.default, tintColor: isPublic ? .pointtext : .srLightGray)
                     
                     Text(isPublic ? "함께 보기" : "나만 보기")
                         .font(.SRFontSet.body4)
@@ -228,7 +228,7 @@ private extension CollectionDescriptionSection {
     var suggestButton: some View {
         Button { onAction(.suggestTap) } label: {
             Image.SRIconSet.unknown
-                .frame(.defaultIconSizeLarge, tintColor: .srWhite)
+                .frame(.large, tintColor: .srWhite)
                 .padding(8)
                 .background(Color.pointtext)
                 .clipShape(Circle())
@@ -241,7 +241,7 @@ private extension CollectionDescriptionSection {
             Button {
                 coordinator.push(Route.edit)
             } label: {
-                Image.SRIconSet.edit.frame(.defaultIconSizeLarge)
+                Image.SRIconSet.edit.frame(.large)
             }
             .srStyled(.iconButton)
         } else {
@@ -257,7 +257,7 @@ private extension CollectionDescriptionSection {
                     }
                 }
             } label: {
-                Image.SRIconSet.option.frame(.defaultIconSizeLarge)
+                Image.SRIconSet.option.frame(.large)
             }
             .srStyled(.iconButton)
         }

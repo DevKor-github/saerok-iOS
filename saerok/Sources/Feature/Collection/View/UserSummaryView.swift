@@ -75,7 +75,7 @@ private extension UserSummaryView {
                     coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
                 .srStyled(.borderedIconButton)
             },

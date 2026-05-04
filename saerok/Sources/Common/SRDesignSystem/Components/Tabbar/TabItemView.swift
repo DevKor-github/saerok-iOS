@@ -28,7 +28,7 @@ struct TabItemView: View {
 private extension TabItemView {
     var tabIcon: some View {
         (isActive ? iconFilled : icon)
-            .frame(.defaultIconSizeLarge)
+            .frame(.large)
             .bold(isActive)
             .foregroundColor(isActive ? .main : .srGray)
     }

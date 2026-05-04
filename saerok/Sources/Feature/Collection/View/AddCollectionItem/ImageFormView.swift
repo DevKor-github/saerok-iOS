@@ -48,7 +48,7 @@ extension CollectionFormView {
                         .cornerRadius(Constants.imageCornerRadius)
 
                     Button(action: onDelete) {
-                        Image.SRIconSet.xmarkCircleFill.frame(.defaultIconSize)
+                        Image.SRIconSet.xmarkCircleFill.frame(.default)
                             .foregroundColor(.srGray)
                             .background(Color.srWhite)
                             .clipShape(Circle())

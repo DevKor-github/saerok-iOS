@@ -32,7 +32,7 @@ struct EnrollView: View {
         NavigationBar(leading: {
             Button(action: handleBackButton) {
                 Image.SRIconSet.chevronLeft
-                    .frame(.defaultIconSize)
+                    .frame(.default)
             }
         })
     }

@@ -133,7 +133,7 @@ private extension InteractionZone {
     ) -> some View {
         HStack(spacing: 10) {
             image
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
                 .padding(.vertical, 8)
                 .contentShape(Rectangle())
                 .onTapGesture(perform: onTap)
@@ -156,7 +156,7 @@ private extension InteractionZone {
     ) -> some View {
         VStack(spacing: 0) {
             image
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
                 .padding(8)
                 .contentShape(Rectangle())
                 .onTapGesture(perform: onTap)

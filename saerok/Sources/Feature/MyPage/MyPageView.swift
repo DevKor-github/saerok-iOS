@@ -188,7 +188,7 @@ private extension MyPageView {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Image.SRIconSet.alert
-                    .frame(.defaultIconSizeLarge)
+                    .frame(.large)
                 Text("현재 비회원으로 사용 중이에요.\n로그인하시겠어요?")
                     .font(.SRFontSet.body2)
             }
@@ -279,7 +279,7 @@ struct UserInfoView: View {
             if type == .my {
                 Button(action: onTap) {
                     Image.SRIconSet.edit
-                        .frame(.defaultIconSizeLarge)
+                        .frame(.large)
                 }
                 .srStyled(.iconButton)
             }

@@ -135,7 +135,7 @@ private extension FieldGuideView {
             (viewModel.filterKey.isBookmarked
              ? Image.SRIconSet.bookmarkFilled
              : Image.SRIconSet.bookmark)
-            .frame(.defaultIconSizeLarge,
+            .frame(.large,
                    tintColor: viewModel.filterKey.isBookmarked ? .pointtext : .black)
         }
         .srStyled(.iconButton)
@@ -144,7 +144,7 @@ private extension FieldGuideView {
     var searchButton: some View {
         Button(action: { coordinator.push(Route.search) }) {
             Image.SRIconSet.search
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
         }
         .srStyled(.iconButton)
     }
@@ -201,7 +201,7 @@ private extension FieldGuideView {
     var scrollToTopButton: some View {
         Button { scrollToTopTrigger.toggle() } label: {
             Image.SRIconSet.upper
-                .frame(.defaultIconSizeLarge)
+                .frame(.large)
         }
         .srStyled(.iconButton)
         .padding(.bottom, 114)

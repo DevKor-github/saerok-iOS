@@ -34,7 +34,7 @@ struct CommunityUserCell: View {
             Spacer()
             
             Image.SRIconSet.chevronRight
-                .frame(.defaultIconSize)
+                .frame(.default)
                 .foregroundStyle(.srGray)
         }
         .padding(.vertical, 11)

@@ -72,7 +72,7 @@ struct BoardDetailView: View {
                     coordinator.pop()
                 } label: {
                     Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
                 .srStyled(.borderedIconButton)
             },

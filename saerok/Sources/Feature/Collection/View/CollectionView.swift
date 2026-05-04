@@ -120,7 +120,7 @@ private extension CollectionView {
                 trailing: {
                     Button { coordinator.push(Route.notification) } label: {
                         (viewModel.hasUnread ? Image.SRIconSet.bellOn : Image.SRIconSet.bell)
-                            .frame(.defaultIconSizeLarge)
+                            .frame(.large)
                     }
                     .srStyled(.iconButton)
                 },

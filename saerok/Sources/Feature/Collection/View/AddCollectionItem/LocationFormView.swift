@@ -26,7 +26,7 @@ extension CollectionFormView {
                         .lineLimit(1)
                         .foregroundStyle(!address.isEmpty ? .primary : .tertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Image.SRIconSet.searchSecondary.frame(.defaultIconSize)
+                    Image.SRIconSet.searchSecondary.frame(.default)
                         .foregroundStyle(.border)
                         .padding(.trailing, 4)
                 }

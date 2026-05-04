@@ -42,7 +42,7 @@ struct CommunityDetailView: View {
                 Button {
                     coordinator.pop()
                 } label: {
-                    Image.SRIconSet.chevronLeft.frame(.defaultIconSize)
+                    Image.SRIconSet.chevronLeft.frame(.default)
                 }
                 
                 .srStyled(.borderedIconButton)
@@ -59,10 +59,8 @@ struct CommunityDetailView: View {
             barIconStyle(icon: .fire, background: .fire)
         case .suggestion:
             barIconStyle(icon: .unknown, background: .pointtext)
-            #if DEBUG
         case .board:
             barIconStyle(icon: .post, background: .srGreen)
-            #endif
         case .search:
             EmptyView()
         }
@@ -70,7 +68,7 @@ struct CommunityDetailView: View {
     
     private func barIconStyle(icon: Image.SRIconSet, background: Color) -> some View {
         icon
-            .frame(.defaultIconSize, tintColor: icon == .unknown ? .srWhite : nil)
+            .frame(.default, tintColor: icon == .unknown ? .srWhite : nil)
             .padding(4)
             .background(background)
             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -80,7 +78,6 @@ struct CommunityDetailView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 switch viewModel.type {
-                #if DEBUG
                 case .board:
                     ForEach(CommunityDetailView.mockPosts, id: \.id) { post in
                         Button {
@@ -90,7 +87,6 @@ struct CommunityDetailView: View {
                         }
                         .buttonStyle(.plain)
                     }
-                #endif
                 default:
                     ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
                         Button {

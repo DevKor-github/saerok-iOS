@@ -52,7 +52,7 @@ struct CommunityPostUserSection: View {
             if showsCommentCount, commentCount > 0 {
                 HStack(spacing: 3) {
                     Image.SRIconSet.commentFilled
-                        .frame(.defaultIconSize, tintColor: .srLightGray)
+                        .frame(.default, tintColor: .srLightGray)
                     Text("\(commentCount)")
                         .font(.SRFontSet.caption1_2)
                         .foregroundStyle(.srGray)

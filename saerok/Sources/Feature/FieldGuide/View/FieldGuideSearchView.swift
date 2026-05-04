@@ -103,7 +103,7 @@ private extension FieldGuideSearchView {
         HStack {
             Button(action: backButtonTapped) {
                 Image.SRIconSet.chevronLeft
-                    .frame(.defaultIconSize)
+                    .frame(.default)
                     .foregroundStyle(.main)
             }
             .buttonStyle(.plain)
@@ -172,7 +172,7 @@ private extension FieldGuideSearchView {
                     }
                     Spacer()
                     Image.SRIconSet.chevronRight
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                         .foregroundStyle(.black)
                 }
                 .contentShape(Rectangle())
@@ -192,7 +192,7 @@ private extension FieldGuideSearchView {
             (bird.isBookmarked
              ? Image.SRIconSet.bookmarkFilled
              : Image.SRIconSet.bookmarkSecondary)
-            .frame(.defaultIconSizeLarge)
+            .frame(.large)
             .foregroundStyle(.border)
         }
     }
@@ -212,7 +212,7 @@ private extension FieldGuideSearchView {
             
             Button(action: { deleteRecentTapped(search) }) {
                 Image.SRIconSet.delete
-                    .frame(.defaultIconSizeSmall, tintColor: .secondary)
+                    .frame(.small, tintColor: .secondary)
             }
         }
         .buttonStyle(.plain)

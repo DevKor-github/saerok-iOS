@@ -60,7 +60,7 @@ struct CollectionCommentSheet: View {
             Spacer()
             Button(action: onDismiss) {
                 Image.SRIconSet.delete
-                    .frame(.defaultIconSizeSmall, tintColor: .srGray)
+                    .frame(.small, tintColor: .srGray)
                     .padding(.leading, 20)
                     .padding(.vertical, 5)
             }

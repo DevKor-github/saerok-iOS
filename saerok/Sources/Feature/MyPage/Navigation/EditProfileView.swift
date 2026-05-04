@@ -221,7 +221,7 @@ struct EditProfileView: View {
                     }
                 } label: {
                     Image.SRIconSet.chevronLeft
-                        .frame(.defaultIconSize)
+                        .frame(.default)
                 }
                 .srStyled(.borderedIconButton)
             })
@@ -255,7 +255,7 @@ struct EditProfileView: View {
                     showOption = true
                 } label: {
                     Image.SRIconSet.edit
-                        .frame(.defaultIconSizeLarge)
+                        .frame(.large)
                 }
                 .srStyled(.iconButton)
                 .overlay(

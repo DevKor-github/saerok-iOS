@@ -53,9 +53,9 @@ struct SourceSheet: View {
                             Spacer()
                             isChecked
                             ? Image.SRIconSet.checkboxMiniCheckedReverse
-                                .frame(.defaultIconSize)
+                                .frame(.default)
                             : Image.SRIconSet.checkboxMiniDefault
-                                .frame(.defaultIconSize)
+                                .frame(.default)
                         }
                         Spacer()
                     }
