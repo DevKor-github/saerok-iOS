@@ -4,14 +4,4 @@
    <FileRef
       location = "self:">
    </FileRef>
-   <Group
-      location = "group:saerokTests"
-      name = "saerokTests">
-      <FileRef
-         location = "group:LoadStateTests.swift">
-      </FileRef>
-      <FileRef
-         location = "group:CollectionInteractorTests.swift">
-      </FileRef>
-   </Group>
 </Workspace>

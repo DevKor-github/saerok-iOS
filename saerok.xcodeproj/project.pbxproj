@@ -15,18 +15,11 @@
 		219841792DDC18CD00919B81 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 219841782DDC18CD00919B81 /* KakaoSDKCommon */; };
 		2198417B2DDC18CD00919B81 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = 2198417A2DDC18CD00919B81 /* KakaoSDKUser */; };
 		21B1579E2F9A175A005DB0C6 /* PRD.md in Resources */ = {isa = PBXBuildFile; fileRef = 21B1579B2F9A175A005DB0C6 /* PRD.md */; };
-		21B1579F2F9A175A005DB0C6 /* UI_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 21B1579C2F9A175A005DB0C6 /* UI_GUIDE.md */; };
+		21B1579F2F9A175A005DB0C6 /* UI-GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 21B1579C2F9A175A005DB0C6 /* UI-GUIDE.md */; };
 		21B157A02F9A175A005DB0C6 /* ARCHITECTURE.md in Resources */ = {isa = PBXBuildFile; fileRef = 21B1579A2F9A175A005DB0C6 /* ARCHITECTURE.md */; };
 		21B157A12F9A175A005DB0C6 /* ADR.md in Resources */ = {isa = PBXBuildFile; fileRef = 21B157992F9A175A005DB0C6 /* ADR.md */; };
 		21D268922F63C19A00942051 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D2688D2F63C19A00942051 /* CLAUDE.md */; };
 		21D268942F63C1A800942051 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D268932F63C1A800942051 /* README.md */; };
-		21DA2D492F95052B00A5A97C /* improvements.md in Resources */ = {isa = PBXBuildFile; fileRef = 21DA2D482F95052B00A5A97C /* improvements.md */; };
-		21E5E48B2F94EF500018A0F2 /* dependency-injection.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4842F94EF500018A0F2 /* dependency-injection.md */; };
-		21E5E48C2F94EF500018A0F2 /* state-management.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4872F94EF500018A0F2 /* state-management.md */; };
-		21E5E48D2F94EF500018A0F2 /* view-viewmodel.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4882F94EF500018A0F2 /* view-viewmodel.md */; };
-		21E5E48E2F94EF500018A0F2 /* design-system.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4852F94EF500018A0F2 /* design-system.md */; };
-		21E5E48F2F94EF500018A0F2 /* networking.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4862F94EF500018A0F2 /* networking.md */; };
-		21E5E4902F94EF500018A0F2 /* data-layer.md in Resources */ = {isa = PBXBuildFile; fileRef = 21E5E4832F94EF500018A0F2 /* data-layer.md */; };
 		21F0CAE22DBE427E004F03F4 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 21F0CAE12DBE427E004F03F4 /* Lottie */; };
 /* End PBXBuildFile section */
 
@@ -45,17 +38,10 @@
 		21B157992F9A175A005DB0C6 /* ADR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ADR.md; sourceTree = "<group>"; };
 		21B1579A2F9A175A005DB0C6 /* ARCHITECTURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ARCHITECTURE.md; sourceTree = "<group>"; };
 		21B1579B2F9A175A005DB0C6 /* PRD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD.md; sourceTree = "<group>"; };
-		21B1579C2F9A175A005DB0C6 /* UI_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = UI_GUIDE.md; sourceTree = "<group>"; };
+		21B1579C2F9A175A005DB0C6 /* UI-GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "UI-GUIDE.md"; sourceTree = "<group>"; };
 		21D2688D2F63C19A00942051 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		21D268932F63C1A800942051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		21DA2D482F95052B00A5A97C /* improvements.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = improvements.md; sourceTree = "<group>"; };
 		21DA2D502F9508EE00A5A97C /* saerokTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = saerokTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		21E5E4832F94EF500018A0F2 /* data-layer.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "data-layer.md"; sourceTree = "<group>"; };
-		21E5E4842F94EF500018A0F2 /* dependency-injection.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "dependency-injection.md"; sourceTree = "<group>"; };
-		21E5E4852F94EF500018A0F2 /* design-system.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "design-system.md"; sourceTree = "<group>"; };
-		21E5E4862F94EF500018A0F2 /* networking.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = networking.md; sourceTree = "<group>"; };
-		21E5E4872F94EF500018A0F2 /* state-management.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "state-management.md"; sourceTree = "<group>"; };
-		21E5E4882F94EF500018A0F2 /* view-viewmodel.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "view-viewmodel.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -132,21 +118,7 @@
 				21B157992F9A175A005DB0C6 /* ADR.md */,
 				21B1579A2F9A175A005DB0C6 /* ARCHITECTURE.md */,
 				21B1579B2F9A175A005DB0C6 /* PRD.md */,
-				21B1579C2F9A175A005DB0C6 /* UI_GUIDE.md */,
-			);
-			path = docs;
-			sourceTree = "<group>";
-		};
-		21E5E4892F94EF500018A0F2 /* docs */ = {
-			isa = PBXGroup;
-			children = (
-				21E5E4832F94EF500018A0F2 /* data-layer.md */,
-				21E5E4842F94EF500018A0F2 /* dependency-injection.md */,
-				21E5E4852F94EF500018A0F2 /* design-system.md */,
-				21E5E4862F94EF500018A0F2 /* networking.md */,
-				21E5E4872F94EF500018A0F2 /* state-management.md */,
-				21E5E4882F94EF500018A0F2 /* view-viewmodel.md */,
-				21DA2D482F95052B00A5A97C /* improvements.md */,
+				21B1579C2F9A175A005DB0C6 /* UI-GUIDE.md */,
 			);
 			path = docs;
 			sourceTree = "<group>";
@@ -154,7 +126,6 @@
 		21E5E48A2F94EF500018A0F2 /* .claude */ = {
 			isa = PBXGroup;
 			children = (
-				21E5E4892F94EF500018A0F2 /* docs */,
 			);
 			path = .claude;
 			sourceTree = "<group>";
@@ -264,17 +235,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21E5E48B2F94EF500018A0F2 /* dependency-injection.md in Resources */,
-				21E5E48C2F94EF500018A0F2 /* state-management.md in Resources */,
-				21E5E48D2F94EF500018A0F2 /* view-viewmodel.md in Resources */,
-				21E5E48E2F94EF500018A0F2 /* design-system.md in Resources */,
-				21DA2D492F95052B00A5A97C /* improvements.md in Resources */,
 				21B1579E2F9A175A005DB0C6 /* PRD.md in Resources */,
-				21B1579F2F9A175A005DB0C6 /* UI_GUIDE.md in Resources */,
+				21B1579F2F9A175A005DB0C6 /* UI-GUIDE.md in Resources */,
 				21B157A02F9A175A005DB0C6 /* ARCHITECTURE.md in Resources */,
 				21B157A12F9A175A005DB0C6 /* ADR.md in Resources */,
-				21E5E48F2F94EF500018A0F2 /* networking.md in Resources */,
-				21E5E4902F94EF500018A0F2 /* data-layer.md in Resources */,
 				21D268922F63C19A00942051 /* CLAUDE.md in Resources */,
 				21D268942F63C1A800942051 /* README.md in Resources */,
 			);

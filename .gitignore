@@ -68,12 +68,6 @@ Config/Secrets.Release.xcconfig
 
 # AI Agentic Coding
 .claude/
-CLAUDE.md
-AGENTS.md
-repo-map.md
-feature-template.md
-DESIGN.md
-docs/
 scripts/
 phases/**/phase*-output.json
 phases/**/step*-output.json
