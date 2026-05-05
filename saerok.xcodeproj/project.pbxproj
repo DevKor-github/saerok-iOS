@@ -84,7 +84,6 @@
 		219F72242D89ABEB00C04738 = {
 			isa = PBXGroup;
 			children = (
-				21E5E48A2F94EF500018A0F2 /* .claude */,
 				219F722F2D89ABEB00C04738 /* saerok */,
 				219F722E2D89ABEB00C04738 /* Products */,
 				21D268932F63C1A800942051 /* README.md */,
@@ -98,13 +97,6 @@
 				21DA2D502F9508EE00A5A97C /* saerokTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		21E5E48A2F94EF500018A0F2 /* .claude */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = .claude;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
