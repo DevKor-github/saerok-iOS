@@ -50,7 +50,17 @@ enum SREndpoint: Endpoint {
     case communitySearch(query: String)
     case communitySearchUsers(query: String, page: Int? = nil, size: Int? = nil)
     case communitySearchCollections(query: String, page: Int? = nil, size: Int? = nil)
-    
+    case communityFreeboardPosts(page: Int? = nil, size: Int? = nil)
+    case createFreeBoardPost(body: DTO.CreateFreeBoardPostRequest)
+    case freeBoardPost(postId: Int)
+    case deleteFreeBoardPost(postId: Int)
+    case editFreeBoardPost(postId: Int, body: DTO.EditFreeBoardPostRequest)
+    case freeBoardPostComments(postId: Int, page: Int? = nil, size: Int? = nil)
+    case createFreeBoardComment(postId: Int, body: DTO.CreateFreeBoardCommentRequest)
+    case deleteFreeBoardComment(postId: Int, commentId: Int)
+    case editFreeBoardComment(postId: Int, commentId: Int, body: DTO.EditFreeBoardCommentRequest)
+    case freeBoardCommentCount(postId: Int)
+
     // MARK: Auth API
     case appleLogin(authorizationCode: String)
     case kakaoLogin(accessCode: String)
@@ -154,6 +164,12 @@ extension SREndpoint {
         case .communitySearch: "community/search"
         case .communitySearchUsers: "community/search/users"
         case .communitySearchCollections: "community/search/collections"
+        case .communityFreeboardPosts, .createFreeBoardPost: "community/freeboard/posts"
+        case .freeBoardPost(let postId), .deleteFreeBoardPost(let postId): "community/freeboard/posts/\(postId)"
+        case .editFreeBoardPost(let postId, _): "community/freeboard/posts/\(postId)"
+        case .freeBoardPostComments(let postId, _, _), .createFreeBoardComment(let postId, _): "community/freeboard/posts/\(postId)/comments"
+        case .deleteFreeBoardComment(let postId, let commentId), .editFreeBoardComment(let postId, let commentId, _): "community/freeboard/posts/\(postId)/comments/\(commentId)"
+        case .freeBoardCommentCount(let postId): "community/freeboard/posts/\(postId)/comments/count"
         
         // MARK: Announcements API
         case .announcements: "announcements"
@@ -163,10 +179,10 @@ extension SREndpoint {
     
     var method: HTTPMethod {
         switch self {
-        case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections, .announcements, .announcementDetail: .get
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment, .signUp_complete, .blockUser: .post
-        case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification: .patch
-        case .deleteMe, .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification, .deleteProfileImage: .delete
+        case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections, .communityFreeboardPosts, .freeBoardPost, .freeBoardPostComments, .freeBoardCommentCount, .announcements, .announcementDetail: .get
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment, .signUp_complete, .blockUser, .createFreeBoardPost, .createFreeBoardComment: .post
+        case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification, .editFreeBoardPost, .editFreeBoardComment: .patch
+        case .deleteMe, .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification, .deleteProfileImage, .deleteFreeBoardPost, .deleteFreeBoardComment: .delete
         }
     }
     
@@ -175,9 +191,9 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment:
             return true
-        case .getSuggestions:
+        case .getSuggestions, .communityFreeboardPosts, .freeBoardPost, .freeBoardPostComments:
             return TokenManager.shared.getAccessToken() != nil
         default:
             return false
@@ -194,7 +210,7 @@ extension SREndpoint {
         }
         
         switch self {
-        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBird, .getProfilePresignedURL, .registerDeviceToken, .toggleNotificationSetting, .signUp_complete, .blockUser:
+        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBird, .getProfilePresignedURL, .registerDeviceToken, .toggleNotificationSetting, .signUp_complete, .blockUser, .createFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .editFreeBoardComment:
             headers["Content-Type"] = "application/json"
         default:
             break
@@ -247,6 +263,14 @@ extension SREndpoint {
         case .signUp_complete(let signupRequest):
             return try? JSONEncoder().encode(signupRequest)
         case .blockUser(let body):
+            return try? JSONEncoder().encode(body)
+        case .createFreeBoardPost(let body):
+            return try? JSONEncoder().encode(body)
+        case .editFreeBoardPost(_, let body):
+            return try? JSONEncoder().encode(body)
+        case .createFreeBoardComment(_, let body):
+            return try? JSONEncoder().encode(body)
+        case .editFreeBoardComment(_, _, let body):
             return try? JSONEncoder().encode(body)
         default:
             return nil
@@ -324,6 +348,16 @@ extension SREndpoint {
                 return [
                     "q": query
                 ]
+            }
+        case .communityFreeboardPosts(let page, let size),
+             .freeBoardPostComments(_, let page, let size):
+            if let page, let size {
+                return [
+                    "page": "\(page)",
+                    "size": "\(size)"
+                ]
+            } else {
+                return nil
             }
         default:
             return nil
@@ -408,6 +442,26 @@ extension SREndpoint {
             return DTO.CommunitySearchUsersResponse.self
         case .communitySearchCollections:
             return DTO.CommunitySearchCollectionsResponse.self
+        case .communityFreeboardPosts:
+            return DTO.CommunityFreeboardPostsResponse.self
+        case .createFreeBoardPost:
+            return DTO.CreateFreeBoardPostResponse.self
+        case .freeBoardPost:
+            return DTO.FreeBoardPostItem.self
+        case .deleteFreeBoardPost:
+            return EmptyResponse.self
+        case .editFreeBoardPost:
+            return DTO.EditFreeBoardPostResponse.self
+        case .freeBoardPostComments:
+            return DTO.FreeBoardCommentsResponse.self
+        case .createFreeBoardComment:
+            return DTO.CreateFreeBoardCommentResponse.self
+        case .deleteFreeBoardComment:
+            return EmptyResponse.self
+        case .editFreeBoardComment:
+            return DTO.EditFreeBoardCommentResponse.self
+        case .freeBoardCommentCount:
+            return DTO.FreeBoardCommentCountResponse.self
         case .announcements:
             return DTO.Announcements.self
         case .announcementDetail:

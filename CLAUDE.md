@@ -19,7 +19,7 @@
 | 새 화면 추가 | `saerok/Sources/Feature/{기능}/View/` + `ViewModel/` — **반드시 [VIEW-GUIDE](docs/VIEW-GUIDE.md)·[VIEWMODEL-GUIDE](docs/VIEWMODEL-GUIDE.md) 참고** |
 | 비즈니스 로직 수정 | `saerok/Sources/Interactors/` |
 | 데이터 모델·API 응답 변환 | `saerok/Sources/Repositories/Models/` |
-| API 엔드포인트 추가 | `saerok/Sources/Network/EndPoint/` |
+| API 엔드포인트 추가 | `saerok/Sources/Network/EndPoint/` — **반드시 [ADD-ENDPOINT-GUIDE](docs/ADD-ENDPOINT-GUIDE.md) 참고** |
 | 공통 컴포넌트·디자인 토큰 | `saerok/Sources/Common/SRDesignSystem/` |
 | 공통 뷰 재사용 | `saerok/Sources/Common/Views/` |
 | 유틸·익스텐션 | `saerok/Sources/Common/Utils/` |
@@ -29,6 +29,7 @@
 ## 개발 가이드 문서
 - [VIEW-GUIDE](docs/VIEW-GUIDE.md) — View 작성 규칙 (라우팅, 생명주기, 컴포넌트 사용, 금지 패턴)
 - [VIEWMODEL-GUIDE](docs/VIEWMODEL-GUIDE.md) — ViewModel 작성 규칙 (LoadState, Output, CancelBag, 비동기 패턴)
+- [ADD-ENDPOINT-GUIDE](docs/ADD-ENDPOINT-GUIDE.md) — API 연동 순서 (DTO → Local → Endpoint → Repository → Interactor)
 
 ## 아키텍처 규칙
 - CRITICAL: 레이어 흐름은 **View → ViewModel → Interactor → Repository → Network/SwiftData** 방향만 허용. 역방향 참조 금지.

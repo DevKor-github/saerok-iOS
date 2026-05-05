@@ -209,7 +209,7 @@ private extension CommunityView {
 
                     VStack(spacing: 44) {
                         VStack(spacing: 15) {
-                            boardSection
+                            boardSections
                             BannerView()
                         }
                         listSection(.recent)
@@ -223,9 +223,9 @@ private extension CommunityView {
     }
 
     // MARK: Sections
-    var boardSection: some View {
+    var boardSections: some View {
         VStack(alignment: .leading, spacing: 0) {
-            bb(title: "새록 모아보기") {
+            boardSection(title: "새록 모아보기") {
                 iconButton(type: .recent, icon: .commentCommunity, background: .accent)
                 iconButton(type: .popular, icon: .fire, background: .fire)
                 iconButton(type: .suggestion, icon: .unknown, background: .pointtext)
@@ -234,7 +234,7 @@ private extension CommunityView {
                 .hidden()
                 .frame(height: 1)
                 .background(Color.srLightGray)
-            bb(title: "자유게시판") {
+            boardSection(title: "자유게시판") {
                 iconButton(type: .board, icon: .post, background: .srGreen)
             }
         }
@@ -244,7 +244,7 @@ private extension CommunityView {
         .padding(.top, 13)
     }
     
-    func bb(
+    func boardSection(
         title: String,
         @ViewBuilder content: @escaping () -> some View
     ) -> some View {
