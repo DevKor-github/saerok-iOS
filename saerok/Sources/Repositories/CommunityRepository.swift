@@ -26,6 +26,7 @@ protocol CommunityRepository {
     func deleteFreeboardComment(postId: Int, commentId: Int) async throws
     func editFreeboardComment(postId: Int, commentId: Int, content: String) async throws -> DTO.EditFreeBoardCommentResponse
     func fetchFreeboardCommentCount(postId: Int) async throws -> DTO.FreeBoardCommentCountResponse
+    func reportFreeboardPost(postId: Int) async throws -> DTO.ReportFreeBoardPostResponse
 }
 
 extension MainRepository: CommunityRepository {
@@ -119,5 +120,9 @@ extension MainRepository: CommunityRepository {
 
     func fetchFreeboardCommentCount(postId: Int) async throws -> DTO.FreeBoardCommentCountResponse {
         try await networkService.performSRRequest(.freeBoardCommentCount(postId: postId))
+    }
+
+    func reportFreeboardPost(postId: Int) async throws -> DTO.ReportFreeBoardPostResponse {
+        try await networkService.performSRRequest(.reportFreeBoardPost(postId: postId))
     }
 }

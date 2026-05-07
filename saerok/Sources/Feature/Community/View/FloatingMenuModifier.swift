@@ -13,9 +13,9 @@ struct FloatingMenuModifier: ViewModifier {
     let bottomOffset: CGFloat
     
     @State private var showMenu = false
+    @Binding var isHidden: Bool
     
     func body(content: Content) -> some View {
-        #if DEBUG // TODO: - 제거
         content
             .overlay {
                 ZStack {
@@ -39,13 +39,11 @@ struct FloatingMenuModifier: ViewModifier {
                             )
                             .padding(.trailing, 24)
                             .padding(.bottom, bottomOffset)
+                            .opacity(isHidden ? 0 : 1)
                         }
                     }
                 }
             }
-        #else
-        content
-        #endif
     }
 }
 

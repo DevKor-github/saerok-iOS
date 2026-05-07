@@ -12,6 +12,7 @@ struct CollectionCommentInputBar: View {
     var selectedNickname: String?
     let nickname: String
     let onSubmit: () async -> Void
+    let isOnSheet: Bool
     
     @FocusState var isFocused: Bool
     @State var keyboard: KeyboardObserver
@@ -79,7 +80,7 @@ struct CollectionCommentInputBar: View {
         .animation(.smooth(duration: 0.25), value: keyboard.keyboardHeight)
         .disabled(isGuest)
         .onChange(of: selectedNickname) { old, new in
-            guard let _ = new else { return }
+            guard let new else { return }
             isFocused = true
         }
     }

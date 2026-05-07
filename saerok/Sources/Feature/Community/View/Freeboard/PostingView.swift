@@ -9,23 +9,34 @@ import SwiftUI
 
 struct PostingView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
-    
-    // test (실제  내 정보로 뜨게해야함)
-    let me: Local.User = .init(userId: 1, nickname: "비둘기", profileImageUrl: "https://stickershop.line-scdn.net/stickershop/v1/product/1665280/LINEStorePC/main.png?v=1")
-    
-    @State private var title: String = ""
+
+    let nickname: String
+    let profileImageUrl: String?
+
     @State private var contents: String = ""
     @State private var isUploading: Bool = false
     @Binding var isPresented: Bool
-    
-    let onPost: () -> Void
-    
+
+    let onPost: (String) async -> Void
+
+    init(
+        nickname: String,
+        profileImageUrl: String?,
+        isPresented: Binding<Bool>,
+        onPost: @escaping (String) async -> Void
+    ) {
+        self.nickname = nickname
+        self.profileImageUrl = profileImageUrl
+        self._isPresented = isPresented
+        self.onPost = onPost
+    }
+
     var body: some View {
         content
             .regainSwipeBack()
-            .modifier(FloatingMenuModifier(postAction: {}, saerokAction: {}, bottomOffset: 24))
+            .modifier(FloatingMenuModifier(postAction: {}, saerokAction: {}, bottomOffset: 24, isHidden: $isPresented))
     }
-    
+
     @ViewBuilder
     var content: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -41,10 +52,12 @@ struct PostingView: View {
                     .padding(.leading, 30)
                     .padding(.top, 3)
                 Spacer()
-                Button(
-                    action : {
-                        onPost()
-                        isUploading.toggle()
+                Button(action: {
+                    isUploading = true
+                    Task {
+                        await onPost(contents)
+                        isPresented = false
+                    }
                 }) {
                     if isUploading {
                         ProgressView()
@@ -53,11 +66,13 @@ struct PostingView: View {
                     }
                 }
                 .srStyled(.primaryButton)
-                .disabled(isUploading)
+                .disabled(isUploading || contents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .safeAreaPadding(.bottom, 17)
             }
             .padding(.horizontal, 24)
         }
+        .presentationDetents([.large])
+        .presentationCornerRadius(20)
     }
 }
 
@@ -78,17 +93,17 @@ private extension PostingView {
             }
         )
     }
-    
+
     var userView: some View {
         HStack(spacing: 5) {
             ReactiveAsyncImage(
-                url: me.profileImageUrl,
+                url: profileImageUrl ?? "",
                 scale: .small,
                 size: .init(width: 25, height: 25),
                 downsampling: true
             )
             .srAvatarStyle()
-            Text(me.nickname)
+            Text(nickname)
                 .font(.SRFontSet.body3_2)
         }
     }

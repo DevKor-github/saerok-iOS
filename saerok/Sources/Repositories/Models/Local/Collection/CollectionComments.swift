@@ -73,4 +73,26 @@ extension Local.CollectionComment {
             isMyCollection: isMyCollection
         )
     }
+
+    static func from(freeBoardComment: Local.FreeBoardComment, isMyPost: Bool) -> Self {
+        .init(
+            id: freeBoardComment.id,
+            user: .init(
+                id: freeBoardComment.userId,
+                nickname: freeBoardComment.nickname,
+                profileImageUrl: freeBoardComment.thumbnailProfileImageUrl ?? ""
+            ),
+            content: freeBoardComment.content,
+            likeCount: 0,
+            isLiked: false,
+            isMine: freeBoardComment.isMine,
+            createdAt: freeBoardComment.createdAt,
+            parentId: freeBoardComment.parentId,
+            replies: freeBoardComment.replies.isEmpty ? nil : freeBoardComment.replies.map {
+                .from(freeBoardComment: $0, isMyPost: isMyPost)
+            },
+            isInteractive: freeBoardComment.status == "ACTIVE",
+            isMyCollection: isMyPost
+        )
+    }
 }

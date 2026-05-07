@@ -29,7 +29,8 @@ extension CommunityType: Equatable {
         switch (lhs, rhs) {
         case (.recent, .recent),
              (.popular, .popular),
-             (.suggestion, .suggestion):
+             (.suggestion, .suggestion),
+             (.board, .board):
             return true
         case let (.search(a), .search(b)):
             return a == b

@@ -9,7 +9,8 @@ import SwiftUI
 
 struct CollectionCommentCell: View {
     //사용자 차단
-    @AppStorage("blockable") var isBlockable: Bool = false
+//    @AppStorage("blockable") var isBlockable: Bool = false
+    var isBlockable: Bool = false
     
     let collectionUserId: Int
     let isMyCollection: Bool

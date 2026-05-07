@@ -51,17 +51,19 @@ struct CommunityCommentSection: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.srLightGray)
     }
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 5) {
             Text("댓글")
             Text("\(comments.count)")
                 .foregroundStyle(.splash)
             Spacer()
         }
-        .font(.SRFontSet.subtitle2)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .font(.SRFontSet.body4_3)
+        .padding(.top, 17)
+        .padding(.horizontal, 25)
     }
 
     private var emptyView: some View {

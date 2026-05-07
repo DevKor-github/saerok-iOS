@@ -41,8 +41,13 @@ extension CommunityView {
             }            
         }
         
-        func createPost(title: String, content: String) async {
-            // TODO: 자유게시판 API 연동 시 구현 예정
+        var currentUserNickname: String { appState[\.currentUser]?.nickname ?? "" }
+        var currentUserProfileImageUrl: String? { appState[\.currentUser]?.imageURL }
+
+        func createFreeboardPost(content: String) async {
+            do {
+                _ = try await interactor.createFreeboardPost(content: content)
+            } catch {}
         }
         
         func loadPosts() async {

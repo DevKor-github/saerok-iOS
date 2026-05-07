@@ -10,7 +10,7 @@ import Foundation
 extension DTO {
     struct CommunityFreeboardPostsResponse: Decodable {
         let items: [FreeBoardPostItem]
-        let hasNext: Bool
+        let hasNext: Bool?
     }
 
     struct FreeBoardPostItem: Decodable {
@@ -41,5 +41,9 @@ extension DTO {
     struct EditFreeBoardPostResponse: Decodable {
         let postId: Int
         let content: String
+    }
+
+    struct ReportFreeBoardPostResponse: Decodable {
+        let reportId: Int
     }
 }

@@ -2,24 +2,27 @@
 //  CommunityPostUserSection.swift
 //  saerok
 //
-//  Created by Codex on 3/13/26.
+//  Created by HanSeung on 5/5/26.
 //
 
 import SwiftUI
 
-struct CommunityPostUserSection: View {
-    let user: DTO.User
-    let createdAt: String
+struct FreeBoardPostUserSection: View {
+    let profileImageUrl: String?
+    let nickname: String
+    let createdAt: Date
     let commentCount: Int
     let showsCommentCount: Bool
 
     init(
-        user: DTO.User,
-        createdAt: String,
+        profileImageUrl: String?,
+        nickname: String,
+        createdAt: Date,
         commentCount: Int,
         showsCommentCount: Bool = true
     ) {
-        self.user = user
+        self.profileImageUrl = profileImageUrl
+        self.nickname = nickname
         self.createdAt = createdAt
         self.commentCount = commentCount
         self.showsCommentCount = showsCommentCount
@@ -28,14 +31,14 @@ struct CommunityPostUserSection: View {
     var body: some View {
         HStack(spacing: 5) {
             ReactiveAsyncImage(
-                url: user.profileImageUrl,
+                url: profileImageUrl ?? "",
                 scale: .small,
                 size: .init(width: 25, height: 25),
                 downsampling: true
             )
             .srAvatarStyle()
 
-            Text(user.nickname ?? "")
+            Text(nickname)
                 .font(.SRFontSet.body3_2)
 
             Text("･")
@@ -43,7 +46,7 @@ struct CommunityPostUserSection: View {
                 .foregroundStyle(.srGray)
                 .padding(.horizontal, 2)
 
-            Text(createdAt)
+            Text(createdAt.relativeString)
                 .font(.SRFontSet.caption3)
                 .foregroundStyle(.srGray)
 
@@ -59,5 +62,14 @@ struct CommunityPostUserSection: View {
                 }
             }
         }
+    }
+}
+
+private extension Date {
+    var relativeString: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: self, relativeTo: .now)
     }
 }

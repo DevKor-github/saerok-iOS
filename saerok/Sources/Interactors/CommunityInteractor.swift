@@ -21,6 +21,7 @@ protocol CommunityInteractor {
     func deleteFreeboardComment(postId: Int, commentId: Int) async throws
     func editFreeboardComment(postId: Int, commentId: Int, content: String) async throws -> (commentId: Int, content: String)
     func fetchFreeboardCommentCount(postId: Int) async throws -> Int
+    func reportFreeboardPost(postId: Int) async throws -> Int
 }
 
 enum CommunityInteractorError: Error {
@@ -51,17 +52,13 @@ struct CommunityInteractorImpl: CommunityInteractor {
         case .popular: try await fetchPopular(page: page, size: size)
         case .recent: try await fetchRecent(page: page, size: size)
         case .suggestion: try await fetchPending(page: page, size: size)
-        case .search: fatalError("search case is not supported")
-        #if DEBUG
-        case .board:
-            []
-        #endif
+        default: []
         }
     }
 
     func fetchFreeboardPosts(page: Int?, size: Int?) async throws -> (items: [Local.FreeBoardPost], hasNext: Bool) {
         let dto = try await repository.fetchFreeboardPosts(page: page, size: size)
-        return (items: dto.items.map { Local.FreeBoardPost.from(dto: $0) }, hasNext: dto.hasNext)
+        return (items: dto.items.map { Local.FreeBoardPost.from(dto: $0) }, hasNext: dto.hasNext ?? false)
     }
 
     func createFreeboardPost(content: String) async throws -> Int {
@@ -88,7 +85,7 @@ struct CommunityInteractorImpl: CommunityInteractor {
         return (
             items: dto.items.map { Local.FreeBoardComment.from(dto: $0) },
             isMyPost: dto.isMyPost,
-            hasNext: dto.hasNext
+            hasNext: dto.hasNext ?? false
         )
     }
 
@@ -109,6 +106,11 @@ struct CommunityInteractorImpl: CommunityInteractor {
     func fetchFreeboardCommentCount(postId: Int) async throws -> Int {
         let dto = try await repository.fetchFreeboardCommentCount(postId: postId)
         return dto.count
+    }
+
+    func reportFreeboardPost(postId: Int) async throws -> Int {
+        let dto = try await repository.reportFreeboardPost(postId: postId)
+        return dto.reportId
     }
 
     func search(_ query: String, searchCase: CommunitySearchCase) async throws -> Local.CommunitySearchMainItems {
@@ -245,6 +247,10 @@ struct MockCommunityInteractorImpl: CommunityInteractor {
     }
 
     func fetchFreeboardCommentCount(postId: Int) async throws -> Int {
+        throw CommunityInteractorError.notImplementedInMock
+    }
+
+    func reportFreeboardPost(postId: Int) async throws -> Int {
         throw CommunityInteractorError.notImplementedInMock
     }
 

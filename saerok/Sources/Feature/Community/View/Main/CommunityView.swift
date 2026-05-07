@@ -13,7 +13,7 @@ enum CommunityRoute: AppRoute {
     case detailFromFeed(id: Int)
     case detailFromProfile(id: Int)
     case detailFromSearch(id: Int)
-    case postDetail(post: DTO.Post)
+    case postDetail(postId: Int)
     case other(id: Int)
     case addCollection
 }
@@ -43,10 +43,6 @@ struct CommunityView: View {
         content
             .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
-            .srPopup(
-                isPresented: $showLoginPopup,
-                config: showLoginPopup ? loginPopupConfig : nil
-            )
             .onPreferenceChange(ScrollPreferenceKey.self) { self.offsetY = $0 }
             .refreshable { Task { await viewModel.refreshPosts() } }
     }
@@ -71,6 +67,8 @@ private extension CommunityView {
     @ViewBuilder
     func routeView(for route: Route) -> some View {
         switch route {
+        case .communityType(let type) where type == .board:
+            FreeBoardListView(viewModel: coordinator.makeFreeBoardListViewModel())
         case .communityType(let type):
             CommunityDetailView(viewModel: coordinator.makeCommunityDetailViewModel(for: type))
         case .detailFromFeed(let id):
@@ -79,9 +77,9 @@ private extension CommunityView {
             CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .userProfile))
         case .detailFromSearch(let id):
             CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .communitySearch))
-        case .postDetail(let post):
+        case .postDetail(let postId):
             CommunityPostDetailView(
-                viewModel: coordinator.makeCommunityPostDetailViewModel(post: post)
+                viewModel: coordinator.makeCommunityPostDetailViewModel(postId: postId)
             )
         case .other(let id):
             UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
@@ -136,31 +134,37 @@ private extension CommunityView {
                         coordinator.push(Route.addCollection)
                     }
                 },
-                bottomOffset: 102
+                bottomOffset: 102,
+                isHidden: $showPostingView
             )
         )
         .sheet(isPresented: $showPostingView) {
             PostingView(
+                nickname: viewModel.currentUserNickname,
+                profileImageUrl: viewModel.currentUserProfileImageUrl,
                 isPresented: $showPostingView,
-                onPost: {
-                showToast(
-                    .init(
-                        type: .success,
-                        message: "포스팅 성공!",
-                        placementOffset: -120,
-                        transitionOffset: 160,
-                        duration: 3.0
+                onPost: { content in
+                    await viewModel.createFreeboardPost(content: content)
+                    showToast(
+                        .init(
+                            type: .success,
+                            message: "포스팅 성공!",
+                            placementOffset: -120,
+                            transitionOffset: 160,
+                            duration: 3.0
+                        )
                     )
-                )
-                showPostingView.toggle()
-            })
-            .presentationDetents([.large])
-            .presentationCornerRadius(20)
+                }
+            )
         }
         .ignoresSafeArea(.all)
         .onTapGesture {
             if !viewModel.isModeIdle { isFocused = false }
         }
+        .srPopup(
+            isPresented: $showLoginPopup,
+            config: showLoginPopup ? loginPopupConfig : nil
+        )
     }
 
     // MARK: Search Bar

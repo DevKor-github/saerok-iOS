@@ -188,6 +188,7 @@ private extension CollectionDetailView {
                     )
                     uiState.selectedComment = nil
                 },
+                isOnSheet: true,
                 isFocused: _isFocused,
                 keyboard: keyboard,
                 isGuest: viewModel.isGuest

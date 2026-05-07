@@ -11,7 +11,7 @@ extension DTO {
     struct FreeBoardCommentsResponse: Decodable {
         let items: [FreeBoardCommentItem]
         let isMyPost: Bool
-        let hasNext: Bool
+        let hasNext: Bool?
     }
 
     struct FreeBoardCommentItem: Decodable {

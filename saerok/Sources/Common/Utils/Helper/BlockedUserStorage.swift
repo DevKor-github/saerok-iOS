@@ -23,6 +23,7 @@ struct BlockedUserStorage {
     }
 
     static func isBlockable() -> Bool {
-        UserDefaults.standard.bool(forKey: blockableKey)
+//        UserDefaults.standard.bool(forKey: blockableKey)
+        false
     }
 }

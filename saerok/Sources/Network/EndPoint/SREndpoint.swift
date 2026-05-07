@@ -60,6 +60,7 @@ enum SREndpoint: Endpoint {
     case deleteFreeBoardComment(postId: Int, commentId: Int)
     case editFreeBoardComment(postId: Int, commentId: Int, body: DTO.EditFreeBoardCommentRequest)
     case freeBoardCommentCount(postId: Int)
+    case reportFreeBoardPost(postId: Int)
 
     // MARK: Auth API
     case appleLogin(authorizationCode: String)
@@ -170,6 +171,7 @@ extension SREndpoint {
         case .freeBoardPostComments(let postId, _, _), .createFreeBoardComment(let postId, _): "community/freeboard/posts/\(postId)/comments"
         case .deleteFreeBoardComment(let postId, let commentId), .editFreeBoardComment(let postId, let commentId, _): "community/freeboard/posts/\(postId)/comments/\(commentId)"
         case .freeBoardCommentCount(let postId): "community/freeboard/posts/\(postId)/comments/count"
+        case .reportFreeBoardPost(let postId): "community/freeboard/posts/\(postId)/report"
         
         // MARK: Announcements API
         case .announcements: "announcements"
@@ -180,7 +182,7 @@ extension SREndpoint {
     var method: HTTPMethod {
         switch self {
         case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections, .communityFreeboardPosts, .freeBoardPost, .freeBoardPostComments, .freeBoardCommentCount, .announcements, .announcementDetail: .get
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment, .signUp_complete, .blockUser, .createFreeBoardPost, .createFreeBoardComment: .post
+        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment, .signUp_complete, .blockUser, .createFreeBoardPost, .createFreeBoardComment, .reportFreeBoardPost: .post
         case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification, .editFreeBoardPost, .editFreeBoardComment: .patch
         case .deleteMe, .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification, .deleteProfileImage, .deleteFreeBoardPost, .deleteFreeBoardComment: .delete
         }
@@ -191,7 +193,7 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment, .reportFreeBoardPost:
             return true
         case .getSuggestions, .communityFreeboardPosts, .freeBoardPost, .freeBoardPostComments:
             return TokenManager.shared.getAccessToken() != nil
@@ -462,6 +464,8 @@ extension SREndpoint {
             return DTO.EditFreeBoardCommentResponse.self
         case .freeBoardCommentCount:
             return DTO.FreeBoardCommentCountResponse.self
+        case .reportFreeBoardPost:
+            return DTO.ReportFreeBoardPostResponse.self
         case .announcements:
             return DTO.Announcements.self
         case .announcementDetail:
