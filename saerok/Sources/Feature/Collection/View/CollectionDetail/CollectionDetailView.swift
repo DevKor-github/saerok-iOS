@@ -118,12 +118,12 @@ private extension CollectionDetailView {
         switch route {
         case .edit:
             if let collection = viewModel.collection {
-                CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .edit(collection)))
+                CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .edit(collection)))
             }
         case .bird(let id):
-            BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(birdID: id))
+            BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(birdID: id))
         case .other(let id):
-            UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
+            UserSummaryView(viewModel: coordinator.factory.makeUserSummaryViewModel(id))
         }
     }
 }
@@ -168,7 +168,7 @@ private extension CollectionDetailView {
         }
         .sheet(isPresented: $uiState.showLikerSheet) {
             CollectionLikerSheet(
-                viewModel: coordinator.makeCollectionLikerSheetViewModel(viewModel.collectionID),
+                viewModel: coordinator.factory.makeCollectionLikerSheetViewModel(viewModel.collectionID),
                 onDismiss: { uiState.showLikerSheet.toggle() }
             )
         }

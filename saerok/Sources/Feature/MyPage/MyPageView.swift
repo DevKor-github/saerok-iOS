@@ -100,15 +100,15 @@ struct MyPageView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .account:
-                    AccountView(viewModel: coordinator.makeAccountViewModel())
+                    AccountView(viewModel: coordinator.factory.makeAccountViewModel())
                 case .notification:
                     NotificationSettingView()
                 case .editProfile:
-                    EditProfileView(viewModel: coordinator.makeEditProfileViewModel())
+                    EditProfileView(viewModel: coordinator.factory.makeEditProfileViewModel())
                 case .board:
-                    BoardView(viewModel: coordinator.makeBoardViewModel())
+                    BoardView(viewModel: coordinator.factory.makeBoardViewModel())
                 case .boardDetail(id: let id):
-                    BoardDetailView(id: id, viewModel: coordinator.makeBoardViewModel())
+                    BoardDetailView(id: id, viewModel: coordinator.factory.makeBoardViewModel())
                 }
             }
             .onChange(of: viewModel.output, initial: true) { _, output in

@@ -68,23 +68,23 @@ private extension CommunityView {
     func routeView(for route: Route) -> some View {
         switch route {
         case .communityType(let type) where type == .board:
-            FreeBoardListView(viewModel: coordinator.makeFreeBoardListViewModel())
+            FreeBoardListView(viewModel: coordinator.factory.makeFreeBoardListViewModel())
         case .communityType(let type):
-            CommunityDetailView(viewModel: coordinator.makeCommunityDetailViewModel(for: type))
+            CommunityDetailView(viewModel: coordinator.factory.makeCommunityDetailViewModel(for: type))
         case .detailFromFeed(let id):
-            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .communityFeed))
+            CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .communityFeed))
         case .detailFromProfile(let id):
-            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .userProfile))
+            CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .userProfile))
         case .detailFromSearch(let id):
-            CollectionDetailView(viewModel: coordinator.makeCollectionDetailViewModel(id: id, entrySource: .communitySearch))
+            CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .communitySearch))
         case .postDetail(let postId):
             CommunityPostDetailView(
-                viewModel: coordinator.makeCommunityPostDetailViewModel(postId: postId)
+                viewModel: coordinator.factory.makeCommunityPostDetailViewModel(postId: postId)
             )
         case .other(let id):
-            UserSummaryView(viewModel: coordinator.makeUserSummaryViewModel(id))
+            UserSummaryView(viewModel: coordinator.factory.makeUserSummaryViewModel(id))
         case .addCollection:
-            CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .add))
+            CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .add))
         }
     }
 }

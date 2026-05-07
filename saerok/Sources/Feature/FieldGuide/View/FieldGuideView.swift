@@ -47,11 +47,11 @@ struct FieldGuideView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .search:
-                    FieldGuideSearchView(viewModel: coordinator.makeFieldGuideSearchViewModel())
+                    FieldGuideSearchView(viewModel: coordinator.factory.makeFieldGuideSearchViewModel())
                 case .birdDetail(let bird):
-                    BirdDetailView(viewModel: coordinator.makeBirdDetailViewModel(bird: bird))
+                    BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(bird: bird))
                 case .addSaerok(let bird):
-                    CollectionFormView(viewModel: coordinator.makeCollectionFormViewModel(mode: .add, bird: bird))
+                    CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .add, bird: bird))
                 }
             }
             .onChange(of: viewModel.output) { _, output in

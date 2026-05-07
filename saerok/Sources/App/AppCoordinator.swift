@@ -14,42 +14,44 @@ protocol AppRoute: Hashable {}
 @MainActor
 final class AppCoordinator: ObservableObject {
     private let container: DIContainer
+    let factory: ViewModelFactory
     @Published var path = NavigationPath()
     private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Resettable lazy ViewModels
+    // MARK: - 탭 루트 ViewModel (로그아웃 시 reset 대상)
     private var _fieldGuideViewModel: FieldGuideView.ViewModel?
     var fieldGuideViewModel: FieldGuideView.ViewModel {
-        if _fieldGuideViewModel == nil { _fieldGuideViewModel = makeFieldGuideViewModel() }
+        if _fieldGuideViewModel == nil { _fieldGuideViewModel = factory.makeFieldGuideViewModel() }
         return _fieldGuideViewModel!
     }
 
     private var _collectionViewModel: CollectionView.ViewModel?
     var collectionViewModel: CollectionView.ViewModel {
-        if _collectionViewModel == nil { _collectionViewModel = makeCollectionViewModel() }
+        if _collectionViewModel == nil { _collectionViewModel = factory.makeCollectionViewModel() }
         return _collectionViewModel!
     }
 
     private var _communityViewModel: CommunityView.ViewModel?
     var communityViewModel: CommunityView.ViewModel {
-        if _communityViewModel == nil { _communityViewModel = makeCommunityViewModel() }
+        if _communityViewModel == nil { _communityViewModel = factory.makeCommunityViewModel() }
         return _communityViewModel!
     }
 
     private var _mapViewModel: MapView.ViewModel?
     var mapViewModel: MapView.ViewModel {
-        if _mapViewModel == nil { _mapViewModel = makeMapViewModel() }
+        if _mapViewModel == nil { _mapViewModel = factory.makeMapViewModel() }
         return _mapViewModel!
     }
 
     private var _myPageViewModel: MyPageView.ViewModel?
     var myPageViewModel: MyPageView.ViewModel {
-        if _myPageViewModel == nil { _myPageViewModel = makeMyPageViewModel() }
+        if _myPageViewModel == nil { _myPageViewModel = factory.makeMyPageViewModel() }
         return _myPageViewModel!
     }
 
     init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {
         self.container = container
+        self.factory = ViewModelFactory(container: container)
         self.path = navigationPath
 
         container.appState
@@ -83,144 +85,5 @@ final class AppCoordinator: ObservableObject {
         _myPageViewModel = nil
         path = .init()
         container.appState[\.currentUser] = nil
-    }
-}
-
-// MARK: - ViewModel Factory
-extension AppCoordinator {
-    func makeCollectionDetailViewModel(
-        id: Int,
-        entrySource: EntrySource = .unknown,
-        screen: Screen = .unknown
-    ) -> CollectionDetailView.ViewModel {
-        .init(
-            collectionID: id,
-            entrySource: entrySource,
-            screen: screen,
-            appState: container.appState,
-            collectionInteractor: container.interactors.collection,
-            fieldGuideInteractor: container.interactors.fieldGuide,
-            userInteractor: container.interactors.user
-        )
-    }
-    
-    func makeNotificationViewModel() -> NotificationView.ViewModel {
-        .init(interactor: container.interactors.user)
-    }
-    
-    func makeUserSummaryViewModel(_ id: Int) -> UserSummaryView.ViewModel {
-        .init(
-            userID: id,
-            interactor: container.interactors.user
-        )
-    }
-    
-    func makeBirdDetailViewModel(birdID: Int? = nil, bird: Local.Bird? = nil) -> BirdDetailView.ViewModel {
-        .init(
-            birdID: birdID,
-            bird: bird,
-            appState: container.appState,
-            interactor: container.interactors.fieldGuide
-        )
-    }
-    
-    func makeCommunityViewModel() -> CommunityView.ViewModel {
-        .init(
-            appState: container.appState,
-            interactor: container.interactors.community
-        )
-    }
-    
-    func makeCommunityDetailViewModel(for type: CommunityType) -> CommunityDetailView.ViewModel {
-        .init(
-            type: type,
-            interactor: container.interactors.community
-        )
-    }
-    
-    func makeCommunityPostDetailViewModel(postId: Int) -> CommunityPostDetailView.ViewModel {
-        .init(
-            postId: postId,
-            interactor: container.interactors.community,
-            appState: container.appState
-        )
-    }
-
-    func makeFreeBoardListViewModel() -> FreeBoardListView.ViewModel {
-        .init(
-            interactor: container.interactors.community,
-            appState: container.appState
-        )
-    }
-    
-    func makeCollectionViewModel() -> CollectionView.ViewModel {
-        .init(
-            appState: container.appState,
-            collectionInteractor: container.interactors.collection,
-            userInteractor: container.interactors.user
-        )
-    }
-    
-    func makeFieldGuideViewModel() -> FieldGuideView.ViewModel {
-        .init(
-            appState: container.appState,
-            interactor: container.interactors.fieldGuide
-        )
-    }
-    
-    func makeFieldGuideSearchViewModel() -> FieldGuideSearchView.ViewModel {
-        .init(
-            appState: container.appState,
-            interactor: container.interactors.fieldGuide
-        )
-    }
-    
-    func makeMyPageViewModel() -> MyPageView.ViewModel {
-        .init(
-            appState: container.appState,
-            interactor: container.interactors.user
-        )
-    }
-    
-    func makeAccountViewModel() -> AccountView.ViewModel {
-        .init(
-            appState: container.appState,
-            interactor: container.interactors.user
-        )
-    }
-    
-    func makeBoardViewModel() -> BoardView.ViewModel {
-        .init(interactor: container.interactors.user)
-    }
-    
-    func makeCollectionFormViewModel(mode: CollectionFormMode, bird: Local.Bird? = nil) -> CollectionFormView.ViewModel {
-        .init(
-            appState: container.appState,
-            fieldguideInteractor: container.interactors.fieldGuide,
-            collectionInteractor: container.interactors.collection,
-            mode: mode,
-            bird: bird
-        )
-    }
-    
-    func makeMapViewModel() -> MapView.ViewModel {
-        .init(
-            mapInteractor: container.interactors.map,
-            appState: container.appState
-        )
-    }
-    
-    func makeEditProfileViewModel() -> EditProfileView.ViewModel {
-        .init(
-            appState: container.appState,
-            interactor: container.interactors.user
-        )
-    }
-    
-    func makeCollectionLikerSheetViewModel(_ id: Int) -> CollectionLikerSheet.ViewModel {
-        .init(
-            collectionID: id,
-            interactor: container.interactors.collection
-        )
     }
 }
