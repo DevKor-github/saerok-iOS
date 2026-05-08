@@ -46,7 +46,7 @@ enum CollectionFormMode {
 
 extension CollectionFormView {
     var currentPopupConfig: PopupConfig? {
-        switch activePopup {
+        switch viewModel.activePopup {
         case .addModeExitConfirm:
             addModeExitConfirmPopupConfig
         case .editModeSaveConfirm:
@@ -57,7 +57,7 @@ extension CollectionFormView {
             nil
         }
     }
-    
+
     var addModeExitConfirmPopupConfig: PopupConfig {
         .init(
             title: "작성 중인 내용이 있어요",
@@ -66,20 +66,20 @@ extension CollectionFormView {
                 .init(
                     title: "계속하기",
                     style: .confirm,
-                    action: { activePopup = .none }
+                    action: { viewModel.dismissPopup() }
                 ),
                 .init(
                     title: "나가기",
                     style: .bordered,
                     action: {
-                        activePopup = .addModeExitConfirm
+                        viewModel.dismissPopup()
                         coordinator.pop()
                     }
                 )
             )
         )
     }
-    
+
     var editModeSaveConfirmPopup: PopupConfig {
         PopupConfig(
             title: "이전 동정 돕기 내역을 불러올까요?",
@@ -89,23 +89,22 @@ extension CollectionFormView {
                     title: "불러오지 않기",
                     style: .bordered,
                     action: {
-                        activePopup = .none
-                        resetSuggestion()
-                        editCollection()
+                        viewModel.dismissPopup()
+                        Task { await viewModel.performEdit(resetSuggestion: true) }
                     }
                 ),
                 .init(
                     title: "불러오기",
                     style: .confirm,
                     action: {
-                        activePopup = .none
-                        editCollection()
+                        viewModel.dismissPopup()
+                        Task { await viewModel.performEdit() }
                     }
                 )
             )
         )
     }
-    
+
     var editModeDeleteConfirmPopup: PopupConfig {
         PopupConfig(
             title: "삭제하시겠어요?",
@@ -114,15 +113,13 @@ extension CollectionFormView {
                 .init(
                     title: "취소",
                     style: .confirm,
-                    action: {
-                        activePopup = .none
-                    }
+                    action: { viewModel.dismissPopup() }
                 ),
                 .init(
                     title: "삭제하기",
                     style: .delete,
                     action: {
-                        activePopup = .editModeDeleteConfirm
+                        viewModel.dismissPopup()
                         deleteCollection()
                     }
                 )

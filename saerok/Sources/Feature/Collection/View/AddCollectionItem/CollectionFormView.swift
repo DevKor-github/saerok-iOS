@@ -26,10 +26,12 @@ extension CollectionFormView {
         let mode: CollectionFormMode
 
         var collectionDraft: Local.CollectionDraft
-        var isSubmitting: Bool = false
+        private(set) var isSubmitting: Bool = false
         var isImageLoading: Bool = false
         private(set) var hadInitialBird: Bool = false
         private(set) var isPositionInitialized: Bool = false
+        private(set) var activePopup: CollectionPopup = .none
+        private(set) var output: Output?
 
         var isBirdChangedToNil: Bool { hadInitialBird && collectionDraft.bird == nil }
 
@@ -40,6 +42,11 @@ extension CollectionFormView {
 
         // MARK: Routing
         private let cancelBag: CancelBag
+
+        enum Output: Equatable {
+            case submitCompleted
+            case deleteCompleted
+        }
 
         init(
             appState: Store<AppState>,
@@ -64,49 +71,60 @@ extension CollectionFormView {
 
         func markPositionInitialized() { isPositionInitialized = true }
         func markHadInitialBird() { hadInitialBird = true }
-        
+        func showPopup(_ popup: CollectionPopup) { activePopup = popup }
+        func dismissPopup() { activePopup = .none }
+        func resetOutput() { output = nil }
+
         func searchResultSelect(for selectedBird: Local.Bird) {
             collectionDraft.bird = selectedBird
         }
-        
+
         func unselectBird() {
             collectionDraft.bird = nil
         }
-        
+
         func initializeCollecionAdd() {
             appState[\.routing.addCollectionItemView] = .init()
         }
-        
+
         func loadBirdDetail(birdId: Int) async {
             collectionDraft.bird = try? await fieldguideInteractor.loadBirdDetails(birdID: birdId)
         }
-        
-        func createCollection() async {
+
+        func refreshCollectionList() {
+            appState[\.routing.collectionView.refreshCollections] = UUID()
+        }
+
+        func performSubmit() async {
+            isSubmitting = true
             do {
                 try await collectionInteractor.createCollection(collectionDraft)
             } catch {
                 try? await collectionInteractor.createCollection(collectionDraft)
             }
+            isSubmitting = false
+            output = .submitCompleted
         }
-        
-        func deleteCollection() async {
+
+        func performDelete() async {
             guard let id = collectionDraft.collectionID else { return }
-
+            isSubmitting = true
             try? await collectionInteractor.deleteCollection(id)
+            isSubmitting = false
+            output = .deleteCompleted
         }
-        
-        func editCollection() async throws {
-            guard let _ = collectionDraft.collectionID else { return }
 
-            try await collectionInteractor.editCollection(collectionDraft)
-        }
-        
-        func refreshCollectionList() {
-            appState[\.routing.collectionView.refreshCollections] = UUID()
-        }
-        
-        func resetSuggestion() async throws {
-            try await collectionInteractor.resetSuggestion(collectionDraft.collectionID ?? 0)
+        func performEdit(resetSuggestion shouldReset: Bool = false) async {
+            guard collectionDraft.collectionID != nil else { return }
+            isSubmitting = true
+            do {
+                if shouldReset {
+                    try await collectionInteractor.resetSuggestion(collectionDraft.collectionID ?? 0)
+                }
+                try await collectionInteractor.editCollection(collectionDraft)
+                output = .submitCompleted
+            } catch { }
+            isSubmitting = false
         }
     }
 }
@@ -120,7 +138,6 @@ struct CollectionFormView: View {
     // MARK: View State
     @Bindable var viewModel: ViewModel
     @State private var lastPathCount: Int = 0
-    @State var activePopup: CollectionPopup = .none
 
     private let locationManager: LocationManager
     
@@ -163,6 +180,9 @@ struct CollectionFormView: View {
                     viewModel.initializeCollecionAdd()
                 }
             }
+            .onChange(of: viewModel.output, initial: true) { _, output in
+                handleOutput(output)
+            }
             .navigationBarHidden(true)
     }
 }
@@ -196,9 +216,9 @@ private extension CollectionFormView {
         }
         .srPopup(
             isPresented: Binding(
-                get: { activePopup != .none },
+                get: { viewModel.activePopup != .none },
                 set: { newValue in
-                    if !newValue { activePopup = .none }
+                    if !newValue { viewModel.dismissPopup() }
                 }
             ),
             config: currentPopupConfig
@@ -255,7 +275,7 @@ private extension CollectionFormView {
                 trailing: {
                     Button {
                         withAnimation(.bouncy) {
-                            activePopup = .addModeExitConfirm
+                            viewModel.showPopup(.addModeExitConfirm)
                         }
                     } label: {
                         Image.SRIconSet.delete.frame(.large)
@@ -269,7 +289,7 @@ private extension CollectionFormView {
                     Button("취소") { coordinator.pop() }
                 },
                 trailing: {
-                    Button("삭제") { activePopup = .editModeDeleteConfirm }
+                    Button("삭제") { viewModel.showPopup(.editModeDeleteConfirm) }
                         .buttonStyle(.plain)
                         .foregroundStyle(.red)
                         .bold()
@@ -279,21 +299,23 @@ private extension CollectionFormView {
     }
 }
 
-// MARK: - Networking & Button Action
+// MARK: - Button Actions
 extension CollectionFormView {
     func submitButtonTapped(_ mode: CollectionFormMode) {
-        viewModel.isSubmitting = true
-
         switch mode {
         case .add:
-            submitForm()
+            Task { await viewModel.performSubmit() }
         case .edit:
             if viewModel.isBirdChangedToNil {
-                activePopup = .editModeSaveConfirm
+                viewModel.showPopup(.editModeSaveConfirm)
             } else {
-                editCollection()
+                Task { await viewModel.performEdit() }
             }
         }
+    }
+
+    func deleteCollection() {
+        Task { await viewModel.performDelete() }
     }
 
     func loadBirdIfNeededOnEditMode() {
@@ -308,40 +330,18 @@ extension CollectionFormView {
         }
     }
 
-    func submitForm() {
-        Task {
-            await viewModel.createCollection()
-            viewModel.isSubmitting = false
+    private func handleOutput(_ output: ViewModel.Output?) {
+        guard let output else { return }
+        switch output {
+        case .submitCompleted:
             coordinator.pop()
             viewModel.refreshCollectionList()
-        }
-    }
-
-    func deleteCollection() {
-        viewModel.isSubmitting = true
-        Task {
-            await viewModel.deleteCollection()
-            viewModel.isSubmitting = false
+        case .deleteCompleted:
             coordinator.pop()
             coordinator.pop()
             viewModel.refreshCollectionList()
         }
-    }
-
-    func editCollection() {
-        Task {
-            do {
-                try await viewModel.editCollection()
-                viewModel.isSubmitting = false
-                coordinator.pop()
-            } catch { }
-        }
-    }
-    
-    func resetSuggestion() {
-        Task {
-            try? await viewModel.resetSuggestion()
-        }
+        viewModel.resetOutput()
     }
 }
 
