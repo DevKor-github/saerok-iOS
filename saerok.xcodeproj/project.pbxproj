@@ -14,6 +14,12 @@
 		219841772DDC18CD00919B81 /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 219841762DDC18CD00919B81 /* KakaoSDKAuth */; };
 		219841792DDC18CD00919B81 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 219841782DDC18CD00919B81 /* KakaoSDKCommon */; };
 		2198417B2DDC18CD00919B81 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = 2198417A2DDC18CD00919B81 /* KakaoSDKUser */; };
+		21C90EA62FAE21ED00410E33 /* MapInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C90EA32FAE21ED00410E33 /* MapInteractorTests.swift */; };
+		21C90EA72FAE21ED00410E33 /* CommunityInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C90EA02FAE21ED00410E33 /* CommunityInteractorTests.swift */; };
+		21C90EA82FAE21ED00410E33 /* UserInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C90EA42FAE21ED00410E33 /* UserInteractorTests.swift */; };
+		21C90EA92FAE21ED00410E33 /* CollectionInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C90E9F2FAE21ED00410E33 /* CollectionInteractorTests.swift */; };
+		21C90EAA2FAE21ED00410E33 /* LoadStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C90EA22FAE21ED00410E33 /* LoadStateTests.swift */; };
+		21C90EAB2FAE21ED00410E33 /* FieldGuideInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C90EA12FAE21ED00410E33 /* FieldGuideInteractorTests.swift */; };
 		21D268942F63C1A800942051 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D268932F63C1A800942051 /* README.md */; };
 		21F0CAE22DBE427E004F03F4 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 21F0CAE12DBE427E004F03F4 /* Lottie */; };
 /* End PBXBuildFile section */
@@ -30,6 +36,12 @@
 
 /* Begin PBXFileReference section */
 		219F722D2D89ABEB00C04738 /* saerok.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = saerok.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		21C90E9F2FAE21ED00410E33 /* CollectionInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionInteractorTests.swift; sourceTree = "<group>"; };
+		21C90EA02FAE21ED00410E33 /* CommunityInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityInteractorTests.swift; sourceTree = "<group>"; };
+		21C90EA12FAE21ED00410E33 /* FieldGuideInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldGuideInteractorTests.swift; sourceTree = "<group>"; };
+		21C90EA22FAE21ED00410E33 /* LoadStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadStateTests.swift; sourceTree = "<group>"; };
+		21C90EA32FAE21ED00410E33 /* MapInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapInteractorTests.swift; sourceTree = "<group>"; };
+		21C90EA42FAE21ED00410E33 /* UserInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInteractorTests.swift; sourceTree = "<group>"; };
 		21D268932F63C1A800942051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		21DA2D502F9508EE00A5A97C /* saerokTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = saerokTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -84,6 +96,7 @@
 		219F72242D89ABEB00C04738 = {
 			isa = PBXGroup;
 			children = (
+				21C90EA52FAE21ED00410E33 /* saerokTests */,
 				219F722F2D89ABEB00C04738 /* saerok */,
 				219F722E2D89ABEB00C04738 /* Products */,
 				21D268932F63C1A800942051 /* README.md */,
@@ -97,6 +110,19 @@
 				21DA2D502F9508EE00A5A97C /* saerokTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		21C90EA52FAE21ED00410E33 /* saerokTests */ = {
+			isa = PBXGroup;
+			children = (
+				21C90E9F2FAE21ED00410E33 /* CollectionInteractorTests.swift */,
+				21C90EA02FAE21ED00410E33 /* CommunityInteractorTests.swift */,
+				21C90EA12FAE21ED00410E33 /* FieldGuideInteractorTests.swift */,
+				21C90EA22FAE21ED00410E33 /* LoadStateTests.swift */,
+				21C90EA32FAE21ED00410E33 /* MapInteractorTests.swift */,
+				21C90EA42FAE21ED00410E33 /* UserInteractorTests.swift */,
+			);
+			path = saerokTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -229,6 +255,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21C90EA62FAE21ED00410E33 /* MapInteractorTests.swift in Sources */,
+				21C90EA72FAE21ED00410E33 /* CommunityInteractorTests.swift in Sources */,
+				21C90EA82FAE21ED00410E33 /* UserInteractorTests.swift in Sources */,
+				21C90EA92FAE21ED00410E33 /* CollectionInteractorTests.swift in Sources */,
+				21C90EAA2FAE21ED00410E33 /* LoadStateTests.swift in Sources */,
+				21C90EAB2FAE21ED00410E33 /* FieldGuideInteractorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,7 +526,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B6AJR944A6;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hazed.saerokTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -518,7 +550,7 @@
 				DEVELOPMENT_TEAM = B6AJR944A6;
 				ENABLE_NS_ASSERTIONS = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hazed.saerokTests;
