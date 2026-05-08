@@ -9,63 +9,64 @@
 import SwiftData
 import SwiftUI
 
+extension CollectionSearchView {
+    @Observable
+    final class ViewModel {
+        var filterKey: BirdFilter = .init()
+        private(set) var filteredBirds: [Local.Bird] = []
+        @ObservationIgnored private var hangulFinder: HangulFinder<Local.Bird> = .init(items: [], keySelector: { $0.name })
+        @ObservationIgnored private var searchDebounceTask: Task<Void, Never>?
+
+        func updateFieldGuide(_ newDataSet: [Local.Bird]) {
+            hangulFinder.reInitialize(newDataSet)
+            filteredBirds = hangulFinder.search(filterKey.searchText)
+        }
+
+        func scheduleSearch() {
+            searchDebounceTask?.cancel()
+            searchDebounceTask = Task { [weak self] in
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                guard let self, !Task.isCancelled, !filterKey.searchText.isEmpty else { return }
+                filteredBirds = hangulFinder.search(filterKey.searchText)
+            }
+        }
+    }
+}
+
 struct CollectionSearchView: View {
-    
+
     // MARK:  Dependencies
-    
+
     @Environment(\.injected) private var injected
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    // MARK: View State
-        
-    @State private var filterKey: BirdFilter = .init()
-    @State private var fieldGuide: [Local.Bird]
-    @State private var filteredBirds: [Local.Bird] = []
-    @State private var hangulFinder: HangulFinder<Local.Bird>
-    @State private var searchDebounceTask: Task<Void, Never>? = nil
 
+    // MARK: View State
+
+    @State private var viewModel = ViewModel()
+    @State private var fieldGuide: [Local.Bird] = []  // SwiftData query 결과 바인딩은 @State 필요
     @FocusState private var isSearchBarFocused: Bool
-        
+
     let onSelect: (Local.Bird) -> Void
 
-    init(onSelect: @escaping (Local.Bird) -> Void) {
-        self.fieldGuide = []
-        self.hangulFinder = .init(items: [], keySelector: { $0.name })
-        self.onSelect = onSelect
-    }
-    
     var body: some View {
         content
-            .query(key: filterKey, results: $fieldGuide) { filterKey in
+            .query(key: viewModel.filterKey, results: $fieldGuide) { filterKey in
                 Query(
                     filter: filterKey.build(),
                     sort: \Local.Bird.name
                 )
             }
             .onChange(of: fieldGuide) { _, newDataSet in
-                hangulFinder.reInitialize(newDataSet)
-                filteredBirds = hangulFinder.search(filterKey.searchText)
+                viewModel.updateFieldGuide(newDataSet)
             }
-            .onChange(of: filterKey, initial: true) { _, newKey in
-                searchTask(newKey)
+            .onChange(of: viewModel.filterKey, initial: true) { _, _ in
+                viewModel.scheduleSearch()
             }
             .onAppear {
                 isSearchBarFocused = true
             }
             .regainSwipeBack()
-    }
-}
-
-private extension CollectionSearchView {
-    func searchTask(_ newKey: BirdFilter) {
-        searchDebounceTask?.cancel()
-        searchDebounceTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            if !Task.isCancelled && !newKey.searchText.isEmpty {
-                filteredBirds = hangulFinder.search(filterKey.searchText)
-            }
-        }
     }
 }
 
@@ -93,8 +94,9 @@ private extension CollectionSearchView {
     }
     
     var searchBarSection: some View {
-        TextField("새 이름을 입력해주세요", text: $filterKey.searchText)
-            .textFieldDeletable(text: $filterKey.searchText)
+        @Bindable var vm = viewModel
+        return TextField("새 이름을 입력해주세요", text: $vm.filterKey.searchText)
+            .textFieldDeletable(text: $vm.filterKey.searchText)
             .padding(.vertical, 14)
             .padding(.leading, 18)
             .frame(height: 44)
@@ -112,9 +114,9 @@ private extension CollectionSearchView {
                 
                 VStack(spacing: 2) {
                     ForEach(
-                        filterKey.searchText.isEmpty
+                        viewModel.filterKey.searchText.isEmpty
                             ? fieldGuide.filter { $0.isBookmarked }
-                            : filteredBirds, id: \.name
+                            : viewModel.filteredBirds, id: \.name
                     ) { bird in
                         searchItem(bird)
                             .listRowInsets(.init())

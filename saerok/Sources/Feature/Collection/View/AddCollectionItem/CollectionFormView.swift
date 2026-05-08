@@ -26,8 +26,13 @@ extension CollectionFormView {
         let mode: CollectionFormMode
 
         var collectionDraft: Local.CollectionDraft
-        private var isBirdChangedToNil: Bool { collectionDraft.bird == nil }
-        
+        var isSubmitting: Bool = false
+        var isImageLoading: Bool = false
+        private(set) var hadInitialBird: Bool = false
+        private(set) var isPositionInitialized: Bool = false
+
+        var isBirdChangedToNil: Bool { hadInitialBird && collectionDraft.bird == nil }
+
         // MARK: Dependencies
         private let appState: Store<AppState>
         private let fieldguideInteractor: FieldGuideInteractor
@@ -35,7 +40,7 @@ extension CollectionFormView {
 
         // MARK: Routing
         private let cancelBag: CancelBag
-        
+
         init(
             appState: Store<AppState>,
             fieldguideInteractor: FieldGuideInteractor,
@@ -48,7 +53,7 @@ extension CollectionFormView {
             self.collectionInteractor = collectionInteractor
             self.cancelBag = .init()
             self.mode = mode
-            
+
             switch mode {
             case .add:
                 collectionDraft = .init(bird: bird, collectionID: nil)
@@ -56,6 +61,9 @@ extension CollectionFormView {
                 collectionDraft = .fromDetail(detail)
             }
         }
+
+        func markPositionInitialized() { isPositionInitialized = true }
+        func markHadInitialBird() { hadInitialBird = true }
         
         func searchResultSelect(for selectedBird: Local.Bird) {
             collectionDraft.bird = selectedBird
@@ -108,14 +116,9 @@ struct CollectionFormView: View {
     
     // MARK:  Dependencies
     @EnvironmentObject var coordinator: AppCoordinator
-        
+
     // MARK: View State
-    @State var viewModel: ViewModel
-    private var isBirdChangedToNil: Bool { hadInitialBird && viewModel.collectionDraft.bird == nil }
-    @State private var hadInitialBird: Bool = false
-    @State private var isPositionInitialized: Bool = false
-    @State private var isSubmitting: Bool = false
-    @State private var isImageLoading: Bool = false
+    @Bindable var viewModel: ViewModel
     @State private var lastPathCount: Int = 0
     @State var activePopup: CollectionPopup = .none
 
@@ -148,11 +151,11 @@ struct CollectionFormView: View {
                 loadBirdIfNeededOnEditMode()
             }
             .task {
-                if !isPositionInitialized,
+                if !viewModel.isPositionInitialized,
                    viewModel.mode.isAddMode,
                    let location = await locationManager.requestAndGetCurrentLocation()?.coordinate {
                     viewModel.collectionDraft.coordinate = (location.latitude, location.longitude)
-                    isPositionInitialized = true
+                    viewModel.markPositionInitialized()
                 }
             }
             .onDisappear {
@@ -171,7 +174,7 @@ private extension CollectionFormView {
             navigationBar
             VStack(alignment: .leading, spacing: 20) {
                 if viewModel.mode.isAddMode {
-                    ImageFormView(selectedImage: $viewModel.collectionDraft.image, isImageLoading: $isImageLoading)
+                    ImageFormView(selectedImage: $viewModel.collectionDraft.image, isImageLoading: $viewModel.isImageLoading)
                 }
                 BirdNameFormView(
                     draft: viewModel.collectionDraft,
@@ -200,9 +203,9 @@ private extension CollectionFormView {
             ),
             config: currentPopupConfig
         )
-        .disabled(isSubmitting)
+        .disabled(viewModel.isSubmitting)
     }
-    
+
     var visibilityToggleButton: some View {
         HStack(spacing: 9) {
             Button {
@@ -227,7 +230,7 @@ private extension CollectionFormView {
         Button {
             submitButtonTapped(viewModel.mode)
         } label: {
-            if isSubmitting{
+            if viewModel.isSubmitting {
                 ProgressView()
             } else {
                 Text(viewModel.mode.submitButtonTitle)
@@ -236,7 +239,7 @@ private extension CollectionFormView {
             }
         }
         .disabled(!viewModel.collectionDraft.submittable && viewModel.mode.isAddMode)
-        .disabled(isSubmitting)
+        .disabled(viewModel.isSubmitting)
         .srStyled(.primaryButton)
     }
     
@@ -279,20 +282,20 @@ private extension CollectionFormView {
 // MARK: - Networking & Button Action
 extension CollectionFormView {
     func submitButtonTapped(_ mode: CollectionFormMode) {
-        isSubmitting = true
-        
+        viewModel.isSubmitting = true
+
         switch mode {
         case .add:
             submitForm()
         case .edit:
-            if isBirdChangedToNil {
+            if viewModel.isBirdChangedToNil {
                 activePopup = .editModeSaveConfirm
             } else {
                 editCollection()
             }
         }
     }
-    
+
     func loadBirdIfNeededOnEditMode() {
         if case .edit(let detail) = viewModel.mode,
            let birdId = detail.birdID,
@@ -300,36 +303,36 @@ extension CollectionFormView {
         {
             Task {
                 await viewModel.loadBirdDetail(birdId: birdId)
-                hadInitialBird = true
+                viewModel.markHadInitialBird()
             }
         }
     }
-    
+
     func submitForm() {
         Task {
             await viewModel.createCollection()
-            isSubmitting = false
+            viewModel.isSubmitting = false
             coordinator.pop()
             viewModel.refreshCollectionList()
         }
     }
-    
+
     func deleteCollection() {
-        isSubmitting = true
+        viewModel.isSubmitting = true
         Task {
             await viewModel.deleteCollection()
-            isSubmitting = false
+            viewModel.isSubmitting = false
             coordinator.pop()
             coordinator.pop()
             viewModel.refreshCollectionList()
         }
     }
-    
+
     func editCollection() {
         Task {
             do {
                 try await viewModel.editCollection()
-                isSubmitting = false
+                viewModel.isSubmitting = false
                 coordinator.pop()
             } catch { }
         }
