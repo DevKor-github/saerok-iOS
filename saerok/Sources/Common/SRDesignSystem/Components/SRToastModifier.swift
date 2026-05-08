@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SRToastModifier: ViewModifier {
     @State var activeToast: Toast?
-    @State private var toastDismissWorkItem: DispatchWorkItem?
+    @State private var toastDismissTask: Task<Void, Never>?
     
     func body(content: Content) -> some View {
         content
@@ -28,17 +28,16 @@ struct SRToastModifier: ViewModifier {
                     }
                     
                 } completion: {
-                    toastDismissWorkItem?.cancel()
+                    toastDismissTask?.cancel()
                     withAnimation(animation) {
                         activeToast = toast
                     }
-                    toastDismissWorkItem = .init(block: dismiss)
                     let duration = max(toast.duration, 1)
-                    if let toastDismissWorkItem {
-                        DispatchQueue.main.asyncAfter(
-                            deadline: .now() + duration,
-                            execute: toastDismissWorkItem
-                        )
+                    toastDismissTask = Task {
+                        do {
+                            try await Task.sleep(for: .seconds(duration))
+                            dismiss()
+                        } catch { }
                     }
                 }
             }
@@ -101,7 +100,7 @@ struct SRToastModifier: ViewModifier {
         withAnimation(animation) {
             activeToast = nil
         }
-        toastDismissWorkItem?.cancel()
+        toastDismissTask?.cancel()
     }
 }
 

@@ -45,10 +45,10 @@ extension NaverMapContainer: UIViewRepresentable {
         let coordinator = context.coordinator
         
         if !controller.pendingActions.isEmpty {
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 while !self.controller.pendingActions.isEmpty {
                     let action = self.controller.pendingActions.removeFirst()
-                    
+
                     switch action {
                     case .moveCamera(let lat, let lng, let animated):
                         coordinator.mapView(

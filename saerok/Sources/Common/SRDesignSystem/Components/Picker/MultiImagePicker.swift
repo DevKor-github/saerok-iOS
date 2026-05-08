@@ -42,7 +42,7 @@ struct MultiImagePicker: UIViewControllerRepresentable {
                 if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
                     result.itemProvider.loadObject(ofClass: UIImage.self) { object, error in
                         if let image = object as? UIImage {
-                            DispatchQueue.main.async {
+                            Task { @MainActor in
                                 self.parent.selectedImages.append(image)
                             }
                         }
