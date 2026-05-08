@@ -9,7 +9,6 @@ import Foundation
 
 struct AppState: Equatable {
     var routing = ViewRouting()
-    var system = System()
     var authStatus: AuthStatus = .notDetermined
     var currentUser: UserProfile? = nil
 }
@@ -23,10 +22,6 @@ extension AppState {
         var mapView = MapView.Routing()
         var myPageView = MyPageView.Routing()
     }
-}
-
-extension AppState {
-    struct System: Equatable {}
 }
 
 extension AppState {
@@ -55,7 +50,6 @@ extension AppState {
 
 func == (lhs: AppState, rhs: AppState) -> Bool {
     lhs.routing == rhs.routing &&
-    lhs.system == rhs.system &&
     lhs.authStatus == rhs.authStatus &&
     lhs.currentUser == rhs.currentUser
 }

@@ -165,22 +165,22 @@ private struct EnumSelectionSheet<T: Hashable & RawRepresentable & CaseIterable>
     
     @ViewBuilder
     private func birdSizeOptionView(_ item: BirdSize) -> some View {
-        let castedItem = item as! T
-        
-        if item != .kayak {
-            Spacer()
-        }
-        VStack {
-            item.image
-            (selection.contains(castedItem) ? Image(.checkboxMiniActive) : Image(.checkboxMiniDefault))
-            Text(item.rawValue)
-                .font(.SRFontSet.body1)
-            Text(item.lengthDescription)
-                .font(.SRFontSet.caption1)
-                .foregroundStyle(.secondary)
-        }
-        .onTapGesture {
-            selection.toggle(castedItem)
+        if let castedItem = item as? T {
+            if item != .kayak {
+                Spacer()
+            }
+            VStack {
+                item.image
+                (selection.contains(castedItem) ? Image(.checkboxMiniActive) : Image(.checkboxMiniDefault))
+                Text(item.rawValue)
+                    .font(.SRFontSet.body1)
+                Text(item.lengthDescription)
+                    .font(.SRFontSet.caption1)
+                    .foregroundStyle(.secondary)
+            }
+            .onTapGesture {
+                selection.toggle(castedItem)
+            }
         }
     }
 }

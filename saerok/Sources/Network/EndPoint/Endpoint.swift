@@ -39,13 +39,17 @@ enum HTTPMethod: String {
 
 extension Endpoint {
     func createRequest() -> URLRequest {
-        var components = URLComponents(string: baseURL + path)!
-        
+        guard var components = URLComponents(string: baseURL + path) else {
+            fatalError("잘못된 URL — baseURL: \(baseURL), path: \(path)")
+        }
+
         if let queryItems = queryItems {
             components.queryItems = queryItems.map { URLQueryItem(name: $0.key, value: $0.value) }
         }
-        
-        let url = components.url!
+
+        guard let url = components.url else {
+            fatalError("URL 생성 실패 — baseURL: \(baseURL), path: \(path)")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         

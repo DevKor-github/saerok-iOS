@@ -27,17 +27,17 @@ final class DefaultAPIClient: APIClient {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.unknownError
         }
-        
-//        #if DEBUG
+
+        #if DEBUG
         logResponse(data: data, response: httpResponse)
-//        #endif
-        
+        #endif
+
         guard 200..<300 ~= httpResponse.statusCode else {
             throw self.validateStatusCode(httpResponse.statusCode)
         }
-        
-        if T.self == EmptyResponse.self {
-            return EmptyResponse() as! T
+
+        if let empty = EmptyResponse() as? T {
+            return empty
         }
         
         do {
@@ -56,9 +56,9 @@ final class DefaultAPIClient: APIClient {
         if !(200..<300).contains(httpResponse.statusCode) {
             throw self.validateStatusCode(httpResponse.statusCode)
         }
-        
-        if T.self == EmptyResponse.self {
-            return (EmptyResponse() as! T, httpResponse.statusCode)
+
+        if let empty = EmptyResponse() as? T {
+            return (empty, httpResponse.statusCode)
         }
         
         do {

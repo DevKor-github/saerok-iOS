@@ -18,7 +18,10 @@ extension ModelContainer {
     }
 
     static var previewable: ModelContainer {
-        try! appModelContainer(inMemoryOnly: true)
+        guard let container = try? appModelContainer(inMemoryOnly: true) else {
+            fatalError("프리뷰용 ModelContainer 생성 실패 — Schema 확인 필요")
+        }
+        return container
     }
 }
 

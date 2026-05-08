@@ -22,31 +22,36 @@ final class AppCoordinator: ObservableObject {
     private var _fieldGuideViewModel: FieldGuideView.ViewModel?
     var fieldGuideViewModel: FieldGuideView.ViewModel {
         if _fieldGuideViewModel == nil { _fieldGuideViewModel = factory.makeFieldGuideViewModel() }
-        return _fieldGuideViewModel!
+        guard let vm = _fieldGuideViewModel else { fatalError("FieldGuideView.ViewModel 생성 실패") }
+        return vm
     }
 
     private var _collectionViewModel: CollectionView.ViewModel?
     var collectionViewModel: CollectionView.ViewModel {
         if _collectionViewModel == nil { _collectionViewModel = factory.makeCollectionViewModel() }
-        return _collectionViewModel!
+        guard let vm = _collectionViewModel else { fatalError("CollectionView.ViewModel 생성 실패") }
+        return vm
     }
 
     private var _communityViewModel: CommunityView.ViewModel?
     var communityViewModel: CommunityView.ViewModel {
         if _communityViewModel == nil { _communityViewModel = factory.makeCommunityViewModel() }
-        return _communityViewModel!
+        guard let vm = _communityViewModel else { fatalError("CommunityView.ViewModel 생성 실패") }
+        return vm
     }
 
     private var _mapViewModel: MapView.ViewModel?
     var mapViewModel: MapView.ViewModel {
         if _mapViewModel == nil { _mapViewModel = factory.makeMapViewModel() }
-        return _mapViewModel!
+        guard let vm = _mapViewModel else { fatalError("MapView.ViewModel 생성 실패") }
+        return vm
     }
 
     private var _myPageViewModel: MyPageView.ViewModel?
     var myPageViewModel: MyPageView.ViewModel {
         if _myPageViewModel == nil { _myPageViewModel = factory.makeMyPageViewModel() }
-        return _myPageViewModel!
+        guard let vm = _myPageViewModel else { fatalError("MyPageView.ViewModel 생성 실패") }
+        return vm
     }
 
     init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {

@@ -66,7 +66,7 @@ final class Analytics {
             listLikeCount: flow.listLikeCount,
             listCommentCount: flow.listCommentCount,
             detailTapTs: iso8601String(from: flow.detailTapTs),
-            detailLoadedTs: iso8601String(from: flow.detailLoadedTs!),
+            detailLoadedTs: iso8601String(from: flow.detailLoadedTs ?? Date()),
             loadDurationMs: flow.loadDurationMs(),
             imageLoaded: flow.imageLoaded
         )
@@ -151,7 +151,7 @@ final class Analytics {
             timestamp: iso8601String(from: Date()),
             isOwnRecord: flow.isOwnRecord,
             detailTapTs: iso8601String(from: flow.detailTapTs),
-            detailLoadedTs: flow.detailLoadedTs != nil ? iso8601String(from: flow.detailLoadedTs!) : nil,
+            detailLoadedTs: flow.detailLoadedTs.map { iso8601String(from: $0) },
             viewtoexitMs: flow.viewToExitMs(),
             exitReason: exitReason,
             hadInteraction: flow.hadInteraction,

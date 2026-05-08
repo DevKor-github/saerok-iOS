@@ -28,8 +28,8 @@ enum NoteBalloonRenderer {
         let shadowMargin: CGFloat = 9
         
         // 폰트
-        let nameFont = UIFont(name: "MoneygraphyTTF-Rounded", size: 15)!
-        let noteFont = UIFont(name: "PretendardVariable-Regular", size: 13)!
+        let nameFont = UIFont(name: "MoneygraphyTTF-Rounded", size: 15) ?? UIFont.systemFont(ofSize: 15, weight: .medium)
+        let noteFont = UIFont(name: "PretendardVariable-Regular", size: 13) ?? UIFont.systemFont(ofSize: 13)
         
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
@@ -121,7 +121,7 @@ enum NoteBalloonRenderer {
         noteLabel.drawHierarchy(in: notePosition, afterScreenUpdates: true)
         
         // 이미지 추출
-        let image = UIGraphicsGetImageFromCurrentImageContext()!
+        let image = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
         UIGraphicsEndImageContext()
         return image
     }

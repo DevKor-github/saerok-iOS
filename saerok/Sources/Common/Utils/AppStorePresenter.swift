@@ -32,7 +32,8 @@ final class AppVersionChecker {
         let lookupURL = "https://itunes.apple.com/lookup?bundleId=com.apu.saerok&country=kr"
         
         do {
-            let (data, _) = try await URLSession.shared.data(from: URL(string: lookupURL)!)
+            guard let url = URL(string: lookupURL) else { return }
+            let (data, _) = try await URLSession.shared.data(from: url)
             
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let results = json["results"] as? [[String: Any]],

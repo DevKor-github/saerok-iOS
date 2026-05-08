@@ -26,13 +26,52 @@ enum InlineNode {
 }
 
 enum NoticeHTMLParser {
-    static func parse(_ html: String) -> [RichNode] {
-        var result: [RichNode] = []
 
-        let blockRegex = try! NSRegularExpression(
+    // MARK: - Static Regex (한 번만 생성, 실패 시 패턴 오류이므로 fatalError)
+
+    private static let blockRegex: NSRegularExpression = {
+        guard let r = try? NSRegularExpression(
             pattern: "<(h1|h2|p|ul|ol)\\b[^>]*>(.*?)</\\1>|<br\\s*/?>",
             options: [.dotMatchesLineSeparators, .caseInsensitive]
-        )
+        ) else { fatalError("blockRegex 패턴 오류") }
+        return r
+    }()
+
+    private static let liRegex: NSRegularExpression = {
+        guard let r = try? NSRegularExpression(
+            pattern: "<li\\b[^>]*>(.*?)</li>",
+            options: [.dotMatchesLineSeparators, .caseInsensitive]
+        ) else { fatalError("liRegex 패턴 오류") }
+        return r
+    }()
+
+    private static let inlineRegex: NSRegularExpression = {
+        guard let r = try? NSRegularExpression(
+            pattern: "<(strong|em|u|a)\\b([^>]*)>(.*?)</\\1>|([^<]+)",
+            options: [.dotMatchesLineSeparators, .caseInsensitive]
+        ) else { fatalError("inlineRegex 패턴 오류") }
+        return r
+    }()
+
+    private static let hrefRegex: NSRegularExpression = {
+        guard let r = try? NSRegularExpression(pattern: "href=\"(.*?)\"", options: []) else {
+            fatalError("hrefRegex 패턴 오류")
+        }
+        return r
+    }()
+
+    private static let imgRegex: NSRegularExpression = {
+        guard let r = try? NSRegularExpression(
+            pattern: "<img\\b[^>]*src=\"(.*?)\"",
+            options: .caseInsensitive
+        ) else { fatalError("imgRegex 패턴 오류") }
+        return r
+    }()
+
+    // MARK: - Parse
+
+    static func parse(_ html: String) -> [RichNode] {
+        var result: [RichNode] = []
 
         let matches = blockRegex.matches(
             in: html,
@@ -84,12 +123,7 @@ enum NoticeHTMLParser {
     // MARK: - List
 
     private static func parseList(_ html: String) -> [[InlineNode]] {
-        let liRegex = try! NSRegularExpression(
-            pattern: "<li\\b[^>]*>(.*?)</li>",
-            options: [.dotMatchesLineSeparators, .caseInsensitive]
-        )
-
-        return liRegex.matches(
+        liRegex.matches(
             in: html,
             range: NSRange(html.startIndex..., in: html)
         ).map {
@@ -102,12 +136,7 @@ enum NoticeHTMLParser {
     private static func parseInline(_ html: String) -> [InlineNode] {
         var nodes: [InlineNode] = []
 
-        let regex = try! NSRegularExpression(
-            pattern: "<(strong|em|u|a)\\b([^>]*)>(.*?)</\\1>|([^<]+)",
-            options: [.dotMatchesLineSeparators, .caseInsensitive]
-        )
-
-        let matches = regex.matches(
+        let matches = inlineRegex.matches(
             in: html,
             range: NSRange(html.startIndex..., in: html)
         )
@@ -151,20 +180,16 @@ enum NoticeHTMLParser {
     // MARK: - Utils
 
     private static func extractHref(from attr: String) -> URL? {
-        let regex = try! NSRegularExpression(pattern: "href=\"(.*?)\"", options: [])
-        guard
-            let match = regex.firstMatch(in: attr, range: NSRange(attr.startIndex..., in: attr))
-        else { return nil }
-
+        guard let match = hrefRegex.firstMatch(in: attr, range: NSRange(attr.startIndex..., in: attr)) else {
+            return nil
+        }
         return URL(string: attr[match.range(at: 1)])
     }
 
     private static func extractImgSrc(from html: String) -> URL? {
-        let regex = try! NSRegularExpression(pattern: "<img\\b[^>]*src=\"(.*?)\"", options: .caseInsensitive)
-        guard
-            let match = regex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html))
-        else { return nil }
-
+        guard let match = imgRegex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)) else {
+            return nil
+        }
         return URL(string: html[match.range(at: 1)])
     }
 }
