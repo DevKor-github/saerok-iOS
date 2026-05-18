@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 import SwiftUI
 
 struct FreeBoardListView: View {
@@ -106,17 +107,27 @@ extension FreeBoardListView {
         private(set) var hasNext: Bool = true
         private(set) var didLoad: Bool = false
         private(set) var currentPage: Int = 1
+        private(set) var currentUser: AppState.UserProfile?
 
         private let interactor: CommunityInteractor
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let size: Int = 20
+        private let cancelBag = CancelBag()
 
-        var currentUserNickname: String { appState[\.currentUser]?.nickname ?? "" }
-        var currentUserProfileImageUrl: String? { appState[\.currentUser]?.imageURL }
+        var currentUserNickname: String { currentUser?.nickname ?? "" }
+        var currentUserProfileImageUrl: String? { currentUser?.imageURL }
 
-        init(interactor: CommunityInteractor, appState: Store<AppState>) {
+        init(interactor: CommunityInteractor, appStore: AppStore) {
             self.interactor = interactor
-            self.appState = appState
+            self.appStore = appStore
+            self.currentUser = appStore[\.currentUser]
+
+            appStore
+                .updates(for: \.currentUser)
+                .weakSink(on: self) { viewModel, user in
+                    viewModel.currentUser = user
+                }
+                .store(in: cancelBag)
         }
 
         func loadInitialIfNeeded() async {

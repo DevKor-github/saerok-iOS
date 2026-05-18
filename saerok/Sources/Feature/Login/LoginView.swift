@@ -24,7 +24,7 @@ struct LoginView: View {
     @Binding private var authStatus: AppState.AuthStatus
 
     var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
-        injected.appState.updates(for: \.authStatus)
+        injected.appStore.updates(for: \.authStatus)
     }
 
     init(authStatus: Binding<AppState.AuthStatus>) {
@@ -81,7 +81,7 @@ private extension LoginView {
                     style: .confirm,
                     action: {
                         showingAlert = false
-                        injected.appState[\.authStatus] = .guest
+                        injected.appStore.send(.enterGuestMode)
                     }
                 )
             )

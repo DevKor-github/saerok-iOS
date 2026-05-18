@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 extension CommunityPostDetailView {
     @Observable
@@ -25,15 +26,35 @@ extension CommunityPostDetailView {
 
         let postId: Int
         private let interactor: CommunityInteractor
-        private let appState: Store<AppState>
+        private let appStore: AppStore
+        private(set) var currentUser: AppState.UserProfile?
+        private(set) var isGuest: Bool
+        private let cancelBag = CancelBag()
 
-        var currentUserNickname: String { appState[\.currentUser]?.nickname ?? "" }
-        var isGuest: Bool { appState[\.authStatus] == .guest }
+        var currentUserNickname: String { currentUser?.nickname ?? "" }
 
-        init(postId: Int, interactor: CommunityInteractor, appState: Store<AppState>) {
+        init(postId: Int, interactor: CommunityInteractor, appStore: AppStore) {
             self.postId = postId
             self.interactor = interactor
-            self.appState = appState
+            self.appStore = appStore
+            self.currentUser = appStore[\.currentUser]
+            self.isGuest = appStore[\.authStatus] == .guest
+
+            cancelBag.collect {
+                appStore
+                    .updates(for: \.currentUser)
+                    .weakSink(on: self) { viewModel, user in
+                        viewModel.currentUser = user
+                    }
+
+                appStore
+                    .updates(for: \.authStatus)
+                    .map { $0 == .guest }
+                    .removeDuplicates()
+                    .weakSink(on: self) { viewModel, isGuest in
+                        viewModel.isGuest = isGuest
+                    }
+            }
         }
 
         func load() async {

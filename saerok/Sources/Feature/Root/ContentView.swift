@@ -17,7 +17,7 @@ struct ContentView: View {
         
     var body: some View {
         content
-            .onReceive(injected.appState.updates(for: \.routing.contentView.tabSelection)) {
+            .onReceive(injected.appStore.updates(for: \.routing.contentView.tabSelection)) {
                 selectedTab = $0
             }
             .onAppear(perform: configureNavigationBar)

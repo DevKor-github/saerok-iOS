@@ -12,30 +12,30 @@ import KakaoSDKUser
 extension AccountView {
     @Observable
     final class ViewModel {
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let interactor: UserInteractor
         private let tokenManager: TokenManager
 
         private(set) var user: AppState.UserProfile?
 
-        init(appState: Store<AppState>, interactor: UserInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, interactor: UserInteractor) {
+            self.appStore = appStore
             self.interactor = interactor
             self.tokenManager = .shared
-            self.user = appState[\.currentUser]
+            self.user = appStore[\.currentUser]
         }
 
         func logout() async throws {
             await tokenManager.clearTokens()
             try await interactor.deleteUser()
             Task { @MainActor in
-                appState[\.authStatus] = .notDetermined
+                appStore.send(.requireAuthentication)
             }
         }
 
         func deleteAccount() async throws {
             try await interactor.deleteAccount()
-            appState[\.authStatus] = .notDetermined
+            appStore.send(.requireAuthentication)
         }
     }
 }

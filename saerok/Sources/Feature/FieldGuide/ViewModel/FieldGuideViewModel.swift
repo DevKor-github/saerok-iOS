@@ -32,36 +32,47 @@ extension FieldGuideView {
         var output: Output?
         
         // MARK: Dependencies
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private var interactor: FieldGuideInteractor
-        private var isGuest: Bool { appState[\.authStatus] == .guest }
+        private(set) var isGuest: Bool
         
         private let cancelBag: CancelBag
         
-        init(appState: Store<AppState>, interactor: FieldGuideInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, interactor: FieldGuideInteractor) {
+            self.appStore = appStore
             self.interactor = interactor
             self.cancelBag = .init()
+            self.isGuest = appStore[\.authStatus] == .guest
             binding()
         }
         
         private func binding() {
             cancelBag.collect {
-                appState
-                    .updates(for: \.routing.fieldGuideView.birdName)
-                    .weakSink(on: self) { viewModel, name in
-                        guard let name,
+                appStore.events
+                    .weakSink(on: self) { viewModel, event in
+                        guard case .fieldGuideBirdRequested(let name) = event,
+                              !name.isEmpty,
                               let bird = viewModel.fieldGuide.first(where: { $0.name == name })
                         else { return }
-                        
+
                         viewModel.output = .showBirdDetail(bird)
                     }
                 
-                appState
-                    .updates(for: \.routing.fieldGuideView.scrollToTop)
-                    .compactMap { $0 }
+                appStore.events
+                    .filter {
+                        if case .fieldGuideScrollToTop = $0 { return true }
+                        return false
+                    }
                     .weakSink(on: self) { viewModel, _ in
                         viewModel.output = .scrollToTop(UUID())
+                    }
+
+                appStore
+                    .updates(for: \.authStatus)
+                    .map { $0 == .guest }
+                    .removeDuplicates()
+                    .weakSink(on: self) { viewModel, isGuest in
+                        viewModel.isGuest = isGuest
                     }
             }
         }
@@ -81,7 +92,7 @@ extension FieldGuideView {
                 }
             }
             
-            if appState[\.authStatus] != .guest {
+            if !isGuest {
                 Task {
                     try? await interactor.refreshBookmarks()
                 }
@@ -97,7 +108,7 @@ extension FieldGuideView {
         }
         
         func navigateToLoginView() {
-            appState[\.authStatus] = .notDetermined
+            appStore.send(.requireAuthentication)
         }
     }
 }

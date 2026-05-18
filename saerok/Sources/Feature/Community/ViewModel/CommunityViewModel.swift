@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 extension CommunityView {
     @Observable
@@ -21,28 +22,40 @@ extension CommunityView {
         var mode: SearchInputBar.Mode = .idle
         var isModeIdle: Bool { mode == .idle }
         private(set) var isGuestMode: Bool = true
+        private(set) var currentUser: AppState.UserProfile?
 
         // MARK: Dependencies
-        private var appState: Store<AppState>
+        private var appStore: AppStore
         private let interactor: CommunityInteractor
 
         private var searchDebounceTask: Task<Void, Never>?
         private var cancelBag: CancelBag
 
-        init(appState: Store<AppState>, interactor: CommunityInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, interactor: CommunityInteractor) {
+            self.appStore = appStore
             self.interactor = interactor
             self.cancelBag = .init()
+            self.isGuestMode = appStore[\.authStatus] == .guest
+            self.currentUser = appStore[\.currentUser]
             cancelBag.collect {
-                appState
-                    .weakSink(on: self) { viewModel, state in
-                        viewModel.isGuestMode = state.authStatus == .guest
+                appStore
+                    .updates(for: \.authStatus)
+                    .map { $0 == .guest }
+                    .removeDuplicates()
+                    .weakSink(on: self) { viewModel, isGuest in
+                        viewModel.isGuestMode = isGuest
                     }
-            }            
+
+                appStore
+                    .updates(for: \.currentUser)
+                    .weakSink(on: self) { viewModel, user in
+                        viewModel.currentUser = user
+                    }
+            }
         }
         
-        var currentUserNickname: String { appState[\.currentUser]?.nickname ?? "" }
-        var currentUserProfileImageUrl: String? { appState[\.currentUser]?.imageURL }
+        var currentUserNickname: String { currentUser?.nickname ?? "" }
+        var currentUserProfileImageUrl: String? { currentUser?.imageURL }
 
         func createFreeboardPost(content: String) async {
             do {
@@ -87,7 +100,7 @@ extension CommunityView {
         }
         
         func initLoginStatus() {
-            appState[\.authStatus] = .notDetermined
+            appStore.send(.requireAuthentication)
         }
         
         private func performSearch(_ text: String, for searchCase: CommunitySearchCase) async {

@@ -63,7 +63,7 @@ struct CollectionEmptyStateView: View {
 
     private var loginButton: some View {
         Button {
-            injected.appState[\.authStatus] = .notDetermined
+            injected.appStore.send(.requireAuthentication)
         } label: {
             HStack(spacing: 8) {
                     Image.SRIconSet.login

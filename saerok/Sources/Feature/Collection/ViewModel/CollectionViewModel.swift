@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 extension CollectionView {
     struct Routing: Equatable {
@@ -30,40 +31,55 @@ extension CollectionView {
         let birdQuote: String = BirdQuote.random()
         
         // MARK: Dependencies
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let collectionInteractor: CollectionInteractor
         private let userInteractor: UserInteractor
         
-        var isGuestMode: Bool { appState[\.authStatus] == .guest }
+        private(set) var isGuestMode: Bool
         
         @ObservationIgnored private let cancelBag: CancelBag
         
-        init(appState: Store<AppState>, collectionInteractor: CollectionInteractor, userInteractor: UserInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, collectionInteractor: CollectionInteractor, userInteractor: UserInteractor) {
+            self.appStore = appStore
             self.collectionInteractor = collectionInteractor
             self.userInteractor = userInteractor
             self.cancelBag = .init()
+            self.isGuestMode = appStore[\.authStatus] == .guest
             
             cancelBag.collect {
-                appState
-                    .updates(for: \.routing.collectionView.scrollToTop)
-                    .compactMap { $0 }
+                appStore.events
+                    .filter {
+                        if case .collectionScrollToTop = $0 { return true }
+                        return false
+                    }
                     .weakSink(on: self) { viewModel, _ in
                         viewModel.output = .scrollToTop(UUID())
                     }
                 
-                appState
-                    .updates(for: \.routing.collectionView.collectionID)
-                    .compactMap { $0 }
+                appStore.events
+                    .compactMap {
+                        guard case .collectionDetailRequested(let id) = $0 else { return nil }
+                        return id
+                    }
                     .weakSink(on: self) { viewModel, id in
                         viewModel.output = .navigateToDetail(id: id)
                     }
                 
-                appState
-                    .updates(for: \.routing.collectionView.refreshCollections)
-                    .dropFirst()
+                appStore.events
+                    .filter {
+                        if case .collectionsRefreshRequested = $0 { return true }
+                        return false
+                    }
                     .weakSink(on: self) { viewModel, _ in
                         Task { await viewModel.refresh() }
+                    }
+
+                appStore
+                    .updates(for: \.authStatus)
+                    .map { $0 == .guest }
+                    .removeDuplicates()
+                    .weakSink(on: self) { viewModel, isGuest in
+                        viewModel.isGuestMode = isGuest
                     }
             }
         }
@@ -96,7 +112,7 @@ extension CollectionView {
         }
         
         func changeStatusToLogout() {
-            appState[\.authStatus] = .notDetermined
+            appStore.send(.requireAuthentication)
         }
         
         func resetOutput() {
@@ -104,4 +120,3 @@ extension CollectionView {
         }
     }
 }
-

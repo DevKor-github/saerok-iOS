@@ -5,7 +5,7 @@
 //  Created by HanSeung on 5/20/25.
 //
 
-
+import Combine
 import SwiftData
 import SwiftUI
 import KakaoSDKUser
@@ -33,42 +33,57 @@ extension MyPageView {
         var output: Output?
 
         // MARK: Dependencies
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let interactor: UserInteractor
-        var isGuest: Bool { appState[\.authStatus] == .guest }
+        private(set) var isGuest: Bool
 
         private let cancelBag: CancelBag
 
-        init(appState: Store<AppState>, interactor: UserInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, interactor: UserInteractor) {
+            self.appStore = appStore
             self.interactor = interactor
             self.cancelBag = .init()
+            self.user = appStore[\.currentUser]
+            self.isGuest = appStore[\.authStatus] == .guest
 
-            appState
-                .updates(for: \.routing.myPageView.boardDetailId)
-                .compactMap { $0 }
+            appStore.events
+                .compactMap {
+                    guard case .boardDetailRequested(let id) = $0 else { return nil }
+                    return id
+                }
                 .weakSink(on: self) { viewModel, id in
                     viewModel.output = .navigateToBoardDetail(id)
                 }
                 .store(in: cancelBag)
 
-            appState
+            appStore
                 .updates(for: \.currentUser)
                 .weakSink(on: self) { viewModel, profile in
                     viewModel.user = profile
                 }
                 .store(in: cancelBag)
+
+            appStore
+                .updates(for: \.authStatus)
+                .map { $0 == .guest }
+                .removeDuplicates()
+                .weakSink(on: self) { viewModel, isGuest in
+                    viewModel.isGuest = isGuest
+                }
+                .store(in: cancelBag)
         }
         
         func changeStatusToLogout() {
-            appState[\.authStatus] = .notDetermined
+            appStore.send(.requireAuthentication)
         }
         
         func syncUser() {
             Task {
-                if !isGuest, user != nil { return }
+                guard !isGuest, user == nil else { return }
                 guard let me = try? await interactor.getUser() else { return }
-                appState[\.currentUser] = .init(me)
+                await MainActor.run {
+                    appStore.send(.syncCurrentUser(.init(me)))
+                }
             }
         }
         

@@ -34,7 +34,7 @@ extension EnrollView {
 
         private func startButtonTapped() {
             withAnimation(.easeInOut(duration: 2.0)) {
-                injected.appState[\.authStatus] = .signedIn(isRegistered: true)
+                injected.appStore.send(.finishSignIn(isRegistered: true))
             }
         }
     }

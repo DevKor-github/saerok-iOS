@@ -20,7 +20,7 @@ struct RootSelectorView: View {
     @State private var versionChecker = AppVersionChecker()
 
     private var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
-        injected.appState.updates(for: \.authStatus)
+        injected.appStore.updates(for: \.authStatus)
     }
     
     var body: some View {
@@ -45,7 +45,7 @@ struct RootSelectorView: View {
                         let status = try await TokenManager.shared.tryAutoLogin()
                         await applyAuthStatus(status)
                     } catch {
-                        injected.appState[\.authStatus] = .notDetermined
+                        injected.appStore.send(.requireAuthentication)
                     }
                 }
             }
@@ -64,7 +64,7 @@ struct RootSelectorView: View {
 private extension RootSelectorView {
     func loadCurrentUser() async throws {
         let user = try await injected.interactors.user.getUser()
-        injected.appState[\.currentUser] = .init(user)
+        injected.appStore.send(.syncCurrentUser(.init(user)))
     }
 
     func applyAuthStatus(_ status: AppState.AuthStatus) async {
@@ -73,20 +73,20 @@ private extension RootSelectorView {
             if isRegistered {
                 do {
                     try await loadCurrentUser()
-                    injected.appState[\.authStatus] = status
+                    injected.appStore.send(.finishSignIn(isRegistered: isRegistered))
                 } catch UserInteractorError.invalidUser {
                     try? await injected.interactors.user.deleteUser()
                     await TokenManager.shared.clearTokens()
-                    injected.appState[\.authStatus] = .notDetermined
+                    injected.appStore.send(.requireAuthentication)
                 } catch {
-                    injected.appState[\.authStatus] = status
+                    injected.appStore.send(.restoreSession(status))
                 }
             } else {
                 try? await injected.interactors.user.deleteUser()
-                injected.appState[\.authStatus] = status
+                injected.appStore.send(.restoreSession(status))
             }
         default:
-            injected.appState[\.authStatus] = status
+            injected.appStore.send(.restoreSession(status))
         }
     }
 }
@@ -101,7 +101,7 @@ private extension RootSelectorView {
                             let status = try await TokenManager.shared.tryAutoLogin()
                             await applyAuthStatus(status)
                         } catch {
-                            injected.appState[\.authStatus] = .notDetermined
+                            injected.appStore.send(.requireAuthentication)
                         }
                         showSplash = false
                     }

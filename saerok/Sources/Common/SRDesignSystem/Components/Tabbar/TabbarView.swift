@@ -28,14 +28,14 @@ struct TabbarView: View {
                 Button {
                     let selectedBefore = self.selectedTab
                     
-                    injected.appState[\.routing.contentView.tabSelection] = item
+                    injected.appStore.send(.selectTab(item))
                     HapticManager.shared.trigger(.light)
                     
                     if selectedBefore == item {
                         if item == .fieldGuide {
-                            injected.appState[\.routing.fieldGuideView.scrollToTop] = UUID()
+                            injected.appStore.send(.requestFieldGuideScrollToTop)
                         } else if item == .collection {
-                            injected.appState[\.routing.collectionView.scrollToTop] = UUID()
+                            injected.appStore.send(.requestCollectionScrollToTop)
                         }
                     }
                 } label: {

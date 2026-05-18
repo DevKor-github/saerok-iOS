@@ -48,7 +48,7 @@ struct EnrollView: View {
     }
     
     private func handleBackButton() {
-        injected.appState[\.authStatus] = .notDetermined
+        injected.appStore.send(.requireAuthentication)
     }
 }
 

@@ -75,7 +75,7 @@ private extension KakaoLoginView {
                 user.email = kakaoInfo.email
                 user.provider = .kakao
 
-                injected.appState[\.authStatus] = .signedIn(isRegistered: response.signupStatus == .completed)
+                injected.appStore.send(.finishSignIn(isRegistered: response.signupStatus == .completed))
             }
         } catch { }
     }

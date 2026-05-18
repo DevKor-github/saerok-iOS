@@ -206,7 +206,6 @@ private extension FindPlaceView {
     }
 
     func submitButtonTapped() {
-        injected.appState[\.routing.addCollectionItemView.locationSelected] = true
         showingSheet = false
         coordinator.pop()
     }

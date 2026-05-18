@@ -7,6 +7,7 @@
 
 
 import Foundation
+import Combine
 import SwiftData
 import SwiftUI
 
@@ -14,13 +15,24 @@ import SwiftUI
 extension FieldGuideSearchView {
     @Observable
     final class ViewModel {
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let interactor: FieldGuideInteractor
-        var isGuest: Bool {appState[\.authStatus] == .guest }
+        private(set) var isGuest: Bool
+        private let cancelBag = CancelBag()
 
-        init(appState: Store<AppState>, interactor: FieldGuideInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, interactor: FieldGuideInteractor) {
+            self.appStore = appStore
             self.interactor = interactor
+            self.isGuest = appStore[\.authStatus] == .guest
+
+            appStore
+                .updates(for: \.authStatus)
+                .map { $0 == .guest }
+                .removeDuplicates()
+                .weakSink(on: self) { viewModel, isGuest in
+                    viewModel.isGuest = isGuest
+                }
+                .store(in: cancelBag)
         }
 
         func toggleBookmark(birdId: Int) async throws -> Bool {

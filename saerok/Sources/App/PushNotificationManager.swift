@@ -117,17 +117,15 @@ extension PushNotificationManager: @MainActor UNUserNotificationCenterDelegate {
     }
     
     private func handleDeepLink(for type: Local.NotificationType, _ id: Int) {
-        guard let appState = injected?.appState else { return }
-        
-        appState.bulkUpdate {
-            switch type {
-            case .system:
-                $0.routing.contentView.tabSelection = .profile
-                $0.routing.myPageView.boardDetailId = id
-            default:
-                $0.routing.contentView.tabSelection = .collection
-                $0.routing.collectionView.collectionID = id
-            }
+        guard let appStore = injected?.appStore else { return }
+
+        switch type {
+        case .system:
+            appStore.send(.selectTab(.profile))
+            appStore.send(.openBoardDetail(id))
+        default:
+            appStore.send(.selectTab(.collection))
+            appStore.send(.openCollectionDetail(id))
         }
     }
     

@@ -11,7 +11,7 @@ import SwiftUI
 extension EditProfileView {
     @Observable
     final class ViewModel {
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let interactor: UserInteractor
         private(set) var user: AppState.UserProfile?
         var nicknameStatus: NicknameStatus = .empty
@@ -33,10 +33,10 @@ extension EditProfileView {
             return (hasImageChange || hasValidNickname) && !nicknameIsBlocking
         }
 
-        init(appState: Store<AppState>, interactor: UserInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, interactor: UserInteractor) {
+            self.appStore = appStore
             self.interactor = interactor
-            self.user = appState[\.currentUser]
+            self.user = appStore[\.currentUser]
         }
 
         func checkNicknameAvailability() async {
@@ -55,7 +55,7 @@ extension EditProfileView {
                 try await interactor.updateNickname(nickname)
                 let fetched = try await interactor.getUser()
                 let profile = AppState.UserProfile(fetched)
-                appState[\.currentUser] = profile
+                appStore.send(.syncCurrentUser(profile))
                 self.user = profile
             } catch {
                 nicknameStatus = .invalid("닉네임 변경에 실패했어요.")
@@ -83,7 +83,7 @@ extension EditProfileView {
             let _ = try await interactor.updateProfileImage(originalData)
             let fetched = try await interactor.getUser()
             let profile = AppState.UserProfile(fetched)
-            appState[\.currentUser] = profile
+            appStore.send(.syncCurrentUser(profile))
             self.user = profile
         }
 
@@ -91,7 +91,7 @@ extension EditProfileView {
             try await interactor.deleteProfileImage()
             let fetched = try await interactor.getUser()
             let profile = AppState.UserProfile(fetched)
-            appState[\.currentUser] = profile
+            appStore.send(.syncCurrentUser(profile))
             self.user = profile
         }
     }

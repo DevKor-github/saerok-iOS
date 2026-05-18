@@ -10,19 +10,19 @@ import SwiftData
 import SwiftUI
 
 struct DIContainer {
-    let appState: Store<AppState>
+    let appStore: AppStore
     let interactors: Interactors
     let networkService: SRNetworkService
 
-    init(appState: Store<AppState> = .init(AppState()), interactors: Interactors, networkService: SRNetworkService) {
-        self.appState = appState
+    init(appStore: AppStore = .init(), interactors: Interactors, networkService: SRNetworkService) {
+        self.appStore = appStore
         self.interactors = interactors
         self.networkService = networkService
     }
 
     init(appState: AppState, interactors: Interactors, networkSevice: SRNetworkService) {
         self.init(
-            appState: Store<AppState>(appState),
+            appStore: AppStore(appState),
             interactors: interactors,
             networkService: networkSevice
         )
@@ -62,9 +62,9 @@ extension EnvironmentValues {
     ///
     /// 뷰 계층 어디서든 `@Environment(\.injected)`를 통해 DIContainer에 접근할 수 있게 됩니다.
     @Entry var injected: DIContainer =
-        .init(appState: AppState(),
+        .init(appStore: AppStore(AppState()),
               interactors: .stub,
-              networkSevice: SRNetworkServiceImpl()
+              networkService: SRNetworkServiceImpl()
         )
 }
 

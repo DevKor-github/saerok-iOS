@@ -16,11 +16,6 @@ struct AppState: Equatable {
 extension AppState {
     struct ViewRouting: Equatable {
         var contentView = ContentView.Routing(tabSelection: SRConstant.mainTab)
-        var fieldGuideView = FieldGuideView.Routing()
-        var collectionView = CollectionView.Routing()
-        var addCollectionItemView = CollectionFormView.Routing()
-        var mapView = MapView.Routing()
-        var myPageView = MyPageView.Routing()
     }
 }
 

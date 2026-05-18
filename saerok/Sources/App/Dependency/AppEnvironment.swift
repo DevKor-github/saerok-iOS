@@ -18,12 +18,12 @@ struct AppEnvironment {
     static func bootstrap() -> AppEnvironment {
         resetStoreOnceIfNeeded()
 
-        let appState = Store<AppState>(AppState())
+        let appStore = AppStore(AppState())
         let modelContainer = configuredModelContainer()
         let networkService = SRNetworkServiceImpl()
         let mainRepository = configuredRepositories(modelContainer: modelContainer, networkService: networkService)
         let interactors = configuredInteractors(repositories: mainRepository)
-        let diContainer = DIContainer(appState: appState, interactors: interactors, networkService: networkService)
+        let diContainer = DIContainer(appStore: appStore, interactors: interactors, networkService: networkService)
         Task { try? await interactors.fieldGuide.refreshFieldGuide() }
         
         return AppEnvironment(modelContainer: modelContainer, diContainer: diContainer)

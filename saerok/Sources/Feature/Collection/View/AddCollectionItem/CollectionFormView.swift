@@ -14,13 +14,6 @@ enum CollectionFormRoute: AppRoute {
 }
 
 extension CollectionFormView {
-    struct Routing: Equatable {
-        var selectedBird: Local.Bird?
-        var locationSelected: Bool = false
-    }
-}
-
-extension CollectionFormView {
     @Observable
     final class ViewModel {
         let mode: CollectionFormMode
@@ -36,7 +29,7 @@ extension CollectionFormView {
         var isBirdChangedToNil: Bool { hadInitialBird && collectionDraft.bird == nil }
 
         // MARK: Dependencies
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let fieldguideInteractor: FieldGuideInteractor
         private let collectionInteractor: CollectionInteractor
 
@@ -49,13 +42,13 @@ extension CollectionFormView {
         }
 
         init(
-            appState: Store<AppState>,
+            appStore: AppStore,
             fieldguideInteractor: FieldGuideInteractor,
             collectionInteractor: CollectionInteractor,
             mode: CollectionFormMode,
             bird: Local.Bird?
         ) {
-            self.appState = appState
+            self.appStore = appStore
             self.fieldguideInteractor = fieldguideInteractor
             self.collectionInteractor = collectionInteractor
             self.cancelBag = .init()
@@ -83,16 +76,14 @@ extension CollectionFormView {
             collectionDraft.bird = nil
         }
 
-        func initializeCollecionAdd() {
-            appState[\.routing.addCollectionItemView] = .init()
-        }
+        func initializeCollecionAdd() { }
 
         func loadBirdDetail(birdId: Int) async {
             collectionDraft.bird = try? await fieldguideInteractor.loadBirdDetails(birdID: birdId)
         }
 
         func refreshCollectionList() {
-            appState[\.routing.collectionView.refreshCollections] = UUID()
+            appStore.send(.refreshCollections)
         }
 
         func performSubmit() async {

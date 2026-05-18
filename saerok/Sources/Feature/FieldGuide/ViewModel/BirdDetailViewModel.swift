@@ -14,19 +14,19 @@ extension BirdDetailView {
         var bird: Local.Bird?
         
         // MARK: Dependencies
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let interactor: FieldGuideInteractor
-        var isGuest: Bool { appState[\.authStatus] == .guest }
+        var isGuest: Bool { appStore[\.authStatus] == .guest }
         
         init(
             birdID: Int? = nil,
             bird: Local.Bird? = nil,
-            appState: Store<AppState>,
+            appStore: AppStore,
             interactor: FieldGuideInteractor
         ) {
             self.birdID = birdID
             self.bird = bird
-            self.appState = appState
+            self.appStore = appStore
             self.interactor = interactor
         }
         
@@ -51,7 +51,7 @@ extension BirdDetailView {
         }
 
         func changeStatusToLogout() {
-            appState[\.authStatus] = .notDetermined
+            appStore.send(.requireAuthentication)
         }
     }
 }

@@ -84,7 +84,7 @@ private extension AppleLoginView {
                 user.email = email ?? "Unknown"
                 user.provider = .apple
                 
-                injected.appState[\.authStatus] = .signedIn(isRegistered: response.signupStatus == .completed)
+                injected.appStore.send(.finishSignIn(isRegistered: response.signupStatus == .completed))
             }
         } catch { }
     }

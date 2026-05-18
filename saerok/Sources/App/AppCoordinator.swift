@@ -59,7 +59,7 @@ final class AppCoordinator: ObservableObject {
         self.factory = ViewModelFactory(container: container)
         self.path = navigationPath
 
-        container.appState
+        container.appStore
             .updates(for: \.authStatus)
             .filter { $0 == .notDetermined }
             .sink { [weak self] _ in self?.reset() }
@@ -89,6 +89,5 @@ final class AppCoordinator: ObservableObject {
         _mapViewModel = nil
         _myPageViewModel = nil
         path = .init()
-        container.appState[\.currentUser] = nil
     }
 }

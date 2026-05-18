@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 extension CollectionDetailView {
     @Observable
@@ -23,32 +24,34 @@ extension CollectionDetailView {
         var newSuggesting: Local.Bird?
         var selectedPreview: Local.BirdSuggestion?
         var selectedAdopting: Local.BirdSuggestion?
-        var isGuest: Bool { appState[\.authStatus] == .guest }
+        private(set) var isGuest: Bool
         
         // MARK: Analytics
         private(set) var detailFlow: DetailViewFlow?
         
         // MARK: Dependencies
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let collectionInteractor: CollectionInteractor
         private let fieldGuideInteractor: FieldGuideInteractor
         private let userInteractor: UserInteractor
+        private let cancelBag = CancelBag()
 
         // MARK: Init
         init(
             collectionID: Int,
             entrySource: EntrySource = .unknown,
             screen: Screen = .unknown,
-            appState: Store<AppState>,
+            appStore: AppStore,
             collectionInteractor: CollectionInteractor,
             fieldGuideInteractor: FieldGuideInteractor,
             userInteractor: UserInteractor
         ) {
             self.collectionID = collectionID
-            self.appState = appState
+            self.appStore = appStore
             self.collectionInteractor = collectionInteractor
             self.fieldGuideInteractor = fieldGuideInteractor
             self.userInteractor = userInteractor
+            self.isGuest = appStore[\.authStatus] == .guest
             
             // DetailViewFlow는 collection 데이터 로드 후 초기화
             self.detailFlow = DetailViewFlow(
@@ -59,6 +62,15 @@ extension CollectionDetailView {
                 listLikeCount: 0,
                 listCommentCount: 0
             )
+
+            appStore
+                .updates(for: \.authStatus)
+                .map { $0 == .guest }
+                .removeDuplicates()
+                .weakSink(on: self) { viewModel, isGuest in
+                    viewModel.isGuest = isGuest
+                }
+                .store(in: cancelBag)
         }
     
 
@@ -224,17 +236,17 @@ extension CollectionDetailView {
         
         func navigateToMap() {
             guard let collection else { return }
-            appState[\.routing.contentView.tabSelection] = .map
-            appState[\.routing.mapView.navigation] = .init(
+            appStore.send(.selectTab(.map))
+            appStore.send(.openMapCoordinate(.init(
                 latitude: collection.coordinate.latitude,
                 longitude: collection.coordinate.longitude
-            )
+            )))
         }
         
         func navigateToFieldGuide() {
-            guard let collection else { return }
-            appState[\.routing.contentView.tabSelection] = .fieldGuide
-            appState[\.routing.fieldGuideView.birdName] = collection.birdName
+            guard let birdName = collection?.birdName else { return }
+            appStore.send(.selectTab(.fieldGuide))
+            appStore.send(.openFieldGuideBird(name: birdName))
         }
         
         func refreshLikers() async throws {

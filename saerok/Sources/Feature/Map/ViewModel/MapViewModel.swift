@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 enum MapError: LocalizedError {
     case locationUnavailable
@@ -33,8 +34,8 @@ extension MapView {
         
         private let locationManager: LocationManager
         private let mapInteractor: MapInteractor
-        private let appState: Store<AppState>
-        var isGuest: Bool { appState[\.authStatus] == .guest }
+        private let appStore: AppStore
+        private(set) var isGuest: Bool
 
         let mapController: MapController
 
@@ -59,18 +60,30 @@ extension MapView {
         init(
             locationManager: LocationManager = .shared,
             mapInteractor: MapInteractor,
-            appState: Store<AppState>
+            appStore: AppStore
         ) {
             self.locationManager = locationManager
             self.mapInteractor = mapInteractor
-            self.appState = appState
+            self.appStore = appStore
             self.mapController = .init(locationManager: locationManager)
+            self.isGuest = appStore[\.authStatus] == .guest
             
-            appState
-                .updates(for: \.routing.mapView.navigation)
-                .compactMap { $0 }
+            appStore.events
+                .compactMap {
+                    guard case .mapNavigationRequested(let coord) = $0 else { return nil }
+                    return coord
+                }
                 .weakSink(on: self) { viewModel, coord in
                     viewModel.output = .navigateTo(coord: coord)
+                }
+                .store(in: cancelBag)
+
+            appStore
+                .updates(for: \.authStatus)
+                .map { $0 == .guest }
+                .removeDuplicates()
+                .weakSink(on: self) { viewModel, isGuest in
+                    viewModel.isGuest = isGuest
                 }
                 .store(in: cancelBag)
         }
@@ -89,7 +102,6 @@ extension MapView {
                 try? await Task.sleep(for: .seconds(0.3))
                 try? await fetchPosition(update.latitude, update.longitude)
                 isNavigating = false
-                appState[\.routing.mapView.navigation] = nil
             }
         }
 

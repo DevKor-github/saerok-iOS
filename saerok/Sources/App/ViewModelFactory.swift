@@ -18,7 +18,7 @@ struct ViewModelFactory {
 extension ViewModelFactory {
     func makeCollectionViewModel() -> CollectionView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             collectionInteractor: container.interactors.collection,
             userInteractor: container.interactors.user
         )
@@ -33,7 +33,7 @@ extension ViewModelFactory {
             collectionID: id,
             entrySource: entrySource,
             screen: screen,
-            appState: container.appState,
+            appStore: container.appStore,
             collectionInteractor: container.interactors.collection,
             fieldGuideInteractor: container.interactors.fieldGuide,
             userInteractor: container.interactors.user
@@ -45,7 +45,7 @@ extension ViewModelFactory {
         bird: Local.Bird? = nil
     ) -> CollectionFormView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             fieldguideInteractor: container.interactors.fieldGuide,
             collectionInteractor: container.interactors.collection,
             mode: mode,
@@ -65,14 +65,14 @@ extension ViewModelFactory {
 extension ViewModelFactory {
     func makeFieldGuideViewModel() -> FieldGuideView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.fieldGuide
         )
     }
 
     func makeFieldGuideSearchViewModel() -> FieldGuideSearchView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.fieldGuide
         )
     }
@@ -84,7 +84,7 @@ extension ViewModelFactory {
         .init(
             birdID: birdID,
             bird: bird,
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.fieldGuide
         )
     }
@@ -94,7 +94,7 @@ extension ViewModelFactory {
 extension ViewModelFactory {
     func makeCommunityViewModel() -> CommunityView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.community
         )
     }
@@ -110,14 +110,14 @@ extension ViewModelFactory {
         .init(
             postId: postId,
             interactor: container.interactors.community,
-            appState: container.appState
+            appStore: container.appStore
         )
     }
 
     func makeFreeBoardListViewModel() -> FreeBoardListView.ViewModel {
         .init(
             interactor: container.interactors.community,
-            appState: container.appState
+            appStore: container.appStore
         )
     }
 }
@@ -127,7 +127,7 @@ extension ViewModelFactory {
     func makeMapViewModel() -> MapView.ViewModel {
         .init(
             mapInteractor: container.interactors.map,
-            appState: container.appState
+            appStore: container.appStore
         )
     }
 }
@@ -136,21 +136,21 @@ extension ViewModelFactory {
 extension ViewModelFactory {
     func makeMyPageViewModel() -> MyPageView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.user
         )
     }
 
     func makeAccountViewModel() -> AccountView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.user
         )
     }
 
     func makeEditProfileViewModel() -> EditProfileView.ViewModel {
         .init(
-            appState: container.appState,
+            appStore: container.appStore,
             interactor: container.interactors.user
         )
     }
