@@ -13,6 +13,7 @@ import KakaoSDKAuth
 
 struct KakaoLoginView: View {
     @Binding var user: User
+    let onSignIn: (Bool) -> Void
     @Environment(\.injected) private var injected: DIContainer
     
     var body: some View {
@@ -75,7 +76,7 @@ private extension KakaoLoginView {
                 user.email = kakaoInfo.email
                 user.provider = .kakao
 
-                injected.appStore.send(.finishSignIn(isRegistered: response.signupStatus == .completed))
+                onSignIn(response.signupStatus == .completed)
             }
         } catch { }
     }

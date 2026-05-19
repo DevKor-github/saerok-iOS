@@ -12,6 +12,7 @@ struct AppleLoginView: View {
     @Environment(\.injected) private var injected: DIContainer
 
     @Binding var user: User
+    let onSignIn: (Bool) -> Void
 
     var body: some View {
         signInButton
@@ -84,7 +85,7 @@ private extension AppleLoginView {
                 user.email = email ?? "Unknown"
                 user.provider = .apple
                 
-                injected.appStore.send(.finishSignIn(isRegistered: response.signupStatus == .completed))
+                onSignIn(response.signupStatus == .completed)
             }
         } catch { }
     }

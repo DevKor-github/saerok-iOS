@@ -10,9 +10,9 @@ import SwiftUI
 import SwiftData
 
 struct EnrollView: View {
-    @Environment(\.injected) private var injected: DIContainer
     @Binding var user: User
     let onEnrollmentComplete: () -> Void
+    let onBack: () -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -48,7 +48,7 @@ struct EnrollView: View {
     }
     
     private func handleBackButton() {
-        injected.appStore.send(.requireAuthentication)
+        onBack()
     }
 }
 

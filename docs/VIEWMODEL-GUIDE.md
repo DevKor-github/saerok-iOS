@@ -16,14 +16,14 @@ extension CollectionView {
         @ObservationIgnored private let cancelBag: CancelBag
 
         // 3. 주입받는 의존성
-        private let appState: Store<AppState>
+        private let appStore: AppStore
         private let collectionInteractor: CollectionInteractor
 
-        init(appState: Store<AppState>, collectionInteractor: CollectionInteractor) {
-            self.appState = appState
+        init(appStore: AppStore, collectionInteractor: CollectionInteractor) {
+            self.appStore = appStore
             self.collectionInteractor = collectionInteractor
             self.cancelBag = .init()
-            bindAppState()
+            bindAppStore()
         }
     }
 }
@@ -82,25 +82,40 @@ func resetOutput() {
 
 ---
 
-## AppState 구독 (Combine + CancelBag)
+## AppStore 구독 — 두 채널 (Combine + CancelBag)
+
+`AppStore`는 두 채널을 제공한다.
+
+| 채널 | API | 용도 |
+|------|-----|------|
+| 상태 | `appStore.updates(for: keyPath)` | 영속 값 변화 감지 (authStatus, currentUser 등) |
+| 이벤트 | `appStore.events` | 일회성 명령 (스크롤, 탭 간 화면 열기 등) |
 
 `init`에서 `cancelBag.collect {}` 블록으로 한꺼번에 구독한다.
 
 ```swift
-private func bindAppState() {
+private func bindAppStore() {
     cancelBag.collect {
-        appState
-            .updates(for: \.routing.collectionView.collectionID)
-            .compactMap { $0 }
+        // 일회성 이벤트 — compactMap으로 원하는 케이스만 추출
+        appStore.events
+            .compactMap { guard case .collectionDetailRequested(let id) = $0 else { return nil }; return id }
             .weakSink(on: self) { viewModel, id in
                 viewModel.output = .navigateToDetail(id: id)
             }
 
-        appState
-            .updates(for: \.routing.collectionView.scrollToTop)
-            .compactMap { $0 }
+        appStore.events
+            .filter { if case .collectionScrollToTop = $0 { return true }; return false }
             .weakSink(on: self) { viewModel, _ in
                 viewModel.output = .scrollToTop(UUID())
+            }
+
+        // 영속 상태 변화 감지
+        appStore
+            .updates(for: \.authStatus)
+            .map { $0 == .guest }
+            .removeDuplicates()
+            .weakSink(on: self) { viewModel, isGuest in
+                viewModel.isGuestMode = isGuest
             }
     }
 }
@@ -109,8 +124,8 @@ private func bindAppState() {
 **규칙:**
 - `weakSink(on: self)` 사용 — retain cycle 방지
 - 구독은 `cancelBag.collect {}` 블록 하나로 모은다
-- AppState 쓰기: `appState[\.routing.xxx] = value`
-- 여러 상태를 한번에 바꿀 때: `appState.bulkUpdate { $0.routing.xxx = ...; $0.currentUser = ... }`
+- AppState 변경: 반드시 `appStore.send(.action)` — 직접 keyPath 쓰기 금지
+- 상태 단순 읽기(초기값 세팅): `appStore[\.authStatus]` subscript 허용
 
 ---
 
@@ -150,9 +165,14 @@ func updateSearchText(_ text: String) {
 ## 게스트 모드 처리
 
 ```swift
-private var isGuestMode: Bool {
-    appState[\.authStatus] == .guest
-}
+// init에서 초기값 세팅 (subscript 읽기)
+self.isGuestMode = appStore[\.authStatus] == .guest
+
+// init에서 변화 감지 (cancelBag.collect 블록 내)
+appStore.updates(for: \.authStatus)
+    .map { $0 == .guest }
+    .removeDuplicates()
+    .weakSink(on: self) { viewModel, isGuest in viewModel.isGuestMode = isGuest }
 
 func loadPosts() async {
     guard !isGuestMode else { return }

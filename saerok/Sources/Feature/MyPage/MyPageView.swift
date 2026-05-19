@@ -45,32 +45,31 @@ extension MyPageView {
             self.cancelBag = .init()
             self.user = appStore[\.currentUser]
             self.isGuest = appStore[\.authStatus] == .guest
+            
+            cancelBag.collect {
+                appStore.events
+                    .compactMap {
+                        guard case .boardDetailRequested(let id) = $0 else { return nil }
+                        return id
+                    }
+                    .weakSink(on: self) { viewModel, id in
+                        viewModel.output = .navigateToBoardDetail(id)
+                    }
 
-            appStore.events
-                .compactMap {
-                    guard case .boardDetailRequested(let id) = $0 else { return nil }
-                    return id
-                }
-                .weakSink(on: self) { viewModel, id in
-                    viewModel.output = .navigateToBoardDetail(id)
-                }
-                .store(in: cancelBag)
+                appStore
+                    .updates(for: \.currentUser)
+                    .weakSink(on: self) { viewModel, profile in
+                        viewModel.user = profile
+                    }
 
-            appStore
-                .updates(for: \.currentUser)
-                .weakSink(on: self) { viewModel, profile in
-                    viewModel.user = profile
-                }
-                .store(in: cancelBag)
-
-            appStore
-                .updates(for: \.authStatus)
-                .map { $0 == .guest }
-                .removeDuplicates()
-                .weakSink(on: self) { viewModel, isGuest in
-                    viewModel.isGuest = isGuest
-                }
-                .store(in: cancelBag)
+                appStore
+                    .updates(for: \.authStatus)
+                    .map { $0 == .guest }
+                    .removeDuplicates()
+                    .weakSink(on: self) { viewModel, isGuest in
+                        viewModel.isGuest = isGuest
+                    }
+            }
         }
         
         func changeStatusToLogout() {

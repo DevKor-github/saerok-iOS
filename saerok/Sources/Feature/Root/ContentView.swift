@@ -30,7 +30,17 @@ struct ContentView: View {
         NavigationStack(path: $coordinator.path) {
             ZStack {
                 CachedTabContainer(selectedTab: selectedTab)
-                TabbarView(selectedTab: selectedTab)
+                TabbarView(
+                    selectedTab: selectedTab,
+                    onTabSelected: { injected.appStore.send(.selectTab($0)) },
+                    onScrollToTop: { tab in
+                        switch tab {
+                        case .fieldGuide: injected.appStore.send(.requestFieldGuideScrollToTop)
+                        case .collection: injected.appStore.send(.requestCollectionScrollToTop)
+                        default: break
+                        }
+                    }
+                )
             }
             .onboardingOverlay(type: selectedTab.onboardingType)
             .srToast()

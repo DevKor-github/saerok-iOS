@@ -5,10 +5,7 @@
 //  Created by HanSeung on 5/18/25.
 //
 
-import Combine
 import SwiftUI
-import KakaoSDKAuth
-import KakaoSDKUser
 
 enum LoginRoute: AppRoute {
     case enroll
@@ -17,23 +14,29 @@ enum LoginRoute: AppRoute {
 struct LoginView: View {
     typealias Route = LoginRoute
 
-    @Environment(\.injected) var injected
-    @State var showingAlert: Bool = false
+    @State private var showingAlert: Bool = false
     @State private var user: User = .init()
     @State private var enrollmentCompleted: Bool = false
     @Binding private var authStatus: AppState.AuthStatus
 
-    var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
-        injected.appStore.updates(for: \.authStatus)
-    }
+    let onSignIn: (Bool) -> Void
+    let onEnterGuestMode: () -> Void
+    let onRequireAuth: () -> Void
 
-    init(authStatus: Binding<AppState.AuthStatus>) {
+    init(
+        authStatus: Binding<AppState.AuthStatus>,
+        onSignIn: @escaping (Bool) -> Void,
+        onEnterGuestMode: @escaping () -> Void,
+        onRequireAuth: @escaping () -> Void
+    ) {
         self._authStatus = authStatus
+        self.onSignIn = onSignIn
+        self.onEnterGuestMode = onEnterGuestMode
+        self.onRequireAuth = onRequireAuth
     }
 
     var body: some View {
         content
-            .onReceive(authStatusUpdate) { authStatus = $0 }
     }
 }
 
@@ -47,11 +50,11 @@ private extension LoginView {
             loginView
         case .signedIn:
             if enrollmentCompleted {
-                EnrollView.EnrollSubmittedView()
+                EnrollView.EnrollSubmittedView(onStart: { onSignIn(true) })
             } else {
                 EnrollView(user: $user, onEnrollmentComplete: {
                     enrollmentCompleted = true
-                })
+                }, onBack: onRequireAuth)
             }
         default:
             EmptyView()
@@ -81,7 +84,7 @@ private extension LoginView {
                     style: .confirm,
                     action: {
                         showingAlert = false
-                        injected.appStore.send(.enterGuestMode)
+                        onEnterGuestMode()
                     }
                 )
             )
@@ -98,8 +101,8 @@ private extension LoginView {
     var loginButtonSection: some View {
         VStack {
             Spacer()
-            AppleLoginView(user: $user)
-            KakaoLoginView(user: $user)
+            AppleLoginView(user: $user, onSignIn: onSignIn)
+            KakaoLoginView(user: $user, onSignIn: onSignIn)
             continueWithoutLoginButton
         }
         .padding(.horizontal, SRDesignConstant.defaultPadding)

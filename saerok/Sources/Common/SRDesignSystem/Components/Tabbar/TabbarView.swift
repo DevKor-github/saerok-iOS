@@ -9,8 +9,9 @@ import SwiftUI
 
 struct TabbarView: View {
     var selectedTab: TabbedItems
-    @Environment(\.injected) var injected
-    
+    let onTabSelected: (TabbedItems) -> Void
+    let onScrollToTop: (TabbedItems) -> Void
+
     var body: some View {
         VStack {
             Spacer()
@@ -19,24 +20,18 @@ struct TabbarView: View {
         }
         .padding()
     }
-    
+
     // MARK: - UI Components
-    
+
     private var tabItems: some View {
         HStack {
             ForEach((TabbedItems.allCases), id: \.self) { item in
                 Button {
                     let selectedBefore = self.selectedTab
-                    
-                    injected.appStore.send(.selectTab(item))
+                    onTabSelected(item)
                     HapticManager.shared.trigger(.light)
-                    
                     if selectedBefore == item {
-                        if item == .fieldGuide {
-                            injected.appStore.send(.requestFieldGuideScrollToTop)
-                        } else if item == .collection {
-                            injected.appStore.send(.requestCollectionScrollToTop)
-                        }
+                        onScrollToTop(item)
                     }
                 } label: {
                     HStack {

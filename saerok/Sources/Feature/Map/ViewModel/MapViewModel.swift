@@ -68,24 +68,24 @@ extension MapView {
             self.mapController = .init(locationManager: locationManager)
             self.isGuest = appStore[\.authStatus] == .guest
             
-            appStore.events
-                .compactMap {
-                    guard case .mapNavigationRequested(let coord) = $0 else { return nil }
-                    return coord
-                }
-                .weakSink(on: self) { viewModel, coord in
-                    viewModel.output = .navigateTo(coord: coord)
-                }
-                .store(in: cancelBag)
+            cancelBag.collect {
+                appStore.events
+                    .compactMap {
+                        guard case .mapNavigationRequested(let coord) = $0 else { return nil }
+                        return coord
+                    }
+                    .weakSink(on: self) { viewModel, coord in
+                        viewModel.output = .navigateTo(coord: coord)
+                    }
 
-            appStore
-                .updates(for: \.authStatus)
-                .map { $0 == .guest }
-                .removeDuplicates()
-                .weakSink(on: self) { viewModel, isGuest in
-                    viewModel.isGuest = isGuest
-                }
-                .store(in: cancelBag)
+                appStore
+                    .updates(for: \.authStatus)
+                    .map { $0 == .guest }
+                    .removeDuplicates()
+                    .weakSink(on: self) { viewModel, isGuest in
+                        viewModel.isGuest = isGuest
+                    }
+            }
         }
         
         @MainActor

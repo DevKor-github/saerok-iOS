@@ -9,10 +9,8 @@
 import SwiftUI
 
 struct CollectionHeaderView: View {
-    @Environment(\.injected) var injected
-    private var isGuest: Bool { injected.appStore[\.authStatus] == .guest }
-    
     var collectionCount: Int
+    var isGuest: Bool = false
     let addButtonTapped: () -> Void
     
     var body: some View {

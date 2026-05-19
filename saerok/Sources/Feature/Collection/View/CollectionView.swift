@@ -139,7 +139,7 @@ private extension CollectionView {
         if collectionSummaries.isEmpty {
             Color.clear.frame(height: Constants.navBarSpacerHeight)
             navigationBar
-            CollectionEmptyStateView(isGuest: viewModel.isGuestMode, addButtonTapped: addButtonTapped)
+            CollectionEmptyStateView(isGuest: viewModel.isGuestMode, addButtonTapped: addButtonTapped, onLoginTapped: viewModel.changeStatusToLogout)
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -147,7 +147,7 @@ private extension CollectionView {
                     Color.clear.frame(height: Constants.navBarSpacerHeight)
                     navigationBar
                     VStack(spacing: 0) {
-                        CollectionHeaderView(collectionCount: collectionSummaries.count, addButtonTapped: addButtonTapped)
+                        CollectionHeaderView(collectionCount: collectionSummaries.count, isGuest: viewModel.isGuestMode, addButtonTapped: addButtonTapped)
                         StaggeredGrid<_, _, EmptyView>(items: collectionSummaries, columns: 2) { collection in
                             CollectionItemView(collection, tapped: {
                                 coordinator.push(Route.collectionDetail(collection.id))
@@ -228,7 +228,7 @@ private extension CollectionView {
                 navigationBar
                 CollectionEmptyStateView(isGuest: viewModel.isGuestMode, addButtonTapped: {
                     showPopup.toggle()
-                })
+                }, onLoginTapped: viewModel.changeStatusToLogout)
             }
         }
         .srPopup(

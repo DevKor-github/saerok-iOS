@@ -109,14 +109,24 @@ private extension RootSelectorView {
             } else {
                 switch authStatus {
                 case .notDetermined:
-                    LoginView(authStatus: $authStatus)
+                    LoginView(
+                        authStatus: $authStatus,
+                        onSignIn: { injected.appStore.send(.finishSignIn(isRegistered: $0)) },
+                        onEnterGuestMode: { injected.appStore.send(.enterGuestMode) },
+                        onRequireAuth: { injected.appStore.send(.requireAuthentication) }
+                    )
                 case .guest:
                     ContentView()
                 case .signedIn(let isRegistered):
                     if isRegistered {
                         ContentView()
                     } else {
-                        LoginView(authStatus: $authStatus)
+                        LoginView(
+                            authStatus: $authStatus,
+                            onSignIn: { injected.appStore.send(.finishSignIn(isRegistered: $0)) },
+                            onEnterGuestMode: { injected.appStore.send(.enterGuestMode) },
+                            onRequireAuth: { injected.appStore.send(.requireAuthentication) }
+                        )
                     }
                 }
             }

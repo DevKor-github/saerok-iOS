@@ -43,10 +43,6 @@ final class AppStore {
         self.stateSubject = .init(initialState)
     }
 
-    var appState: Store<AppState> {
-        stateSubject
-    }
-
     var state: AppState {
         stateSubject.value
     }

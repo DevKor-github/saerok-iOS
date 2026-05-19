@@ -9,10 +9,9 @@
 import SwiftUI
 
 struct CollectionEmptyStateView: View {
-    @Environment(\.injected) private var injected
-
     let isGuest: Bool
     let addButtonTapped: () -> Void
+    let onLoginTapped: () -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -25,7 +24,7 @@ struct CollectionEmptyStateView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        CollectionHeaderView(collectionCount: 0, addButtonTapped: addButtonTapped)
+        CollectionHeaderView(collectionCount: 0, isGuest: isGuest, addButtonTapped: addButtonTapped)
     }
 
     // MARK: - Content
@@ -63,7 +62,7 @@ struct CollectionEmptyStateView: View {
 
     private var loginButton: some View {
         Button {
-            injected.appStore.send(.requireAuthentication)
+            onLoginTapped()
         } label: {
             HStack(spacing: 8) {
                     Image.SRIconSet.login

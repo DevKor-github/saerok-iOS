@@ -9,8 +9,8 @@ import SwiftUI
 
 extension EnrollView {
     struct EnrollSubmittedView: View {
-        @Environment(\.injected) var injected
-        
+        let onStart: () -> Void
+
         var body: some View {
             VStack(alignment: .leading) {
                 NavigationBar()
@@ -34,7 +34,7 @@ extension EnrollView {
 
         private func startButtonTapped() {
             withAnimation(.easeInOut(duration: 2.0)) {
-                injected.appStore.send(.finishSignIn(isRegistered: true))
+                onStart()
             }
         }
     }
