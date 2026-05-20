@@ -67,8 +67,6 @@ Config/Secrets.Debug.xcconfig
 Config/Secrets.Release.xcconfig
 
 # AI Agentic Coding
-.claude/
-scripts/
 docs/WEAKNESSES.md
 phases/**/phase*-output.json
 phases/**/step*-output.json
