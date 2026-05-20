@@ -70,3 +70,4 @@ Config/Secrets.Release.xcconfig
 docs/WEAKNESSES.md
 phases/**/phase*-output.json
 phases/**/step*-output.json
+.claude/commands/
