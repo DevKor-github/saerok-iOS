@@ -347,3 +347,19 @@ extension CollectionFormView {
         static let deleteButtonOffset: CGFloat = imageSize / 2
     }
 }
+
+// MARK: - Wrapper
+
+/// navigationDestination 클로저가 재평가될 때마다 ViewModel이 새로 생성되는 문제를 막기 위한 래퍼.
+/// @State가 SwiftUI 뷰 정체성(identity)을 통해 ViewModel을 보존한다.
+struct CollectionFormViewWrapper: View {
+    @State private var viewModel: CollectionFormView.ViewModel
+
+    init(factory: ViewModelFactory, mode: CollectionFormMode, bird: Local.Bird? = nil) {
+        _viewModel = State(wrappedValue: factory.makeCollectionFormViewModel(mode: mode, bird: bird))
+    }
+
+    var body: some View {
+        CollectionFormView(viewModel: viewModel)
+    }
+}

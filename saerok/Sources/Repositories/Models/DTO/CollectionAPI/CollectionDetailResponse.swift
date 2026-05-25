@@ -14,8 +14,8 @@ extension DTO {
         let imageUrl: String?
         let discoveredDate: String?
         let createdAt: Date
-        let latitude: Double
-        let longitude: Double
+        let latitude: Double?
+        let longitude: Double?
         let address: String?
         let locationAlias: String?
         let note: String

@@ -101,7 +101,7 @@ extension Local.CollectionDraft {
         let draft = Local.CollectionDraft(
             isUnknownBird: detail.birdID == nil,
             discoveredDate: detail.discoveredDate,
-            coordinate: detail.coordinate,
+            coordinate: detail.coordinate.map { ($0.latitude, $0.longitude) } ?? (0, 0),
             address: detail.address,
             locationAlias: detail.locationAlias,
             note: detail.note,

@@ -50,7 +50,7 @@ struct CollectionView: View {
                 case .collectionDetailFromDeepLink(let id):
                     CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .deeplink))
                 case .addCollection(let bird):
-                    CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .add, bird: bird))
+                    CollectionFormViewWrapper(factory: coordinator.factory, mode: .add, bird: bird)
                 case .notification:
                     NotificationView(viewModel: coordinator.factory.makeNotificationViewModel())
                 case .directToBoardDetail(let id):

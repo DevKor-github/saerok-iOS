@@ -14,7 +14,7 @@ extension Local {
         let imageURL: String
         let discoveredDate: Date
         let uploadDate: Date
-        let coordinate: (latitude: Double, longitude: Double)
+        let coordinate: (latitude: Double, longitude: Double)?
         let address: String
         let locationAlias: String
         let note: String
@@ -36,8 +36,8 @@ extension Local {
         static func == (lhs: Local.CollectionDetail, rhs: Local.CollectionDetail) -> Bool {
             lhs.id == rhs.id &&
             lhs.discoveredDate == rhs.discoveredDate &&
-            lhs.coordinate.latitude == rhs.coordinate.latitude &&
-            lhs.coordinate.longitude == rhs.coordinate.longitude &&
+            lhs.coordinate?.latitude == rhs.coordinate?.latitude &&
+            lhs.coordinate?.longitude == rhs.coordinate?.longitude &&
             lhs.address == rhs.address &&
             lhs.locationAlias == rhs.locationAlias &&
             lhs.note == rhs.note &&
@@ -68,7 +68,7 @@ extension Local.CollectionDetail {
             imageURL: dto.imageUrl ?? "",
             discoveredDate: formatter.date(from: dto.discoveredDate ?? "2025-06-19") ?? .now,
             uploadDate: dto.createdAt ,
-            coordinate: (dto.latitude, dto.longitude),
+            coordinate: dto.latitude.flatMap { lat in dto.longitude.map { lng in (lat, lng) } },
             address: dto.address ?? "",
             locationAlias: dto.locationAlias ?? "",
             note: dto.note,

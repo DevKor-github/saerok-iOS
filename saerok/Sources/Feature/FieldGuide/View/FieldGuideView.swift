@@ -51,7 +51,7 @@ struct FieldGuideView: View {
                 case .birdDetail(let bird):
                     BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(bird: bird))
                 case .addSaerok(let bird):
-                    CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .add, bird: bird))
+                    CollectionFormViewWrapper(factory: coordinator.factory, mode: .add, bird: bird)
                 }
             }
             .onChange(of: viewModel.output) { _, output in

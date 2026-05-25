@@ -235,11 +235,11 @@ extension CollectionDetailView {
         }
         
         func navigateToMap() {
-            guard let collection else { return }
+            guard let collection, let coordinate = collection.coordinate else { return }
             appStore.send(.selectTab(.map))
             appStore.send(.openMapCoordinate(.init(
-                latitude: collection.coordinate.latitude,
-                longitude: collection.coordinate.longitude
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude
             )))
         }
         

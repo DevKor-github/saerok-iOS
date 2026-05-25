@@ -15,9 +15,11 @@ extension Local {
         let thumbnailImageUrl: String?
         let discoveredDate: Date?
         let createdAt: Date
-        let latitude: Double
-        let longitude: Double
+        let latitude: Double?
+        let longitude: Double?
         let locationAlias: String
+
+        var isLocationHidden: Bool { latitude == nil }
         let address: String?
         let note: String
         let likeCount: Int

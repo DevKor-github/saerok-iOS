@@ -128,8 +128,13 @@ struct CommunityCell: View {
         HStack(spacing: 7) {
             Text(item.createdAt.timeAgoText)
             comma
-            Text("\(item.locationAlias)에서")
-                .lineLimit(1)
+            if item.isLocationHidden {
+                Text("위치 비공개")
+                    .lineLimit(1)
+            } else {
+                Text("\(item.locationAlias)에서")
+                    .lineLimit(1)
+            }
         }
         .foregroundStyle(.srGray)
         .font(.SRFontSet.caption3)

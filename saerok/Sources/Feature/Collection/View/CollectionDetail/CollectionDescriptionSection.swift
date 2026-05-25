@@ -175,28 +175,37 @@ private extension CollectionDescriptionSection {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 5) {
                 Image.SRIconSet.pin
-                    .frame(.default, tintColor: .pointtext)
-                
-                Button(action: {
-                    coordinator.clear()
-                    onAction(.navigateToMap)
-                }) {
-                    HStack(alignment: .top, spacing: 0) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(collection.locationAlias)
-                                .font(.SRFontSet.body4)
-                            Text(collection.address)
-                                .font(.SRFontSet.caption3)
-                                .foregroundStyle(.secondary)
+                    .frame(.default, tintColor: collection.coordinate != nil ? .pointtext : .srGray)
+
+                if collection.coordinate != nil {
+                    Button(action: {
+                        coordinator.clear()
+                        onAction(.navigateToMap)
+                    }) {
+                        HStack(alignment: .top, spacing: 0) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(collection.locationAlias.isEmpty ? "위치 정보 없음" : collection.locationAlias)
+                                    .font(.SRFontSet.body4)
+                                if !collection.address.isEmpty {
+                                    Text(collection.address)
+                                        .font(.SRFontSet.caption3)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+
+                            Spacer()
+
+                            Image.SRIconSet.chevronRight
+                                .frame(.default, tintColor: .srGray)
                         }
-                        
-                        Spacer()
-                        
-                        Image.SRIconSet.chevronRight
-                            .frame(.default, tintColor: .srGray)
                     }
+                    .buttonStyle(.plain)
+                } else {
+                    Text("위치 비공개")
+                        .font(.SRFontSet.body4)
+                        .foregroundStyle(.secondary)
+                    Spacer()
                 }
-                .buttonStyle(.plain)
             }
             
             HStack(spacing: 5) {

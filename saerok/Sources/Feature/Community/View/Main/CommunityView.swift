@@ -84,7 +84,7 @@ private extension CommunityView {
         case .other(let id):
             UserSummaryView(viewModel: coordinator.factory.makeUserSummaryViewModel(id))
         case .addCollection:
-            CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .add))
+            CollectionFormViewWrapper(factory: coordinator.factory, mode: .add)
         }
     }
 }

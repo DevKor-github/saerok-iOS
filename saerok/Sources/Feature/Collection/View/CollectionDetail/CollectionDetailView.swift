@@ -118,7 +118,7 @@ private extension CollectionDetailView {
         switch route {
         case .edit:
             if let collection = viewModel.collection {
-                CollectionFormView(viewModel: coordinator.factory.makeCollectionFormViewModel(mode: .edit(collection)))
+                CollectionFormViewWrapper(factory: coordinator.factory, mode: .edit(collection))
             }
         case .bird(let id):
             BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(birdID: id))
