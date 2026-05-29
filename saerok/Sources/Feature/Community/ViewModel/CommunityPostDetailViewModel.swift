@@ -101,6 +101,25 @@ extension CommunityPostDetailView {
             } catch {}
         }
 
+        func editPost(content: String) async {
+            do {
+                let result = try await interactor.editFreeboardPost(postId: postId, content: content)
+                guard let current = post else { return }
+                post = .init(
+                    id: current.id,
+                    userId: current.userId,
+                    nickname: current.nickname,
+                    profileImageUrl: current.profileImageUrl,
+                    thumbnailProfileImageUrl: current.thumbnailProfileImageUrl,
+                    content: result.content,
+                    commentCount: current.commentCount,
+                    isMine: current.isMine,
+                    createdAt: current.createdAt,
+                    updatedAt: Date()
+                )
+            } catch {}
+        }
+
         func reportPost() async {
             do {
                 _ = try await interactor.reportFreeboardPost(postId: postId)

@@ -20,8 +20,25 @@ struct SRAvatarStyle: ViewModifier {
     }
 }
 
+struct SRAvatarStyle_2: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .frame(width: 21, height: 21)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .inset(by: 0.6)
+                    .stroke(.srLightGray, lineWidth: 2)
+            )
+    }
+}
+
 extension View {
     func srAvatarStyle() -> some View {
         modifier(SRAvatarStyle())
+    }
+    
+    func srAvatarStyle_2() -> some View {
+        modifier(SRAvatarStyle_2())
     }
 }

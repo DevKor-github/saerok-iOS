@@ -12,6 +12,7 @@ struct CommunityPostDetailView: View {
     @Environment(\.showToast) private var showToast
     @State private var viewModel: ViewModel
     @State private var showDeletePostAlert: Bool = false
+    @State private var showEditPostSheet: Bool = false
     @FocusState private var isInputFocused: Bool
     @State private var keyboard: KeyboardObserver = .init()
 
@@ -28,6 +29,19 @@ struct CommunityPostDetailView: View {
                 case .reportSubmitted:
                     showToast(.init(type: .success, message: "신고가 접수되었어요", placementOffset: -120, transitionOffset: 160, duration: 3.0))
                 case .none: break
+                }
+            }
+            .sheet(isPresented: $showEditPostSheet) {
+                if let post = viewModel.post {
+                    PostingView(
+                        nickname: post.nickname,
+                        profileImageUrl: post.thumbnailProfileImageUrl,
+                        isPresented: $showEditPostSheet,
+                        initialContent: post.content,
+                        buttonTitle: "수정하기"
+                    ) { content in
+                        await viewModel.editPost(content: content)
+                    }
                 }
             }
     }
@@ -130,6 +144,11 @@ private extension CommunityPostDetailView {
                 Menu {
                     if post.isMine {
                         Button(action: {
+                            showEditPostSheet = true
+                        }) {
+                            Label("수정하기", systemImage: "pencil")
+                        }
+                        Button(role: .destructive, action: {
                             showDeletePostAlert = true
                         }) {
                             Label("삭제하기", systemImage: "trash")

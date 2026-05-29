@@ -13,28 +13,35 @@ struct PostingView: View {
     let nickname: String
     let profileImageUrl: String?
 
-    @State private var contents: String = ""
+    @State private var contents: String
     @State private var isUploading: Bool = false
+    @State private var showFloatingMenu: Bool = false
     @Binding var isPresented: Bool
+    @FocusState var isFocused: Bool
 
+    let buttonTitle: String
     let onPost: (String) async -> Void
 
     init(
         nickname: String,
         profileImageUrl: String?,
         isPresented: Binding<Bool>,
+        initialContent: String = "",
+        buttonTitle: String = "게시하기",
         onPost: @escaping (String) async -> Void
     ) {
         self.nickname = nickname
         self.profileImageUrl = profileImageUrl
         self._isPresented = isPresented
+        self._contents = State(wrappedValue: initialContent)
+        self.buttonTitle = buttonTitle
         self.onPost = onPost
     }
 
     var body: some View {
         content
             .regainSwipeBack()
-            .modifier(FloatingMenuModifier(postAction: {}, saerokAction: {}, bottomOffset: 24, isHidden: $isPresented))
+            .modifier(FloatingMenuModifier(postAction: {}, saerokAction: {}, bottomOffset: 24, showMenu: $showFloatingMenu, isHidden: $isPresented))
     }
 
     @ViewBuilder
@@ -51,6 +58,10 @@ struct PostingView: View {
                     .font(.SRFontSet.body4_2)
                     .padding(.leading, 30)
                     .padding(.top, 3)
+                    .focused($isFocused)
+                    .onAppear {
+                        isFocused.toggle()
+                    }
                 Spacer()
                 Button(action: {
                     isUploading = true
@@ -62,7 +73,7 @@ struct PostingView: View {
                     if isUploading {
                         ProgressView()
                     } else {
-                        Text("게시하기")
+                        Text(buttonTitle)
                     }
                 }
                 .srStyled(.primaryButton)

@@ -235,3 +235,7 @@ extension OnboardingType {
         "hasSeenOnboarding_\(rawValue)"
     }
 }
+
+#Preview {
+    OnboardingView(type: .map, onSkip: {})
+}

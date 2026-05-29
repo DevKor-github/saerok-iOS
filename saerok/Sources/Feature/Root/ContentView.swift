@@ -10,6 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab: TabbedItems = SRConstant.mainTab
+    @State private var isCommunityMenuOpen: Bool = false
     
     // MARK: Dependencies
     @Environment(\.injected) private var injected
@@ -29,7 +30,7 @@ struct ContentView: View {
     private var content: some View {
         NavigationStack(path: $coordinator.path) {
             ZStack {
-                CachedTabContainer(selectedTab: selectedTab)
+                CachedTabContainer(selectedTab: selectedTab, isCommunityMenuOpen: $isCommunityMenuOpen)
                 TabbarView(
                     selectedTab: selectedTab,
                     onTabSelected: { injected.appStore.send(.selectTab($0)) },
@@ -39,7 +40,9 @@ struct ContentView: View {
                         case .collection: injected.appStore.send(.requestCollectionScrollToTop)
                         default: break
                         }
-                    }
+                    },
+                    isDimmed: isCommunityMenuOpen,
+                    onDimTap: { isCommunityMenuOpen = false }
                 )
             }
             .onboardingOverlay(type: selectedTab.onboardingType)
@@ -69,41 +72,24 @@ extension ContentView {
 
 struct CachedTabContainer: View {
     let selectedTab: TabbedItems
-    @State private var initializedTabs: Set<TabbedItems> = []
+    @Binding var isCommunityMenuOpen: Bool
 
-    init(selectedTab: TabbedItems) {
+    init(selectedTab: TabbedItems, isCommunityMenuOpen: Binding<Bool>) {
         self.selectedTab = selectedTab
+        self._isCommunityMenuOpen = isCommunityMenuOpen
     }
-    
-    var body: some View {
-        ZStack {
-            ForEach(TabbedItems.allCases, id: \.self) { tab in
-                let isSelected = selectedTab == tab
 
-                Group {
-                    if initializedTabs.contains(tab) {
-                        TabContent(tab: tab)
-                    } else if isSelected {
-                        TabContent(tab: tab)
-                            .onAppear {
-                                initializedTabs.insert(tab)
-                            }
-                    }
-                }
-                .opacity(isSelected ? 1 : 0)
-                .scaleEffect(isSelected ? 1 : 0.99)
-                .offset(y: isSelected ? 0 : 5)
-                .animation(.spring(response: 0.15, dampingFraction: 0.9), value: selectedTab)
-            }
-        }
+    var body: some View {
+        TabContent(tab: selectedTab, isCommunityMenuOpen: $isCommunityMenuOpen)
     }
 }
 
 private struct TabContent: View {
     let tab: TabbedItems
-    
+    @Binding var isCommunityMenuOpen: Bool
+
     @EnvironmentObject private var coordinator: AppCoordinator
-    
+
     var body: some View {
         content
     }
@@ -118,7 +104,7 @@ private struct TabContent: View {
         case .collection:
             CollectionView(viewModel: coordinator.collectionViewModel)
         case .community:
-            CommunityView(viewModel: coordinator.communityViewModel)
+            CommunityView(viewModel: coordinator.communityViewModel, showFloatingMenu: $isCommunityMenuOpen)
         case .profile:
             MyPageView(viewModel: coordinator.myPageViewModel)
         }

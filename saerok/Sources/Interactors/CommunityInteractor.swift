@@ -43,7 +43,8 @@ struct CommunityInteractorImpl: CommunityInteractor {
         return filterBlockedCollections(
             pending: items.pendingCollections,
             recent: items.recentCollections,
-            popular: items.popularCollections
+            popular: items.popularCollections,
+            freeBoardPosts: items.recentFreeBoardPosts
         )
     }
     
@@ -174,12 +175,14 @@ private extension CommunityInteractorImpl {
     func filterBlockedCollections(
         pending: [Local.CommunityItemSummary],
         recent: [Local.CommunityItemSummary],
-        popular: [Local.CommunityItemSummary]
+        popular: [Local.CommunityItemSummary],
+        freeBoardPosts: [Local.FreeBoardPostSummary]
     ) -> Local.CommunityMainItems {
         .init(
             pendingCollections: filterBlockedCollections(pending),
             recentCollections: filterBlockedCollections(recent),
-            popularCollections: filterBlockedCollections(popular)
+            popularCollections: filterBlockedCollections(popular),
+            recentFreeBoardPosts: freeBoardPosts
         )
     }
 

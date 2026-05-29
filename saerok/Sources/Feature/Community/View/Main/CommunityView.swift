@@ -33,17 +33,24 @@ struct CommunityView: View {
     @State private var showPostingView: Bool = false
     @State private var offsetY: CGFloat = 0
     @FocusState private var isFocused: Bool
-    
+    @Binding private var showFloatingMenu: Bool
+
     // MARK: Init
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, showFloatingMenu: Binding<Bool>) {
         self.viewModel = viewModel
+        self._showFloatingMenu = showFloatingMenu
     }
-    
+
     var body: some View {
         content
             .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
-            .onPreferenceChange(ScrollPreferenceKey.self) { self.offsetY = $0 }
+            .onPreferenceChange(ScrollPreferenceKey.self) { newValue in
+                let clampedNew = max(min(newValue, 0), -100)
+                let clampedOld = max(min(self.offsetY, 0), -100)
+                guard abs(clampedNew - clampedOld) > 0.5 else { return }
+                self.offsetY = newValue
+            }
             .refreshable { Task { await viewModel.refreshPosts() } }
     }
 
@@ -68,21 +75,19 @@ private extension CommunityView {
     func routeView(for route: Route) -> some View {
         switch route {
         case .communityType(let type) where type == .board:
-            FreeBoardListView(viewModel: coordinator.factory.makeFreeBoardListViewModel())
+            FreeBoardListViewWrapper(factory: coordinator.factory)
         case .communityType(let type):
-            CommunityDetailView(viewModel: coordinator.factory.makeCommunityDetailViewModel(for: type))
+            CommunityDetailViewWrapper(factory: coordinator.factory, type: type)
         case .detailFromFeed(let id):
-            CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .communityFeed))
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communityFeed)
         case .detailFromProfile(let id):
-            CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .userProfile))
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .userProfile)
         case .detailFromSearch(let id):
-            CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .communitySearch))
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communitySearch)
         case .postDetail(let postId):
-            CommunityPostDetailView(
-                viewModel: coordinator.factory.makeCommunityPostDetailViewModel(postId: postId)
-            )
+            CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: postId)
         case .other(let id):
-            UserSummaryView(viewModel: coordinator.factory.makeUserSummaryViewModel(id))
+            UserSummaryViewWrapper(factory: coordinator.factory, id: id)
         case .addCollection:
             CollectionFormViewWrapper(factory: coordinator.factory, mode: .add)
         }
@@ -135,6 +140,7 @@ private extension CommunityView {
                     }
                 },
                 bottomOffset: 102,
+                showMenu: $showFloatingMenu,
                 isHidden: $showPostingView
             )
         )
@@ -180,7 +186,7 @@ private extension CommunityView {
                 onTap: { viewModel.mode = .searching },
                 onTextChange: { viewModel.updateSearchText($0) }
             )
-            .padding(.bottom, viewModel.isModeIdle ? 20 : 0)
+            .padding(.bottom, viewModel.isModeIdle ? 7 : 0)
 
             if !viewModel.isModeIdle {
                 CommunityFilterBar(selected: $viewModel.searchCase)
@@ -208,17 +214,24 @@ private extension CommunityView {
                 VStack(spacing: 0) {
                     OffsetReaderView().id("community-scrollable")
 
-                    suggestionListSection
-                        .padding(.bottom, 26)
-
-                    VStack(spacing: 44) {
-                        VStack(spacing: 15) {
+                    FreeBoardCarouselSection(
+                        posts: Array(viewModel.mainItems.recentFreeBoardPosts.prefix(5)),
+                        onPostTap: { coordinator.push(Route.postDetail(postId: $0)) },
+                        onCTATap: { coordinator.push(Route.communityType(type: .board)) }
+                    )
+                    .padding(.bottom, 14)
+                    
+                    Group {
+                        BannerView()
+                            .cornerRadius(10)
+                            .padding(.vertical, 15)
+                        VStack(spacing: 44) {
                             boardSections
-                            BannerView()
+                            suggestionListSection
+                            listSection(.recent)
+                            listSection(.popular)
+                            Color.clear.frame(height: 70)
                         }
-                        listSection(.recent)
-                        listSection(.popular)
-                        Color.clear.frame(height: 70)
                     }
                     .background(Color.srWhite)
                 }
@@ -245,9 +258,8 @@ private extension CommunityView {
         .cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.srLightGray, lineWidth: 1))
         .padding(.horizontal, 24)
-        .padding(.top, 13)
     }
-    
+
     func boardSection(
         title: String,
         @ViewBuilder content: @escaping () -> some View
@@ -281,10 +293,12 @@ private extension CommunityView {
                     }
                     Color.clear.frame(width: 17)
                 }
+                .padding(.vertical, 8) // 카드 그림자가 잘리지 않도록 여백 확보
             }
+            .padding(.vertical, -8) // 추가한 여백만큼 상쇄해 섹션 프레임은 유지
         }
     }
-    
+
     func listSection(_ type: CommunityType) -> some View {
         let items: [Local.CommunityItemSummary] = {
             switch type {
@@ -396,6 +410,40 @@ private extension CommunityView {
     }
 }
 
+
+// MARK: - Carousel Section (isolated state to prevent parent re-renders)
+
+private struct FreeBoardCarouselSection: View {
+    let posts: [Local.FreeBoardPostSummary]
+    let onPostTap: (Int) -> Void
+    let onCTATap: () -> Void
+
+    @State private var displayIndex: Int = 0
+
+    var body: some View {
+        let dotCount = posts.count + 1
+        VStack(spacing: 3) {
+            FreeBoardInfiniteCarouselView(
+                posts: posts,
+                displayIndex: $displayIndex,
+                onPostTap: onPostTap,
+                onCTATap: onCTATap
+            )
+            .frame(height: FreeBoardInfiniteCarouselView.Const.itemHeight)
+
+            if dotCount > 1 {
+                HStack(spacing: 5) {
+                    ForEach(0..<dotCount, id: \.self) { i in
+                        Circle()
+                            .fill(displayIndex == i ? .splash : Color.srLightGray)
+                            .frame(width: 7, height: 7)
+                    }
+                }
+            }
+        }
+    }
+}
+
 private extension CommunityView {
     var defaultView: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -415,4 +463,76 @@ private extension CommunityView {
         ProgressView()
             .background(Color.srWhite)
     }
+}
+
+// MARK: - Navigation Destination Wrappers
+
+struct FreeBoardListViewWrapper: View {
+    let factory: ViewModelFactory
+    @State private var viewModel: FreeBoardListView.ViewModel
+
+    init(factory: ViewModelFactory) {
+        self.factory = factory
+        _viewModel = State(wrappedValue: factory.makeFreeBoardListViewModel())
+    }
+
+    var body: some View { FreeBoardListView(viewModel: viewModel) }
+}
+
+struct CommunityDetailViewWrapper: View {
+    let factory: ViewModelFactory
+    let type: CommunityType
+    @State private var viewModel: CommunityDetailView.ViewModel
+
+    init(factory: ViewModelFactory, type: CommunityType) {
+        self.factory = factory
+        self.type = type
+        _viewModel = State(wrappedValue: factory.makeCommunityDetailViewModel(for: type))
+    }
+
+    var body: some View { CommunityDetailView(viewModel: viewModel) }
+}
+
+struct CollectionDetailViewWrapper: View {
+    let factory: ViewModelFactory
+    let id: Int
+    let entrySource: EntrySource
+    @State private var viewModel: CollectionDetailView.ViewModel
+
+    init(factory: ViewModelFactory, id: Int, entrySource: EntrySource) {
+        self.factory = factory
+        self.id = id
+        self.entrySource = entrySource
+        _viewModel = State(wrappedValue: factory.makeCollectionDetailViewModel(id: id, entrySource: entrySource))
+    }
+
+    var body: some View { CollectionDetailView(viewModel: viewModel) }
+}
+
+struct CommunityPostDetailViewWrapper: View {
+    let factory: ViewModelFactory
+    let postId: Int
+    @State private var viewModel: CommunityPostDetailView.ViewModel
+
+    init(factory: ViewModelFactory, postId: Int) {
+        self.factory = factory
+        self.postId = postId
+        _viewModel = State(wrappedValue: factory.makeCommunityPostDetailViewModel(postId: postId))
+    }
+
+    var body: some View { CommunityPostDetailView(viewModel: viewModel) }
+}
+
+struct UserSummaryViewWrapper: View {
+    let factory: ViewModelFactory
+    let id: Int
+    @State private var viewModel: UserSummaryView.ViewModel
+
+    init(factory: ViewModelFactory, id: Int) {
+        self.factory = factory
+        self.id = id
+        _viewModel = State(wrappedValue: factory.makeUserSummaryViewModel(id))
+    }
+
+    var body: some View { UserSummaryView(viewModel: viewModel) }
 }

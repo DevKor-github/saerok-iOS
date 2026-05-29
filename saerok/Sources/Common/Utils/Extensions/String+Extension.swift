@@ -7,9 +7,16 @@
 
 import Foundation
 
+private let _lineBreakCache = NSCache<NSString, NSString>()
+
 extension String {
     func allowLineBreaking() -> String {
-        return self.map { String($0) }.joined(separator: "\u{200B}")
+        if let cached = _lineBreakCache.object(forKey: self as NSString) {
+            return cached as String
+        }
+        let result = map { String($0) }.joined(separator: "\u{200B}")
+        _lineBreakCache.setObject(result as NSString, forKey: self as NSString)
+        return result
     }
 }
 

@@ -11,8 +11,8 @@ struct FloatingMenuModifier: ViewModifier {
     let postAction: () -> Void
     let saerokAction: () -> Void
     let bottomOffset: CGFloat
-    
-    @State private var showMenu = false
+
+    @Binding var showMenu: Bool
     @Binding var isHidden: Bool
     
     func body(content: Content) -> some View {
@@ -37,7 +37,7 @@ struct FloatingMenuModifier: ViewModifier {
                                 postAction: postAction,
                                 saerokAction: saerokAction
                             )
-                            .padding(.trailing, 24)
+                            .padding(.trailing, 23)
                             .padding(.bottom, bottomOffset)
                             .opacity(isHidden ? 0 : 1)
                         }

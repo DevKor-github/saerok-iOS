@@ -12,6 +12,17 @@ extension DTO {
         let recentCollections: [CommunityItem]
         let popularCollections: [CommunityItem]
         let pendingCollections: [CommunityItem]
+        let recentFreeBoardPosts: [FreeBoardMainPostItem]
+
+        struct FreeBoardMainPostItem: Decodable {
+            let postId: Int
+            let userId: Int
+            let nickname: String
+            let profileImageUrl: String?
+            let thumbnailProfileImageUrl: String?
+            let content: String
+            let createdAt: Date
+        }
     }
 }
 

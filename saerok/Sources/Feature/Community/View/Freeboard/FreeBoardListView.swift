@@ -13,6 +13,7 @@ struct FreeBoardListView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: ViewModel
     @State private var showPostingView: Bool = false
+    @State private var showFloatingMenu: Bool = false
 
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
@@ -47,6 +48,7 @@ struct FreeBoardListView: View {
                 postAction: { showPostingView = true },
                 saerokAction: {},
                 bottomOffset: 24,
+                showMenu: $showFloatingMenu,
                 isHidden: $showPostingView
             )
         )

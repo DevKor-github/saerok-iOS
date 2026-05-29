@@ -47,9 +47,9 @@ struct FieldGuideView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .search:
-                    FieldGuideSearchView(viewModel: coordinator.factory.makeFieldGuideSearchViewModel())
+                    FieldGuideSearchViewWrapper(factory: coordinator.factory)
                 case .birdDetail(let bird):
-                    BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(bird: bird))
+                    BirdDetailViewWrapper(factory: coordinator.factory, bird: bird)
                 case .addSaerok(let bird):
                     CollectionFormViewWrapper(factory: coordinator.factory, mode: .add, bird: bird)
                 }
@@ -261,4 +261,32 @@ private extension FieldGuideView {
     func failedView(_ error: Error) -> some View {
         ProgressView().progressViewStyle(CircularProgressViewStyle())
     }
+}
+
+// MARK: - Navigation Destination Wrappers
+
+struct BirdDetailViewWrapper: View {
+    let factory: ViewModelFactory
+    let bird: Local.Bird
+    @State private var viewModel: BirdDetailView.ViewModel
+
+    init(factory: ViewModelFactory, bird: Local.Bird) {
+        self.factory = factory
+        self.bird = bird
+        _viewModel = State(wrappedValue: factory.makeBirdDetailViewModel(bird: bird))
+    }
+
+    var body: some View { BirdDetailView(viewModel: viewModel) }
+}
+
+struct FieldGuideSearchViewWrapper: View {
+    let factory: ViewModelFactory
+    @State private var viewModel: FieldGuideSearchView.ViewModel
+
+    init(factory: ViewModelFactory) {
+        self.factory = factory
+        _viewModel = State(wrappedValue: factory.makeFieldGuideSearchViewModel())
+    }
+
+    var body: some View { FieldGuideSearchView(viewModel: viewModel) }
 }

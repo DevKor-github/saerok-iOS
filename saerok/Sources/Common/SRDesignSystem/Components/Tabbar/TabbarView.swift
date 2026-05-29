@@ -11,12 +11,22 @@ struct TabbarView: View {
     var selectedTab: TabbedItems
     let onTabSelected: (TabbedItems) -> Void
     let onScrollToTop: (TabbedItems) -> Void
+    var isDimmed: Bool = false
+    var onDimTap: () -> Void = {}
 
     var body: some View {
         VStack {
             Spacer()
             tabItems
                 .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 0)
+                .overlay {
+                    Color.black
+                        .opacity(isDimmed ? 0.5 : 0)
+                        .cornerRadius(.infinity)
+                        .allowsHitTesting(isDimmed)
+                        .onTapGesture { onDimTap() }
+                        .animation(.easeInOut(duration: 0.2), value: isDimmed)
+                }
         }
         .padding()
     }

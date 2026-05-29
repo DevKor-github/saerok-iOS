@@ -21,6 +21,7 @@ struct PostCell: View {
             divider
                 .offset(y: 1)
         }
+        .contentShape(Rectangle())
     }
 
     var user: some View {

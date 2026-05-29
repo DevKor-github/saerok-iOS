@@ -30,6 +30,9 @@ final class AppVersionChecker {
     
     func checkVersion() async {
         let lookupURL = "https://itunes.apple.com/lookup?bundleId=com.apu.saerok&country=kr"
+        #if DEBUG
+        return
+        #endif
         
         do {
             guard let url = URL(string: lookupURL) else { return }
