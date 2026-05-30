@@ -17,17 +17,20 @@ struct ReactiveAsyncImageWithMetadata: View {
     let scale: ImageScale
     let downsampling: Bool
     let isCachingEnabled: Bool
-    
+    let onLoaded: (() -> Void)?
+
     init(
         url: String,
         scale: ImageScale = .small,
         downsampling: Bool = true,
-        isCachingEnabled: Bool = true
+        isCachingEnabled: Bool = true,
+        onLoaded: (() -> Void)? = nil
     ) {
         self.url = url
         self.scale = scale
         self.downsampling = downsampling
         self.isCachingEnabled = isCachingEnabled
+        self.onLoaded = onLoaded
     }
     
     var body: some View {
@@ -68,8 +71,9 @@ struct ReactiveAsyncImageWithMetadata: View {
                     isCachingEnabled: isCachingEnabled
                 )
             }
-            
+
             isLoading = false
+            if uiImage != nil { onLoaded?() }
         }
     }
 }

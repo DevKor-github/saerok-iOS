@@ -88,7 +88,6 @@ struct CollectionDetailView: View {
             }
             
             await viewModel.loadInitial()
-            downloadImage(from: viewModel.collection?.imageURL ?? "")
         }
         .onDisappear {
             // saerok_detail_exit 이벤트 (화면 이탈)
@@ -107,6 +106,12 @@ struct CollectionDetailView: View {
                     uiState.showFindBird = false
                 }
             )
+        }
+        .onChange(of: uiState.showFullImage) { _, isShown in
+            if isShown { loadFullImageIfNeeded() }
+        }
+        .onChange(of: uiState.showShareSheet) { _, isShown in
+            if isShown { loadFullImageIfNeeded() }
         }
     }
 }
@@ -260,7 +265,8 @@ private extension CollectionDetailView {
             url: viewModel.collection?.imageURL ?? "",
             scale: .medium,
             downsampling: true,
-            isCachingEnabled: true
+            isCachingEnabled: true,
+            onLoaded: { viewModel.detailFlow?.markImageLoaded() }
         )
         
         image
@@ -388,16 +394,21 @@ private extension CollectionDetailView {
         coordinator.push(Route.other(userId))
     }
     
-    func downloadImage(from urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        
+    /// 공유 시트·풀이미지 오버레이에서만 필요한 원본 이미지를 지연 로드한다.
+    /// 화면에 표시되는 다운샘플 이미지는 `imageSection`이 별도로 처리하므로,
+    /// 진입 시점에는 받지 않고 실제로 필요해질 때 1회만 다운로드한다.
+    func loadFullImageIfNeeded() {
+        guard uiState.collectionImage == nil,
+              let urlString = viewModel.collection?.imageURL,
+              let url = URL(string: urlString)
+        else { return }
+
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data, let image = UIImage(data: data) else { return }
+            // 메인스레드 디코딩 hitch를 피하기 위해 백그라운드에서 미리 디코딩
+            let decoded = image.preparingForDisplay() ?? image
             Task { @MainActor in
-                uiState.collectionImage = image
-                
-                // 이미지 로드 완료 표시
-                viewModel.detailFlow?.markImageLoaded()
+                uiState.collectionImage = decoded
             }
         }.resume()
     }

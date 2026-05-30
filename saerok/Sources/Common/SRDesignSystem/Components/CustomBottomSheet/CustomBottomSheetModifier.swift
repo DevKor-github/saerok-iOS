@@ -70,6 +70,15 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     @State var keyboard: KeyboardObserver
     let isExtendable: Bool
 
+    /// 한 번이라도 표시된 적이 있는지. 진입 시점에는 sheetContent를 구성하지 않아
+    /// 화면 전환 hitch를 줄이고, 최초 표시 이후에는 계속 마운트해 닫힘 애니메이션을 보존한다.
+    @State private var hasEverShown: Bool = false
+
+    /// sheetContent를 실제로 트리에 구성해야 하는지 여부
+    private var shouldBuildContent: Bool {
+        alwaysOnDisplay || isShowing || hasEverShown
+    }
+
     private var actualOffset: CGFloat {
         guard isShowing else {
             return UIScreen.main.bounds.height + 100 // 항상 완전 숨김
@@ -94,7 +103,9 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
             }
         }
         .onChange(of: isShowing) { _, new in
-            if new == false {
+            if new {
+                hasEverShown = true
+            } else {
                 currentDetent = .medium
             }
         }
@@ -118,11 +129,13 @@ struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                 }
                 
                 ZStack(alignment: .top) {
-                    sheetContent()
-                        .frame(maxHeight: UIScreen.main.bounds.height - topOffset)
-                        .frame(width: UIScreen.main.bounds.width)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.top)
+                    if shouldBuildContent {
+                        sheetContent()
+                            .frame(maxHeight: UIScreen.main.bounds.height - topOffset)
+                            .frame(width: UIScreen.main.bounds.width)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top)
+                    }
                     Color.clear
                         .frame(width: 1)
                     PanGestureView(

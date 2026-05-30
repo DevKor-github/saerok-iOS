@@ -135,7 +135,8 @@ private extension MapView {
                     viewModel.mode = (new.isEmpty ? .searching : (viewModel.mode == .idle ? .idle : viewModel.mode))
                 }
             )
-            
+            .equatable()
+
             SearchRefreshButton {
                 viewModel.refreshButtonTapped()
                 viewModel.reloadAddress()
@@ -237,11 +238,11 @@ private extension MapView {
 
 // MARK: - SearchBar
 
-struct SearchInputBar: View {
+struct SearchInputBar: View, Equatable {
     enum Mode: Equatable {
         case idle, searching, resultShown
     }
-    
+
     let tintColor: Color?
     let placeHolder: String
     let isModeIdle: Bool
@@ -250,6 +251,15 @@ struct SearchInputBar: View {
     @Binding var mode: Mode
     let onTap: () -> Void
     let onTextChange: (String) -> Void
+
+    // 클로저는 비교 불가(참조 타입 캡처라 stale 위험 없음)와 바인딩은 제외.
+    // 화면에 보이는 값만 비교해 부모 재평가 시 불필요한 재구성을 차단한다.
+    static func == (lhs: SearchInputBar, rhs: SearchInputBar) -> Bool {
+        lhs.tintColor == rhs.tintColor &&
+        lhs.placeHolder == rhs.placeHolder &&
+        lhs.isModeIdle == rhs.isModeIdle &&
+        lhs.text == rhs.text
+    }
     
     var body: some View {
         HStack {

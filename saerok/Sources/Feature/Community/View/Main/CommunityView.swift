@@ -186,6 +186,7 @@ private extension CommunityView {
                 onTap: { viewModel.mode = .searching },
                 onTextChange: { viewModel.updateSearchText($0) }
             )
+            .equatable()
             .padding(.bottom, viewModel.isModeIdle ? 7 : 0)
 
             if !viewModel.isModeIdle {
