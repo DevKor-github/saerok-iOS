@@ -193,9 +193,9 @@ extension SREndpoint {
             return isGuest == false
         }
         switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .collectionDetail, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .collectionComments, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment, .reportFreeBoardPost:
+        case .toggleBookmark, .me, .updateMe, .myCollections, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment, .reportFreeBoardPost:
             return true
-        case .getSuggestions, .communityFreeboardPosts, .freeBoardPost, .freeBoardPostComments:
+        case .getSuggestions, .collectionDetail:
             return TokenManager.shared.getAccessToken() != nil
         default:
             return false
