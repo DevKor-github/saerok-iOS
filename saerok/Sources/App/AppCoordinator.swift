@@ -12,11 +12,24 @@ import SwiftUI
 protocol AppRoute: Hashable {}
 
 @MainActor
+final class AppNavigationState: ObservableObject {
+    @Published var path: NavigationPath
+
+    init(path: NavigationPath = NavigationPath()) {
+        self.path = path
+    }
+}
+
+@MainActor
 final class AppCoordinator: ObservableObject {
     private let container: DIContainer
     let factory: ViewModelFactory
-    @Published var path = NavigationPath()
+    let navigation: AppNavigationState
     private var cancellables = Set<AnyCancellable>()
+
+    var path: NavigationPath {
+        navigation.path
+    }
 
     // MARK: - 탭 루트 ViewModel (로그아웃 시 reset 대상)
     private var _fieldGuideViewModel: FieldGuideView.ViewModel?
@@ -57,7 +70,7 @@ final class AppCoordinator: ObservableObject {
     init(container: DIContainer, navigationPath: NavigationPath = NavigationPath()) {
         self.container = container
         self.factory = ViewModelFactory(container: container)
-        self.path = navigationPath
+        self.navigation = AppNavigationState(path: navigationPath)
 
         container.appStore
             .updates(for: \.authStatus)
@@ -67,17 +80,17 @@ final class AppCoordinator: ObservableObject {
     }
 
     func push(_ route: any AppRoute) {
-        path.append(route)
+        navigation.path.append(route)
     }
 
     func pop() {
-        if !path.isEmpty {
-            path.removeLast()
+        if !navigation.path.isEmpty {
+            navigation.path.removeLast()
         }
     }
 
     func clear() {
-        path = .init()
+        navigation.path = .init()
     }
 
     // 로그아웃/세션 만료 시 모든 탭 ViewModel과 네비게이션 스택을 초기화
@@ -88,6 +101,6 @@ final class AppCoordinator: ObservableObject {
         _communityViewModel = nil
         _mapViewModel = nil
         _myPageViewModel = nil
-        path = .init()
+        navigation.path = .init()
     }
 }

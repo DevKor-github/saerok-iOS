@@ -28,7 +28,41 @@ struct ContentView: View {
     }
     
     private var content: some View {
-        NavigationStack(path: $coordinator.path) {
+        AppNavigationHost(
+            coordinator: coordinator,
+            selectedTab: selectedTab,
+            isCommunityMenuOpen: $isCommunityMenuOpen
+        )
+    }
+    
+    private func configureNavigationBar() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .srWhite
+        appearance.shadowColor = .clear
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    }
+}
+
+private struct AppNavigationHost: View {
+    @Environment(\.injected) private var injected
+    @ObservedObject private var navigation: AppNavigationState
+    private let selectedTab: TabbedItems
+    @Binding private var isCommunityMenuOpen: Bool
+
+    init(
+        coordinator: AppCoordinator,
+        selectedTab: TabbedItems,
+        isCommunityMenuOpen: Binding<Bool>
+    ) {
+        self.selectedTab = selectedTab
+        self._isCommunityMenuOpen = isCommunityMenuOpen
+        self._navigation = ObservedObject(wrappedValue: coordinator.navigation)
+    }
+
+    var body: some View {
+        NavigationStack(path: $navigation.path) {
             ZStack {
                 CachedTabContainer(selectedTab: selectedTab, isCommunityMenuOpen: $isCommunityMenuOpen)
                 TabbarView(
@@ -50,15 +84,6 @@ struct ContentView: View {
             .ignoresSafeArea(.all)
         }
         .ignoresSafeArea(.all)
-    }
-    
-    private func configureNavigationBar() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .srWhite
-        appearance.shadowColor = .clear
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
 }
 

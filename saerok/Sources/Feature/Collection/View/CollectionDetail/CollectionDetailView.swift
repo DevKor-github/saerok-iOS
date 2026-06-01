@@ -394,9 +394,6 @@ private extension CollectionDetailView {
         coordinator.push(Route.other(userId))
     }
     
-    /// 공유 시트·풀이미지 오버레이에서만 필요한 원본 이미지를 지연 로드한다.
-    /// 화면에 표시되는 다운샘플 이미지는 `imageSection`이 별도로 처리하므로,
-    /// 진입 시점에는 받지 않고 실제로 필요해질 때 1회만 다운로드한다.
     func loadFullImageIfNeeded() {
         guard uiState.collectionImage == nil,
               let urlString = viewModel.collection?.imageURL,
@@ -405,7 +402,6 @@ private extension CollectionDetailView {
 
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data, let image = UIImage(data: data) else { return }
-            // 메인스레드 디코딩 hitch를 피하기 위해 백그라운드에서 미리 디코딩
             let decoded = image.preparingForDisplay() ?? image
             Task { @MainActor in
                 uiState.collectionImage = decoded
