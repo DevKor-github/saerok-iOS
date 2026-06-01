@@ -228,10 +228,10 @@ let isGuest = appStore[\.authStatus] == .guest
 `AppAction` (→ `appStore.send()`로 전달):
 - **인증**: `enterGuestMode` / `requireAuthentication` / `finishSignIn(isRegistered:)` / `restoreSession(_:)` / `syncCurrentUser(_:)` / `clearCurrentUser`
 - **탭**: `selectTab(_:)`
-- **이벤트 발행**: `requestFieldGuideScrollToTop` / `requestCollectionScrollToTop` / `openBoardDetail(_:)` / `openCollectionDetail(_:)` / `openMapCoordinate(_:)` / `openFieldGuideBird(name:)` / `refreshCollections`
+- **이벤트 발행**: `requestFieldGuideScrollToTop` / `requestCollectionScrollToTop` / `openBoardDetail(_:)` / `openCollectionDetail(_:)` / `openMapCoordinate(_:)` / `openFieldGuideBird(name:)` / `refreshCollections` / `notifyFreeBoardPostDeleted(_:)`
 
 `AppEvent` (`appStore.events`로 수신):
-`fieldGuideScrollToTop` / `collectionScrollToTop` / `boardDetailRequested(Int)` / `collectionDetailRequested(Int)` / `mapNavigationRequested(Coordinate)` / `fieldGuideBirdRequested(String)` / `collectionsRefreshRequested`
+`fieldGuideScrollToTop` / `collectionScrollToTop` / `boardDetailRequested(Int)` / `collectionDetailRequested(Int)` / `mapNavigationRequested(Coordinate)` / `fieldGuideBirdRequested(String)` / `collectionsRefreshRequested` / `freeBoardPostDeleted(Int)`
 
 ## API 엔드포인트 추가
 
