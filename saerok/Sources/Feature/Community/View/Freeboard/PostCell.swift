@@ -9,19 +9,58 @@ import SwiftUI
 
 struct PostCell: View {
     let post: Local.FreeBoardPost
+    let onTap: (() -> Void)?
+    let onDelete: (() -> Void)?
+    let onReport: (() -> Void)?
+
+    init(
+        post: Local.FreeBoardPost,
+        onTap: (() -> Void)? = nil,
+        onDelete: (() -> Void)? = nil,
+        onReport: (() -> Void)? = nil
+    ) {
+        self.post = post
+        self.onTap = onTap
+        self.onDelete = onDelete
+        self.onReport = onReport
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            user
-            content
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading, spacing: 3) {
+                user
+                content
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 13)
+            .overlay(alignment: .bottom) {
+                divider
+                    .offset(y: 1)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onTap?()
+            }
+
+            if onDelete != nil || onReport != nil {
+                Menu {
+                    if post.isMine, let onDelete {
+                        Button(role: .destructive, action: onDelete) {
+                            Label("삭제하기", systemImage: "trash")
+                        }
+                    } else if let onReport {
+                        Button(action: onReport) {
+                            Label("신고하기", systemImage: "light.beacon.max")
+                        }
+                    }
+                } label: {
+                    Image.SRIconSet.option
+                        .frame(.default, tintColor: .srGray)
+                        .padding(.trailing, 24)
+                        .padding(.top, 13)
+                }
+            }
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 13)
-        .overlay(alignment: .bottom) {
-            divider
-                .offset(y: 1)
-        }
-        .contentShape(Rectangle())
     }
 
     var user: some View {
@@ -32,6 +71,7 @@ struct PostCell: View {
             commentCount: post.commentCount,
             showsCommentCount: true
         )
+        .padding(.trailing, onDelete != nil || onReport != nil ? 32 : 0)
     }
 
     var content: some View {

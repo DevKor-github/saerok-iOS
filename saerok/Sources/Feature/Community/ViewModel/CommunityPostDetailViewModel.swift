@@ -97,6 +97,7 @@ extension CommunityPostDetailView {
         func deletePost() async {
             do {
                 try await interactor.deleteFreeboardPost(postId: postId)
+                appStore.send(.notifyFreeBoardPostDeleted(postId))
                 output = .postDeleted
             } catch {}
         }

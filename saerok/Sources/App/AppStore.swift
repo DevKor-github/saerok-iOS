@@ -23,6 +23,7 @@ enum AppAction {
     case openMapCoordinate(MapView.Routing.Coordinate)
     case openFieldGuideBird(name: String)
     case refreshCollections
+    case notifyFreeBoardPostDeleted(Int)
 }
 
 enum AppEvent: Equatable {
@@ -33,6 +34,7 @@ enum AppEvent: Equatable {
     case mapNavigationRequested(MapView.Routing.Coordinate)
     case fieldGuideBirdRequested(String)
     case collectionsRefreshRequested
+    case freeBoardPostDeleted(Int)
 }
 
 final class AppStore {
@@ -107,6 +109,9 @@ final class AppStore {
 
         case .refreshCollections:
             eventSubject.send(.collectionsRefreshRequested)
+
+        case .notifyFreeBoardPostDeleted(let postId):
+            eventSubject.send(.freeBoardPostDeleted(postId))
         }
     }
 }

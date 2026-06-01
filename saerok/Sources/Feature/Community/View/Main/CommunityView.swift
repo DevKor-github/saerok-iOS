@@ -150,16 +150,28 @@ private extension CommunityView {
                 profileImageUrl: viewModel.currentUserProfileImageUrl,
                 isPresented: $showPostingView,
                 onPost: { content in
-                    await viewModel.createFreeboardPost(content: content)
-                    showToast(
-                        .init(
-                            type: .success,
-                            message: "포스팅 성공!",
-                            placementOffset: -120,
-                            transitionOffset: 160,
-                            duration: 3.0
+                    do {
+                        try await viewModel.createFreeboardPost(content: content)
+                        showToast(
+                            .init(
+                                type: .success,
+                                message: "게시글을 올렸어요.",
+                                placementOffset: -120,
+                                transitionOffset: 160,
+                                duration: 3.0
+                            )
                         )
-                    )
+                    } catch {
+                        showToast(
+                            .init(
+                                type: .failure,
+                                message: "게시글 업로드에 실패했어요.",
+                                placementOffset: -120,
+                                transitionOffset: 160,
+                                duration: 3.0
+                            )
+                        )
+                    }
                 }
             )
         }

@@ -51,16 +51,23 @@ extension CommunityView {
                     .weakSink(on: self) { viewModel, user in
                         viewModel.currentUser = user
                     }
+
+                appStore.events
+                    .compactMap { event -> Int? in
+                        guard case .freeBoardPostDeleted(let postId) = event else { return nil }
+                        return postId
+                    }
+                    .weakSink(on: self) { viewModel, postId in
+                        viewModel.removeFreeBoardPost(postId)
+                    }
             }
         }
         
         var currentUserNickname: String { currentUser?.nickname ?? "" }
         var currentUserProfileImageUrl: String? { currentUser?.imageURL }
 
-        func createFreeboardPost(content: String) async {
-            do {
-                _ = try await interactor.createFreeboardPost(content: content)
-            } catch {}
+        func createFreeboardPost(content: String) async throws {
+            _ = try await interactor.createFreeboardPost(content: content)
         }
         
         func loadPosts() async {
@@ -137,6 +144,15 @@ extension CommunityView {
                     await self?.performSearch(text, for: searchCase)
                 }
             }
+        }
+
+        private func removeFreeBoardPost(_ postId: Int) {
+            mainItems = .init(
+                pendingCollections: mainItems.pendingCollections,
+                recentCollections: mainItems.recentCollections,
+                popularCollections: mainItems.popularCollections,
+                recentFreeBoardPosts: mainItems.recentFreeBoardPosts.filter { $0.id != postId }
+            )
         }
     }
 }

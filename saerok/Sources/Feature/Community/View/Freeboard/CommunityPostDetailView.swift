@@ -25,9 +25,11 @@ struct CommunityPostDetailView: View {
             .task { await viewModel.load() }
             .onChange(of: viewModel.output) { _, new in
                 switch new {
-                case .postDeleted: coordinator.pop()
+                case .postDeleted:
+                    coordinator.pop()
+                    showToast(.init(type: .success, message: "게시글을 삭제했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
                 case .reportSubmitted:
-                    showToast(.init(type: .success, message: "신고가 접수되었어요", placementOffset: -120, transitionOffset: 160, duration: 3.0))
+                    showToast(.init(type: .success, message: "게시글을 신고했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
                 case .none: break
                 }
             }

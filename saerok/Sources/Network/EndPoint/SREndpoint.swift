@@ -195,7 +195,7 @@ extension SREndpoint {
         switch self {
         case .toggleBookmark, .me, .updateMe, .myCollections, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment, .reportFreeBoardPost:
             return true
-        case .getSuggestions, .collectionDetail:
+        case .getSuggestions, .collectionDetail, .freeBoardPost, .communityFreeboardPosts:
             return TokenManager.shared.getAccessToken() != nil
         default:
             return false
