@@ -10,19 +10,11 @@ import Combine
 import SwiftUI
 
 struct FreeBoardListView: View {
-    private enum PendingPostAction {
-        case delete
-        case report
-    }
-
     @EnvironmentObject private var coordinator: AppCoordinator
     @Environment(\.showToast) private var showToast
     @State private var viewModel: ViewModel
     @State private var showPostingView: Bool = false
     @State private var showFloatingMenu: Bool = false
-    @State private var showPostActionPopup: Bool = false
-    @State private var selectedPost: Local.FreeBoardPost?
-    @State private var pendingPostAction: PendingPostAction?
 
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
@@ -32,7 +24,6 @@ struct FreeBoardListView: View {
         content
             .task { await viewModel.loadInitialIfNeeded() }
             .regainSwipeBack()
-            .srPopup(isPresented: $showPostActionPopup, config: postActionPopupConfig)
             .sheet(isPresented: $showPostingView) {
                 PostingView(
                     nickname: viewModel.currentUserNickname,
@@ -85,35 +76,6 @@ struct FreeBoardListView: View {
         )
     }
 
-    private var postActionPopupConfig: PopupConfig? {
-        guard let selectedPost, let pendingPostAction else { return nil }
-
-        switch pendingPostAction {
-        case .delete:
-            return .init(
-                title: "게시글을 삭제하시겠어요?",
-                message: "\(formatText(selectedPost.content))게시글이 삭제돼요.",
-                buttons: .double(
-                    .init(title: "취소", style: .confirm) { dismissPostActionPopup() },
-                    .init(title: "삭제하기", style: .delete) {
-                        Task { await deletePost(selectedPost.id) }
-                    }
-                )
-            )
-        case .report:
-            return .init(
-                title: "게시글을 신고하시겠어요?",
-                message: "커뮤니티 가이드에 따라\n신고 사유에 해당하는지 검토 후 처리돼요.",
-                buttons: .double(
-                    .init(title: "신고하기", style: .delete) {
-                        Task { await reportPost(selectedPost.id) }
-                    },
-                    .init(title: "돌아가기", style: .confirm) { dismissPostActionPopup() }
-                )
-            )
-        }
-    }
-
     private var navigationBar: some View {
         NavigationBar(
             center: {
@@ -144,12 +106,6 @@ struct FreeBoardListView: View {
                         post: post,
                         onTap: {
                             coordinator.push(CommunityView.Route.postDetail(postId: post.id))
-                        },
-                        onDelete: {
-                            presentPostActionPopup(post: post, action: .delete)
-                        },
-                        onReport: {
-                            presentPostActionPopup(post: post, action: .report)
                         }
                     )
                     .onAppear {
@@ -166,49 +122,6 @@ struct FreeBoardListView: View {
         .refreshable { await viewModel.refresh() }
     }
 
-    private func deletePost(_ postId: Int) async {
-        dismissPostActionPopup()
-        do {
-            try await viewModel.deletePost(postId)
-            showToast(.init(type: .success, message: "게시글을 삭제했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
-        } catch {
-            showToast(.init(type: .failure, message: "게시글 삭제에 실패했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
-        }
-    }
-
-    private func reportPost(_ postId: Int) async {
-        dismissPostActionPopup()
-        do {
-            try await viewModel.reportPost(postId)
-            showToast(.init(type: .success, message: "게시글을 신고했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
-        } catch {
-            showToast(.init(type: .failure, message: "게시글 신고에 실패했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
-        }
-    }
-
-    private func presentPostActionPopup(post: Local.FreeBoardPost, action: PendingPostAction) {
-        selectedPost = post
-        pendingPostAction = action
-        showPostActionPopup = true
-    }
-
-    private func dismissPostActionPopup() {
-        showPostActionPopup = false
-        selectedPost = nil
-        pendingPostAction = nil
-    }
-
-    private func formatText(_ text: String?) -> String {
-        let limit = 10
-        guard let text else { return "" }
-
-        if text.count <= limit {
-            return "'\(text)...'"
-        } else {
-            let truncated = text.prefix(limit)
-            return "'\(truncated)...'"
-        }
-    }
 }
 
 extension FreeBoardListView {
@@ -281,15 +194,6 @@ extension FreeBoardListView {
             _ = try await interactor.createFreeboardPost(content: content)
             didLoad = false
             await loadInitialIfNeeded()
-        }
-
-        func deletePost(_ postId: Int) async throws {
-            try await interactor.deleteFreeboardPost(postId: postId)
-            appStore.send(.notifyFreeBoardPostDeleted(postId))
-        }
-
-        func reportPost(_ postId: Int) async throws {
-            _ = try await interactor.reportFreeboardPost(postId: postId)
         }
 
         private func loadInitial() async {

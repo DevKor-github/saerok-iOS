@@ -30,6 +30,7 @@ extension MapView {
     final class ViewModel {
         enum Output: Equatable {
             case navigateTo(coord: Routing.Coordinate)
+            case showToast(message: String)
         }
         
         private let locationManager: LocationManager
@@ -135,6 +136,7 @@ extension MapView {
                     withAnimation(.bouncy(duration: 0.4)) {
                         isMineOnly.toggle()
                     }
+                    output = .showToast(message: isMineOnly ? "내 새록만 보기" : "모든 새록 보기")
                     HapticManager.shared.trigger(.success)
                 } catch {
                     HapticManager.shared.trigger(.error)

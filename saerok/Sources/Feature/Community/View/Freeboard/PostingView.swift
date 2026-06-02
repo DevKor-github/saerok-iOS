@@ -54,14 +54,25 @@ struct PostingView: View {
             Group {
                 userView
                     .padding(.top, 13)
-                TextField("자유로운 글을 작성해보세요!", text: $contents)
-                    .font(.SRFontSet.body4_2)
-                    .padding(.leading, 30)
-                    .padding(.top, 3)
-                    .focused($isFocused)
-                    .onAppear {
-                        isFocused.toggle()
+                ZStack(alignment: .topLeading) {
+                    if contents.isEmpty {
+                        Text("자유로운 글을 작성해보세요!")
+                            .font(.SRFontSet.body4_2)
+                            .foregroundStyle(Color.srGray)
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
                     }
+                    TextEditor(text: $contents)
+                        .font(.SRFontSet.body4_2)
+                        .scrollContentBackground(.hidden)
+                        .focused($isFocused)
+                }
+                .padding(.leading, 26)
+                .padding(.top, 3)
+                .onAppear {
+                    isFocused.toggle()
+                }
                 Spacer()
                 Button(action: {
                     isUploading = true

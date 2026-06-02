@@ -10,19 +10,13 @@ import SwiftUI
 struct PostCell: View {
     let post: Local.FreeBoardPost
     let onTap: (() -> Void)?
-    let onDelete: (() -> Void)?
-    let onReport: (() -> Void)?
 
     init(
         post: Local.FreeBoardPost,
-        onTap: (() -> Void)? = nil,
-        onDelete: (() -> Void)? = nil,
-        onReport: (() -> Void)? = nil
+        onTap: (() -> Void)? = nil
     ) {
         self.post = post
         self.onTap = onTap
-        self.onDelete = onDelete
-        self.onReport = onReport
     }
 
     var body: some View {
@@ -42,23 +36,16 @@ struct PostCell: View {
                 onTap?()
             }
 
-            if onDelete != nil || onReport != nil {
-                Menu {
-                    if post.isMine, let onDelete {
-                        Button(role: .destructive, action: onDelete) {
-                            Label("삭제하기", systemImage: "trash")
-                        }
-                    } else if let onReport {
-                        Button(action: onReport) {
-                            Label("신고하기", systemImage: "light.beacon.max")
-                        }
-                    }
-                } label: {
-                    Image.SRIconSet.option
-                        .frame(.default, tintColor: .srGray)
-                        .padding(.trailing, 24)
-                        .padding(.top, 13)
+            if post.commentCount > 0 {
+                HStack(spacing: 3) {
+                    Image.SRIconSet.commentFilled
+                        .frame(.default, tintColor: .srLightGray)
+                    Text("\(post.commentCount)")
+                        .font(.SRFontSet.caption1_2)
+                        .foregroundStyle(.srGray)
                 }
+                .padding(.trailing, 24)
+                .padding(.top, 13)
             }
         }
     }
@@ -69,9 +56,9 @@ struct PostCell: View {
             nickname: post.nickname,
             createdAt: post.createdAt,
             commentCount: post.commentCount,
-            showsCommentCount: true
+            showsCommentCount: false
         )
-        .padding(.trailing, onDelete != nil || onReport != nil ? 32 : 0)
+        .padding(.trailing, post.commentCount > 0 ? 32 : 0)
     }
 
     var content: some View {

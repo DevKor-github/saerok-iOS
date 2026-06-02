@@ -307,17 +307,15 @@ struct FreeBoardCTACarouselCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("자유게시판에 글을 남겨보세요")
-                        .font(.SRFontSet.body2_3)
-                    Text("새 관찰 이야기를 공유해보세요!")
-                        .font(.SRFontSet.caption1)
-                        .foregroundStyle(.srGray)
-                }
-                Spacer()
-                Image.SRIconSet.post
-                    .frame(.default, tintColor: .srGreen)
+            HStack(spacing: 17) {
+                Text("자유게시판에 글을 남겨보세요!")
+                    .font(.SRFontSet.caption1)
+                    .foregroundStyle(.srGray)
+                Image(systemName: "arrow.right")
+                    .foregroundStyle(.srWhite)
+                    .padding(8)
+                    .background(.whiteGray)
+                    .cornerRadius(10)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)

@@ -80,9 +80,9 @@ private struct AppNavigationHost: View {
                 )
             }
             .onboardingOverlay(type: selectedTab.onboardingType)
-            .srToast()
             .ignoresSafeArea(.all)
         }
+        .srToast()
         .ignoresSafeArea(.all)
     }
 }

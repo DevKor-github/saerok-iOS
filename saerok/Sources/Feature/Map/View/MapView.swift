@@ -16,7 +16,8 @@ struct MapView: View {
     
     // MARK: - Dependencies
     @EnvironmentObject private var coordinator: AppCoordinator
-        
+    @Environment(\.showToast) private var showToast
+
     @State private var viewModel: ViewModel
     @FocusState private var isFocused: Bool
 
@@ -50,6 +51,16 @@ struct MapView: View {
                 switch output {
                 case .navigateTo(coord: let coord):
                     viewModel.handleRoutingNavigationUpdate(coord)
+                case .showToast(let message):
+                    showToast(
+                        .init(
+                            type: .normal,
+                            message: message,
+                            placementOffset: -120,
+                            transitionOffset: 160,
+                            duration: 3.0
+                        )
+                    )
                 }
                 viewModel.resetOutput()
             }

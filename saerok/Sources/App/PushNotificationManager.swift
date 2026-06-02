@@ -131,13 +131,7 @@ extension PushNotificationManager: @MainActor UNUserNotificationCenterDelegate {
     
     private func parseNotificationType(from userInfo: [AnyHashable: Any]) -> Local.NotificationType? {
         guard let type = userInfo["type"] as? String else { return nil }
-        
-        switch type {
-        case Local.NotificationType.system.rawValue:
-            return .system
-        default:
-            return .comment
-        }
+        return Local.NotificationType(rawValue: type)
     }
     
     private func parseRelatedId(from userInfo: [AnyHashable: Any]) -> Int? {
