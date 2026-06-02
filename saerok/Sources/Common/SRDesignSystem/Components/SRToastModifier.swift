@@ -61,6 +61,7 @@ struct SRToastModifier: ViewModifier {
             
             Text(toast.message)
                 .font(.SRFontSet.body2)
+                .foregroundStyle(toast.type.textColor)
                 .multilineTextAlignment(.center)
                 .frame(height: 28)
             
@@ -74,9 +75,7 @@ struct SRToastModifier: ViewModifier {
         .padding(.leading, 6)
         .padding(.trailing, 13)
         .padding(.vertical, 5)
-        .background(
-            Color.white.opacity(0.8)
-        )
+        .background(toast.type.backgroundColor)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -129,7 +128,7 @@ enum ToastType {
         }
     }
     
-    var color: Color {
+    var iconColor: Color {
         switch self {
         case .success: .splash
         case .failure: .iconRed
@@ -141,7 +140,23 @@ enum ToastType {
         switch self {
         case .success: .accent
         case .failure: .fire
-        case .normal: .srGray
+        case .normal: Color(red: 0.13, green: 0.13, blue: 0.13).opacity(0.8)
+        }
+    }
+    
+    var backgroundColor: Color {
+        switch self {
+        case .success: Color.white.opacity(0.8)
+        case .failure: Color.white.opacity(0.8)
+        case .normal: Color(red: 0.13, green: 0.13, blue: 0.13).opacity(0.8)
+        }
+    }
+    
+    var textColor: Color {
+        switch self {
+        case .success: .black
+        case .failure: .black
+        case .normal: .white
         }
     }
 }
