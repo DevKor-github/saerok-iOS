@@ -12,12 +12,17 @@ import AppTrackingTransparency
 struct RootSelectorView: View {
     @Environment(\.injected) private var injected
     @Environment(\.scenePhase) private var scenePhase
-    
+    @EnvironmentObject private var coordinator: AppCoordinator
+
     @State private var authStatus: AppState.AuthStatus = .notDetermined
     @State private var showSplash = true
-    
+
     @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var versionChecker = AppVersionChecker()
+
+    /// 스플래시가 뜨는 동안 첫 화면(CommunityView)의 메인 데이터를 미리 받아오는 작업.
+    /// `community/main`은 인증이 필요 없어 autoLogin과 병렬로 안전하게 선조회할 수 있다.
+    @State private var communityPrefetchTask: Task<Void, Never>?
 
     private var authStatusUpdate: AnyPublisher<AppState.AuthStatus, Never> {
         injected.appStore.updates(for: \.authStatus)
@@ -31,6 +36,7 @@ struct RootSelectorView: View {
             }
         }
         .animation(.spring(), value: networkMonitor.isConnected)
+        .onAppear(perform: startCommunityPrefetchIfNeeded)
         .onReceive(authStatusUpdate) { newStatus in
             authStatus = newStatus
             if case .notDetermined = newStatus {
@@ -62,6 +68,12 @@ struct RootSelectorView: View {
 }
 
 private extension RootSelectorView {
+    /// 스플래시 노출과 동시에 첫 화면 데이터 선조회를 시작한다. 한 번만 실행된다.
+    func startCommunityPrefetchIfNeeded() {
+        guard communityPrefetchTask == nil else { return }
+        communityPrefetchTask = Task { @MainActor in await coordinator.communityViewModel.loadPosts() }
+    }
+
     func loadCurrentUser() async throws {
         let user = try await injected.interactors.user.getUser()
         injected.appStore.send(.syncCurrentUser(.init(user)))
@@ -103,6 +115,9 @@ private extension RootSelectorView {
                         } catch {
                             injected.appStore.send(.requireAuthentication)
                         }
+                        // 선조회가 아직 끝나지 않았다면 완료를 기다린 뒤 화면을 전환해
+                        // CommunityView가 로딩 상태 없이 바로 데이터와 함께 뜨도록 한다.
+                        await communityPrefetchTask?.value
                         showSplash = false
                     }
                 }
