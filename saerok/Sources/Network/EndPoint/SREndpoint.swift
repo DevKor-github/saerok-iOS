@@ -7,473 +7,101 @@
 
 import Foundation
 
-enum SREndpoint: Endpoint {
-    
-    // MARK: Birds API
-    case fullSync
-    case birdChanges(since: Date)
-    
-    // MARK: Bookmark API
-    case myBookmarks
-    case toggleBookmark(birdId: Int)
-    
-    // MARK: Collections API
-    case myCollections
-    case collectionDetail(collectionId: Int)
-    case nearbyCollections(lat: Double, lng: Double, radius: Double, isMineOnly: Bool, isGuest: Bool = false)
-    case createCollection(body: DTO.CreateCollectionRequest)
-    case getPresignedURL(collectionId: Int, contentType: String)
-    case registerUploadedImage(collectionId: Int, body: DTO.RegisterImageRequest)
-    case deleteCollection(collectionId: Int)
-    case editCollection(collectionId: Int, body: DTO.EditCollectionMetadataRequest)
-    case collectionComments(collectionId: Int)
-    case createComment(collectionId: Int, body: DTO.CreateCommentRequest)
-    case likeCollection(collectionId: Int)
-    case deleteCollectionComment(collectionID: Int, commentID: Int)
-    case reportCollection(collectionId: Int)
-    case reportComment(collectionId: Int, commentId: Int)
-    case collectionLikeUsers(collectionId: Int)
-    
-    // MARK: Bird ID Suggestions API
-    case getSuggestions(collectionId: Int)
-    case suggestBird(collectionId: Int, birdId: Int)
-    case adoptSuggestion(collectionId: Int, birdId: Int)
-    case toggleSuggestionAgree(collectionId: Int, birdId: Int)
-    case toggleSuggestionDisagree(collectionId: Int, birdId: Int)
-    case resetSuggestion(collectionId: Int)
-    
-    // MARK: Community API
-    case communityMain
-    case communityPendingBirdId(page: Int? = nil, size: Int? = nil)
-    case communityPopular(page: Int? = nil, size: Int? = nil)
-    case communityRecent(page: Int? = nil, size: Int? = nil)
-    case communitySearch(query: String)
-    case communitySearchUsers(query: String, page: Int? = nil, size: Int? = nil)
-    case communitySearchCollections(query: String, page: Int? = nil, size: Int? = nil)
-    case communityFreeboardPosts(page: Int? = nil, size: Int? = nil)
-    case createFreeBoardPost(body: DTO.CreateFreeBoardPostRequest)
-    case freeBoardPost(postId: Int)
-    case deleteFreeBoardPost(postId: Int)
-    case editFreeBoardPost(postId: Int, body: DTO.EditFreeBoardPostRequest)
-    case freeBoardPostComments(postId: Int, page: Int? = nil, size: Int? = nil)
-    case createFreeBoardComment(postId: Int, body: DTO.CreateFreeBoardCommentRequest)
-    case deleteFreeBoardComment(postId: Int, commentId: Int)
-    case editFreeBoardComment(postId: Int, commentId: Int, body: DTO.EditFreeBoardCommentRequest)
-    case freeBoardCommentCount(postId: Int)
-    case reportFreeBoardPost(postId: Int)
+/// 새록 백엔드 API 엔드포인트.
+///
+/// 각 API는 도메인별 `extension SREndpoint`(`SREndpoint+{도메인}.swift`)의
+/// **static factory** 하나로 정의한다. 하나의 API에 필요한 모든 속성
+/// (path·method·auth·body·response 등)이 한 블록에 모이므로, API를 추가할 때
+/// 여러 `switch`를 오가며 수정할 필요가 없다.
+struct SREndpoint: Endpoint {
 
-    // MARK: Auth API
-    case appleLogin(authorizationCode: String)
-    case kakaoLogin(accessCode: String)
-    case refreshToken(refreshToken: String)
-    
-    // MARK: User API
-    case signUp_complete(body: DTO.SignUpRequest)
-    case checkNickname(_ nickname: String)
-    case me
-    case deleteMe
-    case updateMe(nickname: String? = nil, registerImage: DTO.ProfileRegisterImageRequest? = nil)
-    case deleteProfileImage
-    case getProfilePresignedURL(contentType: String)
-    case profile(userId: Int)
-    case blockUser(body: DTO.BlockUserRequest)
-    
-    // MARK: Notifications API
-    case registerDeviceToken(body: DTO.RegisterDeviceTokenRequest)
-    case getNotificationSettings(deviceId: String)
-    case toggleNotificationSetting(body: DTO.ToggleNotificationRequest)
-    case notifications
-    case readAllNotifications
-    case readNotification(notificationId: Int)
-    case deleteAllNotifications
-    case deleteNotification(_ notificationId: Int)
-    case notificationsUnreadCount
-    
-    // MARK: Announcements API
-    case announcements
-    case announcementDetail(id: Int)
+    /// 인증 토큰 부착 정책.
+    enum Auth {
+        /// 토큰 불필요 (공개 API).
+        case none
+        /// 항상 토큰 필요.
+        case required
+        /// 토큰이 있으면 부착, 없으면 게스트로 호출 (로그인 선택 API).
+        case ifLoggedIn
+    }
+
+    let path: String
+    let method: HTTPMethod
+    let auth: Auth
+    let queryItems: [String: String]?
+    let requestBody: Data?
+    /// `Content-Type: application/json` 헤더 부착 여부.
+    let sendsJSON: Bool
+    let expectedResponseType: Decodable.Type
+
+    init(
+        path: String,
+        method: HTTPMethod = .get,
+        auth: Auth = .none,
+        query: [String: String]? = nil,
+        body: Data? = nil,
+        json: Bool = false,
+        response: Decodable.Type = EmptyResponse.self
+    ) {
+        self.path = path
+        self.method = method
+        self.auth = auth
+        self.queryItems = query
+        self.requestBody = body
+        self.sendsJSON = json
+        self.expectedResponseType = response
+    }
 }
+
+// MARK: - Endpoint conformance
 
 extension SREndpoint {
     var baseURL: String { Bundle.main.baseURL }
-    
-    var path: String {
-        switch self {
-            
-        // MARK: Birds API
-        case .fullSync: "birds/full-sync"
-        case .birdChanges: "birds/changes"
-            
-        // MARK: Bookmark API
-        case .toggleBookmark(let ID): "birds/bookmarks/\(ID)/toggle"
-        case .myBookmarks: "birds/bookmarks/"
-            
-        // MARK: Collections API
-        case .myCollections: "collections/me"
-        case .collectionDetail(let collectionID), .deleteCollection(let collectionID): "collections/\(collectionID)"
-        case .nearbyCollections: "collections/nearby"
-        case .createCollection: "collections/"
-        case .getPresignedURL(let collectionID, _): "collections/\(collectionID)/images/presign"
-        case .registerUploadedImage(let collectionID, _): "collections/\(collectionID)/images"
-        case .editCollection(let collectionID, _): "collections/\(collectionID)/edit"
-        case .collectionComments(let collectionID): "collections/\(collectionID)/comments"
-        case .createComment(let collectionID, _): "collections/\(collectionID)/comments"
-        case .likeCollection(collectionId: let collectionID): "collections/\(collectionID)/like"
-        case .deleteCollectionComment(let collectionID, let commentID): "collections/\(collectionID)/comments/\(commentID)"
-        case .reportCollection(let collectionId): "collections/\(collectionId)/report"
-        case .reportComment(let collectionId, let commentId): "collections/\(collectionId)/comments/\(commentId)/report"
-        case .collectionLikeUsers(let collectionId): "collections/\(collectionId)/like/users"
-            
-        // MARK: Bird ID Suggestions API
-        case .getSuggestions(let collectionId): "collections/\(collectionId)/bird-id-suggestions"
-        case .suggestBird(let collectionId, _): "collections/\(collectionId)/bird-id-suggestions"
-        case .toggleSuggestionAgree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/agree"
-        case .toggleSuggestionDisagree(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/disagree"
-        case .adoptSuggestion(let collectionId, let birdId): "collections/\(collectionId)/bird-id-suggestions/\(birdId)/adopt"
-        case .resetSuggestion(collectionId: let collectionId): "/collections/\(collectionId)/bird-id-suggestions/all"
-            
-        // MARK: Auth API
-        case .appleLogin: "auth/apple/login"
-        case .kakaoLogin: "auth/kakao/login"
-        case .refreshToken: "auth/refresh"
-            
-        // MARK: User API
-        case .signUp_complete: "user/signup-complete"
-        case .checkNickname: "user/check-nickname"
-        case .me, .updateMe, .deleteMe: "user/me"
-        case .getProfilePresignedURL: "user/me/profile-image/presign"
-        case .deleteProfileImage: "user/me/profile-image"
-        case .profile(let userId): "profile/\(userId)"
-        case .blockUser: "users/blocks"
-            
-        // MARK: Notifications API
-        case .registerDeviceToken: "notifications/tokens"
-        case .getNotificationSettings: "notifications/settings"
-        case .toggleNotificationSetting: "notifications/settings/toggle"
-        case .notifications: "notifications"
-        case .readAllNotifications: "notifications/read-all"
-        case .readNotification(let notificationId): "notifications/\(notificationId)/read"
-        case .deleteAllNotifications: "notifications/all"
-        case .deleteNotification(let notificationId): "notifications/\(notificationId)"
-        case .notificationsUnreadCount: "notifications/unread-count"
-            
-        // MARK: Community API
-        case .communityMain: "community/main"
-        case .communityPendingBirdId: "community/pending-bird-id"
-        case .communityPopular: "community/popular"
-        case .communityRecent: "community/recent"
-        case .communitySearch: "community/search"
-        case .communitySearchUsers: "community/search/users"
-        case .communitySearchCollections: "community/search/collections"
-        case .communityFreeboardPosts, .createFreeBoardPost: "community/freeboard/posts"
-        case .freeBoardPost(let postId), .deleteFreeBoardPost(let postId): "community/freeboard/posts/\(postId)"
-        case .editFreeBoardPost(let postId, _): "community/freeboard/posts/\(postId)"
-        case .freeBoardPostComments(let postId, _, _), .createFreeBoardComment(let postId, _): "community/freeboard/posts/\(postId)/comments"
-        case .deleteFreeBoardComment(let postId, let commentId), .editFreeBoardComment(let postId, let commentId, _): "community/freeboard/posts/\(postId)/comments/\(commentId)"
-        case .freeBoardCommentCount(let postId): "community/freeboard/posts/\(postId)/comments/count"
-        case .reportFreeBoardPost(let postId): "community/freeboard/posts/\(postId)/report"
-        
-        // MARK: Announcements API
-        case .announcements: "announcements"
-        case .announcementDetail(id: let id): "announcements/\(id)"
-        }
-    }
-    
-    var method: HTTPMethod {
-        switch self {
-        case .fullSync, .birdChanges, .checkNickname, .me, .profile, .myCollections, .nearbyCollections, .collectionDetail, .myBookmarks, .collectionComments, .getSuggestions, .getNotificationSettings, .notifications, .notificationsUnreadCount, .collectionLikeUsers, .communityMain, .communityPendingBirdId, .communityPopular, .communityRecent, .communitySearch, .communitySearchUsers, .communitySearchCollections, .communityFreeboardPosts, .freeBoardPost, .freeBoardPostComments, .freeBoardCommentCount, .announcements, .announcementDetail: .get
-        case .appleLogin, .kakaoLogin, .toggleBookmark, .refreshToken, .createCollection, .getPresignedURL, .registerUploadedImage, .createComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .reportComment, .signUp_complete, .blockUser, .createFreeBoardPost, .createFreeBoardComment, .reportFreeBoardPost: .post
-        case .updateMe, .editCollection, .toggleNotificationSetting, .readAllNotifications, .readNotification, .editFreeBoardPost, .editFreeBoardComment: .patch
-        case .deleteMe, .deleteCollection, .deleteCollectionComment, .resetSuggestion, .deleteAllNotifications, .deleteNotification, .deleteProfileImage, .deleteFreeBoardPost, .deleteFreeBoardComment: .delete
-        }
-    }
-    
+
     var requiresAuth: Bool {
-        if case let .nearbyCollections(_, _, _, _, isGuest) = self {
-            return isGuest == false
-        }
-        switch self {
-        case .toggleBookmark, .me, .updateMe, .myCollections, .createCollection, .getPresignedURL, .registerUploadedImage, .deleteCollection, .editCollection, .myBookmarks, .createComment, .deleteCollectionComment, .likeCollection, .suggestBird, .adoptSuggestion, .toggleSuggestionAgree, .toggleSuggestionDisagree, .resetSuggestion, .reportCollection, .getProfilePresignedURL, .registerDeviceToken, .getNotificationSettings, .toggleNotificationSetting, .notifications, .readAllNotifications, .readNotification, .deleteAllNotifications, .deleteNotification, .notificationsUnreadCount, .deleteMe, .deleteProfileImage, .reportComment, .signUp_complete, .createFreeBoardPost, .deleteFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .deleteFreeBoardComment, .editFreeBoardComment, .reportFreeBoardPost:
-            return true
-        case .getSuggestions, .collectionDetail, .freeBoardPost, .communityFreeboardPosts:
-            return TokenManager.shared.getAccessToken() != nil
-        default:
-            return false
+        switch auth {
+        case .none: return false
+        case .required: return true
+        case .ifLoggedIn: return TokenManager.shared.getAccessToken() != nil
         }
     }
-    
+
     var headers: [String: String]? {
         var headers: [String: String] = [:]
-        
-        if requiresAuth {
-            if let token = TokenManager.shared.getAccessToken() {
-                headers["Authorization"] = "Bearer \(token)"
-            }
+
+        if requiresAuth, let token = TokenManager.shared.getAccessToken() {
+            headers["Authorization"] = "Bearer \(token)"
         }
-        
-        switch self {
-        case .appleLogin, .kakaoLogin, .refreshToken, .updateMe, .createCollection, .getPresignedURL, .registerUploadedImage, .editCollection, .createComment, .suggestBird, .getProfilePresignedURL, .registerDeviceToken, .toggleNotificationSetting, .signUp_complete, .blockUser, .createFreeBoardPost, .editFreeBoardPost, .createFreeBoardComment, .editFreeBoardComment:
+        if sendsJSON {
             headers["Content-Type"] = "application/json"
-        default:
-            break
         }
-        
+
         return headers.isEmpty ? nil : headers
-    }
-    
-    var requestBody: Data? {
-        switch self {
-        case let .createCollection(body):
-            return try? JSONEncoder().encode(body)
-        case .getPresignedURL(_, let contentType):
-            let body = ["contentType": contentType]
-            return try? JSONSerialization.data(withJSONObject: body)
-        case .registerUploadedImage(_, let body):
-            return try? JSONEncoder().encode(body)
-        case.editCollection(_, let body):
-            return try? JSONEncoder().encode(body)
-        case .appleLogin(let authorizationCode):
-            let body = ["authorizationCode": authorizationCode]
-            return try? JSONSerialization.data(withJSONObject: body)
-        case .kakaoLogin(let accessToken):
-            let body = ["accessToken": accessToken]
-            return try? JSONSerialization.data(withJSONObject: body)
-        case .refreshToken(let token):
-            let body = ["refreshTokenJson": token]
-            return try? JSONSerialization.data(withJSONObject: body)
-        case .updateMe(let nickname, let registerImage):
-            if let nickname = nickname {
-                let body = ["nickname": nickname]
-                return try? JSONSerialization.data(withJSONObject: body)
-            } else if let registerImage = registerImage {
-                return try? JSONEncoder().encode(registerImage)
-            } else {
-                return nil
-            }
-        case .createComment(_, let body):
-            return try? JSONEncoder().encode(body)
-        case .suggestBird(_, let birdId):
-            let body = ["birdId": birdId]
-            return try? JSONSerialization.data(withJSONObject: body)
-        case .getProfilePresignedURL(let contentType):
-            let body = ["contentType": contentType]
-            return try? JSONSerialization.data(withJSONObject: body)
-        case .registerDeviceToken(let body):
-               return try? JSONEncoder().encode(body)
-        case .toggleNotificationSetting(let body):
-               return try? JSONEncoder().encode(body)
-        case .signUp_complete(let signupRequest):
-            return try? JSONEncoder().encode(signupRequest)
-        case .blockUser(let body):
-            return try? JSONEncoder().encode(body)
-        case .createFreeBoardPost(let body):
-            return try? JSONEncoder().encode(body)
-        case .editFreeBoardPost(_, let body):
-            return try? JSONEncoder().encode(body)
-        case .createFreeBoardComment(_, let body):
-            return try? JSONEncoder().encode(body)
-        case .editFreeBoardComment(_, _, let body):
-            return try? JSONEncoder().encode(body)
-        default:
-            return nil
-        }
-    }
-    
-    var queryItems: [String: String]? {
-        switch self {
-        case .checkNickname(let nickname):
-            return ["nickname": nickname]
-        case .nearbyCollections(let lat, let lng, let radius, let isMineOnly, _):
-            return [
-                "latitude": "\(lat)",
-                "longitude": "\(lng)",
-                "radiusMeters": "\(radius)",
-                "isMineOnly": "\(isMineOnly)"
-            ]
-        case .getNotificationSettings(let deviceId):
-            return ["deviceId": deviceId, "platform": "IOS"]
-        case .birdChanges(let since):
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withColonSeparatorInTimeZone]
-            return ["since": formatter.string(from: since)]
-        case .communityPendingBirdId(let page, let size):
-            if let page, let size {
-                return [
-                    "page": "\(page)",
-                    "size": "\(size)"
-                ]
-            } else {
-                return nil
-            }
-        case .communityPopular(let page, let size):
-            if let page, let size {
-                return [
-                    "page": "\(page)",
-                    "size": "\(size)"
-                ]
-            } else {
-                return nil
-            }
-        case .communityRecent(let page, let size):
-            if let page, let size {
-                return [
-                    "page": "\(page)",
-                    "size": "\(size)"
-                ]
-            } else {
-                return nil
-            }
-        case .communitySearch(let query):
-            return [
-                "q": query
-            ]
-        case .communitySearchUsers(let query, let page, let size):
-            if let page, let size {
-                return [
-                    "q": query,
-                    "page": "\(page)",
-                    "size": "\(size)"
-                ]
-            } else {
-                return [
-                    "q": query
-                ]
-            }
-        case .communitySearchCollections(let query, let page, let size):
-            if let page, let size {
-                return [
-                    "q": query,
-                    "page": "\(page)",
-                    "size": "\(size)"
-                ]
-            } else {
-                return [
-                    "q": query
-                ]
-            }
-        case .communityFreeboardPosts(let page, let size),
-             .freeBoardPostComments(_, let page, let size):
-            if let page, let size {
-                return [
-                    "page": "\(page)",
-                    "size": "\(size)"
-                ]
-            } else {
-                return nil
-            }
-        default:
-            return nil
-        }
     }
 }
 
+// MARK: - Body / Query 헬퍼
+
 extension SREndpoint {
-    var expectedResponseType: Decodable.Type {
-        switch self {
-        case .fullSync:
-            return DTO.BirdsResponse.self
-        case .birdChanges:
-            return EmptyResponse.self
-        case .myCollections:
-            return DTO.MyCollectionsResponse.self
-        case .collectionDetail:
-            return DTO.CollectionDetailResponse.self
-        case .createCollection:
-            return DTO.CreateCollectionResponse.self
-        case .getPresignedURL:
-            return DTO.PresignedURLResponse.self
-        case .registerUploadedImage:
-            return DTO.RegisterImageResponse.self
-        case .nearbyCollections:
-            return DTO.NearbyCollectionsResponse.self
-        case .deleteCollection:
-            return EmptyResponse.self
-        case .editCollection:
-            return DTO.CollectionEditResponse.self
-        case .collectionLikeUsers:
-            return DTO.CollectionLikeUsersResponse.self
-        case .appleLogin, .kakaoLogin, .refreshToken:
-            return DTO.AuthResponse.self
-        case .checkNickname:
-            return DTO.CheckNicknameResponse.self
-        case .me, .updateMe:
-            return DTO.MeResponse.self
-        case .profile:
-            return DTO.ProfileResponse.self
-        case .toggleBookmark:
-            return DTO.ToggleBookmarkResponse.self
-        case .myBookmarks:
-            return DTO.MyBookmarkResponse.self
-        case .collectionComments:
-            return DTO.CollectionCommentsResponse.self
-        case .createComment:
-            return DTO.CreateCommentResponse.self
-        case .likeCollection:
-            return DTO.CollectionLikeToggleResponse.self
-        case .getSuggestions:
-            return DTO.SuggestionListResponse.self
-        case .suggestBird:
-            return DTO.SuggestResponse.self
-        case .adoptSuggestion:
-            return DTO.AdoptSuggestionResponse.self
-        case .toggleSuggestionAgree, .toggleSuggestionDisagree:
-            return DTO.ToggleSuggestionResponse.self
-        case .getProfilePresignedURL:
-            return DTO.PresignedURLResponse.self
-        case .registerDeviceToken:
-            return DTO.RegisterDeviceTokenResponse.self
-        case .getNotificationSettings:
-            return DTO.GetNotificationSettingsResponse.self
-        case .toggleNotificationSetting:
-            return DTO.ToggleNotificationResponse.self
-        case .notifications:
-            return DTO.NotificationResponse.self
-        case .notificationsUnreadCount:
-            return DTO.GetUnreadCount.self
-        case .communityMain:
-            return DTO.CommunityMainResponse.self
-        case .communityPendingBirdId:
-            return DTO.CommunityPendingBirdIdResponse.self
-        case .communityPopular:
-            return DTO.CommunityPopularResponse.self
-        case .communityRecent:
-            return DTO.CommunityRecentResponse.self
-        case .communitySearch:
-            return DTO.CommunitySearchResponse.self
-        case .communitySearchUsers:
-            return DTO.CommunitySearchUsersResponse.self
-        case .communitySearchCollections:
-            return DTO.CommunitySearchCollectionsResponse.self
-        case .communityFreeboardPosts:
-            return DTO.CommunityFreeboardPostsResponse.self
-        case .createFreeBoardPost:
-            return DTO.CreateFreeBoardPostResponse.self
-        case .freeBoardPost:
-            return DTO.FreeBoardPostItem.self
-        case .deleteFreeBoardPost:
-            return EmptyResponse.self
-        case .editFreeBoardPost:
-            return DTO.EditFreeBoardPostResponse.self
-        case .freeBoardPostComments:
-            return DTO.FreeBoardCommentsResponse.self
-        case .createFreeBoardComment:
-            return DTO.CreateFreeBoardCommentResponse.self
-        case .deleteFreeBoardComment:
-            return EmptyResponse.self
-        case .editFreeBoardComment:
-            return DTO.EditFreeBoardCommentResponse.self
-        case .freeBoardCommentCount:
-            return DTO.FreeBoardCommentCountResponse.self
-        case .reportFreeBoardPost:
-            return DTO.ReportFreeBoardPostResponse.self
-        case .announcements:
-            return DTO.Announcements.self
-        case .announcementDetail:
-            return DTO.AnnouncementDetail.self
-        case .blockUser:
-            return EmptyResponse.self
-        default:
-            return EmptyResponse.self
-        }
+    /// `Encodable` 모델을 JSON Data로 인코딩.
+    static func jsonBody<E: Encodable>(_ value: E) -> Data? {
+        try? JSONEncoder().encode(value)
+    }
+
+    /// 딕셔너리를 JSON Data로 인코딩 (단일 필드 등 모델이 없는 경우).
+    static func jsonBody(_ dict: [String: Any]) -> Data? {
+        try? JSONSerialization.data(withJSONObject: dict)
+    }
+
+    /// page·size가 모두 있을 때만 페이지네이션 쿼리를 만든다. (둘 중 하나라도 nil이면 쿼리 없음)
+    static func pageQuery(page: Int?, size: Int?) -> [String: String]? {
+        guard let page, let size else { return nil }
+        return ["page": "\(page)", "size": "\(size)"]
+    }
+
+    /// 검색 쿼리. page·size가 모두 있으면 함께 붙이고, 아니면 `q`만 보낸다.
+    static func searchQuery(query: String, page: Int?, size: Int?) -> [String: String] {
+        guard let page, let size else { return ["q": query] }
+        return ["q": query, "page": "\(page)", "size": "\(size)"]
     }
 }

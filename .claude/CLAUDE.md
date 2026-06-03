@@ -235,36 +235,29 @@ let isGuest = appStore[\.authStatus] == .guest
 
 ## API 엔드포인트 추가
 
-`SREndpoint` enum에 케이스를 추가할 때 반드시 6개 항목을 모두 처리해야 한다.
+`SREndpoint`는 **struct**이고, 각 API는 도메인별 `extension SREndpoint`의 **static factory 하나**로 정의한다. 하나의 API에 필요한 모든 속성(path·method·auth·body·response)이 한 블록에 모이므로, 해당 도메인 `// MARK:` 섹션에 함수만 추가하면 된다. (예전 enum + switch 방식은 폐기 — 자세한 절차는 [ADD-ENDPOINT-GUIDE](docs/ADD-ENDPOINT-GUIDE.md) 4단계 참고.)
 
 ```swift
-enum SREndpoint: Endpoint {
-    case somethingList(page: Int, size: Int)
-
-    var path: String {
-        switch self {
-        case .somethingList: return "something/list"
-        }
-    }
-
-    var method: HTTPMethod { .get }
-
-    var requiresAuth: Bool { true }   // 인증 불필요 시 TokenManager.shared.getAccessToken() != nil
-
-    var queryItems: [String: String]? {
-        switch self {
-        case .somethingList(let page, let size):
-            return ["page": "\(page)", "size": "\(size)"]
-        }
-    }
-
-    var expectedResponseType: Decodable.Type {
-        switch self {
-        case .somethingList: return DTO.SomethingListResponse.self
-        }
+// MARK: - Something API
+extension SREndpoint {
+    static func somethingList(page: Int, size: Int) -> SREndpoint {
+        SREndpoint(
+            path: "something/list",
+            method: .get,                 // 기본값 .get
+            auth: .required,              // .none / .required / .ifLoggedIn
+            query: ["page": "\(page)", "size": "\(size)"],
+            response: DTO.SomethingListResponse.self
+        )
     }
 }
 ```
+
+- `init` 파라미터: `path` / `method`(기본 `.get`) / `auth`(기본 `.none`) / `query` / `body` / `json`(Content-Type) / `response`(기본 `EmptyResponse`).
+- 인자가 없는 API는 `static var`로 선언한다 (예: `static var myCollections`).
+- 바디는 `jsonBody(...)` 헬퍼로 인코딩하고 `json: true`를 함께 지정한다.
+- 페이지네이션 쿼리는 `pageQuery(page:size:)` / `searchQuery(query:page:size:)` 헬퍼를 재사용한다.
+- 응답 바디가 없으면 `response:`를 생략한다 → `EmptyResponse`. (switch `default:` 함정 없음)
+- 호출부는 기존과 동일: `networkService.performSRRequest(.somethingList(page:size:))`.
 
 ## UI 규칙
 - CRITICAL: 색상은 반드시 **Asset Catalog 이름**으로 참조 (`Color.main`, `.srWhite`, `.srGray` 등). hex 하드코딩 금지.

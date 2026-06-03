@@ -105,50 +105,83 @@ extension Local.FreeBoardPost {
 
 **위치**: `saerok/Sources/Network/EndPoint/SREndpoint.swift`
 
-총 **6군데**를 수정한다.
+`SREndpoint`는 **struct**이고, 각 API는 도메인별 `extension SREndpoint`의 **static factory 하나**로 정의한다. 하나의 API에 필요한 모든 속성이 한 블록에 모이므로, 해당 도메인 `// MARK:` 섹션에 함수 하나만 추가하면 된다. (예전처럼 여러 `switch`를 오가며 수정하지 않는다.)
 
-### 4-1. case 선언
+### 호출부에서 인자가 있으면 `static func`, 없으면 `static var`
+
 ```swift
-// MARK: Community API
-case communityFreeboardPosts(page: Int? = nil, size: Int? = nil)
-```
-
-### 4-2. `path`
-```swift
-case .communityFreeboardPosts: "community/freeboard/posts"
-```
-
-### 4-3. `method`
-```swift
-// GET 케이스 목록에 추가
-case .communityFreeboardPosts: // 이미 .get 케이스에 포함
-```
-
-### 4-4. `requiresAuth`
-| API 인증 | 처리 방법 |
-|----------|----------|
-| required | `true`를 반환하는 케이스 목록에 추가 |
-| none | `default: return false`에 걸리므로 추가 불필요 |
-| optional | 토큰이 있으면 전송: `case .communityFreeboardPosts: return TokenManager.shared.getAccessToken() != nil` |
-
-### 4-5. `queryItems` / `requestBody`
-```swift
-// 쿼리 파라미터 (page, size 쌍)
-case .communityFreeboardPosts(let page, let size):
-    if let page, let size {
-        return ["page": "\(page)", "size": "\(size)"]
-    } else {
-        return nil
+// MARK: - Community API
+extension SREndpoint {
+    static func communityFreeboardPosts(page: Int? = nil, size: Int? = nil) -> SREndpoint {
+        SREndpoint(
+            path: "community/freeboard/posts",
+            method: .get,                 // 기본값 .get — GET이면 생략 가능
+            auth: .ifLoggedIn,            // .none / .required / .ifLoggedIn
+            query: pageQuery(page: page, size: size),
+            response: DTO.CommunityFreeboardPostsResponse.self
+        )
     }
+}
 ```
-- POST/PATCH 바디는 `requestBody`에, GET 파라미터는 `queryItems`에 추가한다.
-- page와 size는 API 문서에서 "둘 다 제공해야 함" 조건이 있으면 쌍으로만 처리한다.
 
-### 4-6. `expectedResponseType`
+### `init` 파라미터 한눈에
+
+| 파라미터 | 의미 | 기본값 |
+|----------|------|--------|
+| `path` | 경로 (버전 prefix 제거). 앞에 `/`를 붙이지 않는다 | (필수) |
+| `method` | `.get` / `.post` / `.patch` / `.delete` | `.get` |
+| `auth` | 인증 정책 (아래 표 참고) | `.none` |
+| `query` | 쿼리 파라미터 `[String: String]?` | `nil` |
+| `body` | 요청 바디 `Data?` — `jsonBody(...)` 헬퍼로 인코딩 | `nil` |
+| `json` | `Content-Type: application/json` 헤더 부착 여부. 바디가 JSON이면 `true` | `false` |
+| `response` | 디코딩할 응답 타입. **응답 바디가 없으면 생략** (기본 `EmptyResponse`) | `EmptyResponse.self` |
+
+### `auth` 정책
+
+| API 인증 | 값 |
+|----------|------|
+| required (항상 토큰) | `.required` |
+| none (공개) | `.none` (생략 가능) |
+| optional (있으면 부착) | `.ifLoggedIn` |
+
+### 바디가 있는 경우 — `jsonBody` 헬퍼 사용
+
 ```swift
-case .communityFreeboardPosts:
-    return DTO.CommunityFreeboardPostsResponse.self
+// Encodable DTO 바디
+static func createFreeBoardPost(body: DTO.CreateFreeBoardPostRequest) -> SREndpoint {
+    SREndpoint(
+        path: "community/freeboard/posts",
+        method: .post,
+        auth: .required,
+        body: jsonBody(body),   // Encodable → Data
+        json: true,
+        response: DTO.CreateFreeBoardPostResponse.self
+    )
+}
+
+// 단일 필드 등 모델 없이 딕셔너리 바디
+static func suggestBird(collectionId: Int, birdId: Int) -> SREndpoint {
+    SREndpoint(
+        path: "collections/\(collectionId)/bird-id-suggestions",
+        method: .post,
+        auth: .required,
+        body: jsonBody(["birdId": birdId]),   // [String: Any] → Data
+        json: true,
+        response: DTO.SuggestResponse.self
+    )
+}
 ```
+
+### 페이지네이션 쿼리 — `pageQuery` / `searchQuery` 헬퍼
+
+`page`·`size`가 **둘 다 있을 때만** 쿼리를 붙이는 규칙은 파일 하단의 헬퍼로 처리한다. 직접 `if let` 분기를 작성하지 말고 재사용한다.
+
+```swift
+query: pageQuery(page: page, size: size)              // page+size 쌍, 둘 중 하나라도 nil이면 쿼리 없음
+query: searchQuery(query: q, page: page, size: size)  // q는 항상, page+size는 쌍일 때만
+```
+
+> 응답 바디가 없는 API(`delete*`, `report*` 등)는 `response:`를 생략하면 자동으로 `EmptyResponse`가 된다. 예전 `switch`의 `default:` 함정(추가를 깜빡하면 조용히 잘못된 타입으로 디코딩)이 사라졌으므로, 응답 타입은 항상 호출 지점에서 명시적으로 보인다.
 
 ---
 
@@ -218,12 +251,10 @@ struct MockCommunityInteractorImpl: CommunityInteractor {
 ```
 [ ] DTO 파일 생성 (nullable 처리, 날짜는 String)
 [ ] Local 모델 파일 생성 (from(dto:) 변환 포함)
-[ ] SREndpoint case 선언
-[ ] SREndpoint path 추가
-[ ] SREndpoint method(GET/POST 등) 케이스에 추가
-[ ] SREndpoint requiresAuth 처리
-[ ] SREndpoint queryItems 또는 requestBody 추가
-[ ] SREndpoint expectedResponseType 추가
+[ ] SREndpoint static factory 추가 (도메인 MARK 섹션에 함수 하나)
+[ ]   - path / method / auth 지정
+[ ]   - 바디는 jsonBody(...), 페이지 쿼리는 pageQuery/searchQuery 헬퍼 사용
+[ ]   - response 타입 지정 (응답 바디 없으면 생략 → EmptyResponse)
 [ ] Repository 프로토콜 메서드 추가
 [ ] Repository MainRepository 구현 추가
 [ ] Interactor 프로토콜 메서드 추가
