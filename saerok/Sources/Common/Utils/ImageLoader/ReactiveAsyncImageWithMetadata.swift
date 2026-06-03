@@ -53,23 +53,19 @@ struct ReactiveAsyncImageWithMetadata: View {
             guard let url = URL(string: url),
                   uiImage == nil
             else { return }
-            
-            if metadata == nil {
-                metadata = try? await ImageLoader.fetchMetadata(from: url)
-            }
-            
-            if let metadata {
-                let cellWidth = UIScreen.main.bounds.width / 2 - 24 
-                let cellHeight = cellWidth / metadata.aspectRatio
-                let targetSize = CGSize(width: cellWidth, height: cellHeight)
-                
-                uiImage = try? await ImageLoader.loadFromURL(
-                    from: url,
-                    size: targetSize,
-                    scale: scale,
-                    downsampled: downsampling,
-                    isCachingEnabled: isCachingEnabled
-                )
+
+            let cellWidth = UIScreen.main.bounds.width / 2 - 24
+
+            // 메타데이터 + 이미지를 한 번의 다운로드로 함께 로드
+            if let result = try? await ImageLoader.loadImageWithMetadata(
+                from: url,
+                cellWidth: cellWidth,
+                scale: scale,
+                downsampled: downsampling,
+                isCachingEnabled: isCachingEnabled
+            ) {
+                metadata = result.metadata
+                uiImage = result.image
             }
 
             isLoading = false

@@ -15,7 +15,8 @@ struct AsyncImage: View {
     let size: CGSize
     let scale: ImageScale
     let downsampling: Bool
-    
+    var useDiskCache: Bool = false
+
     var body: some View {
         GeometryReader { geometry in
             content(in: geometry.size.width)
@@ -26,7 +27,8 @@ struct AsyncImage: View {
                 from: URL(string: url),
                 size: size,
                 scale: scale,
-                downsampled: downsampling
+                downsampled: downsampling,
+                useDiskCache: useDiskCache
             )
             isLoading = false
         }
@@ -80,19 +82,22 @@ struct ReactiveAsyncImage: View {
     let size: CGSize
     let downsampling: Bool
     let isCachingEnabled: Bool
-    
+    let useDiskCache: Bool
+
     init(
         url: String,
         scale: ImageScale,
         size: CGSize,
         downsampling: Bool,
-        isCachingEnabled: Bool = true
+        isCachingEnabled: Bool = true,
+        useDiskCache: Bool = false
     ) {
         self.url = url
         self.scale = scale
         self.size = size
         self.downsampling = downsampling
         self.isCachingEnabled = isCachingEnabled
+        self.useDiskCache = useDiskCache
     }
     
     var body: some View {
@@ -112,7 +117,8 @@ struct ReactiveAsyncImage: View {
                 size: size,
                 scale: scale,
                 downsampled: downsampling,
-                isCachingEnabled: isCachingEnabled
+                isCachingEnabled: isCachingEnabled,
+                useDiskCache: useDiskCache
             )
 
             isLoading = false

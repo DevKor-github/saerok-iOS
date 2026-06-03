@@ -20,7 +20,8 @@ struct BirdCardView: View {
                         url: url,
                         size: Const.imageSize,
                         scale: .small,
-                        downsampling: true
+                        downsampling: true,
+                        useDiskCache: true
                     )
                     .clipped()
                 }
