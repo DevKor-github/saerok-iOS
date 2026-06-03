@@ -420,6 +420,7 @@ private extension CommunityView {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
+        .contentShape(Rectangle())
     }
 }
 

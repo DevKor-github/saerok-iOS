@@ -26,7 +26,6 @@ struct SRToastModifier: ViewModifier {
                     if activeToast != nil {
                         activeToast = nil
                     }
-                    
                 } completion: {
                     toastDismissTask?.cancel()
                     withAnimation(animation) {
@@ -76,12 +75,19 @@ struct SRToastModifier: ViewModifier {
         .padding(.trailing, 13)
         .padding(.vertical, 5)
         .background(toast.type.backgroundColor)
+        .background {
+            BackdropView()
+                .blur(radius: 4)
+        }
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .inset(by: 0.5)
                 .stroke(toast.type.strokeColor, lineWidth: 1)
         )
+        .applyIf(toast.type == .normal) {
+            $0.shadow(color: Color(red: 0.33, green: 0.33, blue: 0.33).opacity(0.5), radius: 5, x: 0, y: 0)
+        }
         .offset(y: toast.placementOffset)
         .gesture(
             DragGesture()

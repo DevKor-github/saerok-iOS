@@ -136,7 +136,7 @@ extension MapView {
                     withAnimation(.bouncy(duration: 0.4)) {
                         isMineOnly.toggle()
                     }
-                    output = .showToast(message: isMineOnly ? "내 새록만 보기" : "모든 새록 보기")
+                    output = .showToast(message: isMineOnly ? "내 새록만 보기" : "모두의 새록 보기")
                     HapticManager.shared.trigger(.success)
                 } catch {
                     HapticManager.shared.trigger(.error)

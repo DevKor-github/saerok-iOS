@@ -29,7 +29,7 @@ struct FreeBoardPostUserSection: View {
     }
 
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 7) {
             ReactiveAsyncImage(
                 url: profileImageUrl ?? "",
                 scale: .small,
@@ -40,11 +40,12 @@ struct FreeBoardPostUserSection: View {
 
             Text(nickname)
                 .font(.SRFontSet.body3_2)
-
-            Text("･")
-                .font(.SRFontSet.caption3)
-                .foregroundStyle(.srGray)
-                .padding(.horizontal, 2)
+            
+            Rectangle()
+                .foregroundColor(.clear)
+                .frame(width: 2, height: 2)
+                .background(.srGray)
+                .cornerRadius(1)
 
             Text(createdAt.relativeString)
                 .font(.SRFontSet.caption3)

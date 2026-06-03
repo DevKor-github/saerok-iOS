@@ -313,6 +313,7 @@ struct FreeBoardCTACarouselCard: View {
                     .foregroundStyle(.srGray)
                 Image(systemName: "arrow.right")
                     .foregroundStyle(.srWhite)
+                    .frame(width: 24, height: 24)
                     .padding(8)
                     .background(.whiteGray)
                     .cornerRadius(10)

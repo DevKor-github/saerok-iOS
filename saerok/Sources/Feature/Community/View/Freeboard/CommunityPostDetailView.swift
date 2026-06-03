@@ -27,9 +27,9 @@ struct CommunityPostDetailView: View {
                 switch new {
                 case .postDeleted:
                     coordinator.pop()
-                    showToast(.init(type: .success, message: "게시글을 삭제했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
+                    showToast(.init(type: .success, message: "게시글을 삭제했어요.", placementOffset: -58, transitionOffset: 160, duration: 2.0))
                 case .reportSubmitted:
-                    showToast(.init(type: .success, message: "게시글을 신고했어요.", placementOffset: -120, transitionOffset: 160, duration: 3.0))
+                    showToast(.init(type: .success, message: "게시글을 신고했어요.", placementOffset: -58, transitionOffset: 160, duration: 2.0))
                 case .none: break
                 }
             }

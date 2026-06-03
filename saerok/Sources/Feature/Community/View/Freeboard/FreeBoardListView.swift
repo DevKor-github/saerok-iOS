@@ -15,7 +15,8 @@ struct FreeBoardListView: View {
     @State private var viewModel: ViewModel
     @State private var showPostingView: Bool = false
     @State private var showFloatingMenu: Bool = false
-
+    @State private var showLoginPopup: Bool = false
+    
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
@@ -36,9 +37,9 @@ struct FreeBoardListView: View {
                                 .init(
                                     type: .success,
                                     message: "게시글을 올렸어요.",
-                                    placementOffset: -120,
+                                    placementOffset: -58,
                                     transitionOffset: 160,
-                                    duration: 3.0
+                                    duration: 2.0
                                 )
                             )
                         } catch {
@@ -46,9 +47,9 @@ struct FreeBoardListView: View {
                                 .init(
                                     type: .failure,
                                     message: "게시글 업로드에 실패했어요.",
-                                    placementOffset: -120,
+                                    placementOffset: -58,
                                     transitionOffset: 160,
-                                    duration: 3.0
+                                    duration: 2.0
                                 )
                             )
                         }
@@ -68,10 +69,45 @@ struct FreeBoardListView: View {
         .modifier(
             FloatingMenuModifier(
                 postAction: { showPostingView = true },
-                saerokAction: {},
-                bottomOffset: 24,
+                saerokAction: {
+                    if viewModel.isGuestMode {
+                        showLoginPopup = true
+                    } else {
+                        coordinator.push(CommunityView.Route.addCollection)
+                    }
+                },
+                bottomOffset: 34,
                 showMenu: $showFloatingMenu,
                 isHidden: $showPostingView
+            )
+        )
+        .srPopup(
+            isPresented: $showLoginPopup,
+            config: showLoginPopup ? loginPopupConfig : nil
+        )
+        .ignoresSafeArea(edges: .bottom)
+    }
+
+    private var loginPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "로그인이 필요한 기능이에요",
+            message: "로그인하고 더 많은 기능을 사용해보세요!",
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        showLoginPopup = false
+                    }
+                ),
+                .init(
+                    title: "로그인",
+                    style: .confirm,
+                    action: {
+                        showLoginPopup = false
+                        viewModel.initLoginStatus()
+                    }
+                )
             )
         )
     }
@@ -133,6 +169,7 @@ extension FreeBoardListView {
         private(set) var didLoad: Bool = false
         private(set) var currentPage: Int = 1
         private(set) var currentUser: AppState.UserProfile?
+        private(set) var isGuestMode: Bool = true
 
         private let interactor: CommunityInteractor
         private let appStore: AppStore
@@ -146,11 +183,21 @@ extension FreeBoardListView {
             self.interactor = interactor
             self.appStore = appStore
             self.currentUser = appStore[\.currentUser]
+            self.isGuestMode = appStore[\.authStatus] == .guest
 
             appStore
                 .updates(for: \.currentUser)
                 .weakSink(on: self) { viewModel, user in
                     viewModel.currentUser = user
+                }
+                .store(in: cancelBag)
+
+            appStore
+                .updates(for: \.authStatus)
+                .map { $0 == .guest }
+                .removeDuplicates()
+                .weakSink(on: self) { viewModel, isGuest in
+                    viewModel.isGuestMode = isGuest
                 }
                 .store(in: cancelBag)
 
@@ -194,6 +241,10 @@ extension FreeBoardListView {
             _ = try await interactor.createFreeboardPost(content: content)
             didLoad = false
             await loadInitialIfNeeded()
+        }
+
+        func initLoginStatus() {
+            appStore.send(.requireAuthentication)
         }
 
         private func loadInitial() async {
