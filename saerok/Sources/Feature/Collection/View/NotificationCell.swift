@@ -49,11 +49,24 @@ struct NotificationCell: View {
                 + Text("“\(payload.comment ?? "")”").font(.SRFontSet.body4)
             case .birdIdSuggestion:
                 Text("두근두근! 새로운 의견이 공유됐어요. 확인해볼까요?").font(.SRFontSet.body4)
-            case .system, .adminMessage:
+            case .system, .adminMessage, .freeBoardComment, .freeBoardReply:
                 Text("")
             }
         case .announcement(let payload):
             Text(payload.body).font(.SRFontSet.body4)
+        case .freeBoard(let payload):
+            switch item.type {
+            case .freeBoardComment:
+                Text(payload.actorNickname).font(.SRFontSet.body2_3)
+                + Text("님이 게시글에 댓글을 남겼어요. ").font(.SRFontSet.body4)
+                + Text("“\(payload.comment)”").font(.SRFontSet.body4)
+            case .freeBoardReply:
+                Text(payload.actorNickname).font(.SRFontSet.body2_3)
+                + Text("님이 회원님의 댓글에 답글을 남겼어요. ").font(.SRFontSet.body4)
+                + Text("“\(payload.comment)”").font(.SRFontSet.body4)
+            default:
+                Text("")
+            }
         }
     }
     
@@ -61,6 +74,13 @@ struct NotificationCell: View {
     private var actorImage: some View {
         switch item.payload {
         case .saerok(let payload):
+            ReactiveAsyncImage(
+                url: payload.actorImageUrl,
+                scale: .small,
+                size: .init(width: 25, height: 25),
+                downsampling: true
+            )
+        case .freeBoard(let payload):
             ReactiveAsyncImage(
                 url: payload.actorImageUrl,
                 scale: .small,

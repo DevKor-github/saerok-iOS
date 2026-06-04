@@ -33,6 +33,9 @@ struct NotificationView: View {
                     if case .saerok(let payload) = item.payload {
                         coordinator.push(CollectionRoute.collectionDetailFromNotiCenter(payload.collectionId))
                         viewModel.readNotification(item)
+                    } else if case .freeBoard(let payload) = item.payload {
+                        viewModel.readNotification(item)
+                        coordinator.push(CollectionRoute.directToFreeBoardPost(payload.postId))
                     } else if case .announcement(let payload) = item.payload {
                         viewModel.readNotification(item)
                         guard let id = payload.announcementId else { return }

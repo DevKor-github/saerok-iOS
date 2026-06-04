@@ -13,6 +13,8 @@ extension Local {
         case system = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
         case adminMessage = "SYSTEM_ADMIN_MESSAGE"
         case replied = "REPLIED_TO_COMMENT"
+        case freeBoardComment = "COMMENTED_ON_FREE_BOARD_POST"
+        case freeBoardReply = "REPLIED_TO_FREE_BOARD_COMMENT"
 
         var title: String {
             switch self {
@@ -28,6 +30,10 @@ extension Local {
                 return "공지사항 알림"
             case .adminMessage:
                 return "관리자 알림"
+            case .freeBoardComment:
+                return "자유게시판 댓글 알림"
+            case .freeBoardReply:
+                return "자유게시판 답글 알림"
             }
         }
     }
@@ -61,6 +67,10 @@ extension Local {
                     dict[.system] = item.enabled
                 case .repliedToComment:
                     dict[.replied] = item.enabled
+                case .commentedOnFreeBoardPost:
+                    dict[.freeBoardComment] = item.enabled
+                case .repliedToFreeBoardComment:
+                    dict[.freeBoardReply] = item.enabled
                 case .systemAdminMessage:
                     break
                 }

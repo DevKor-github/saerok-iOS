@@ -19,6 +19,7 @@ extension Local {
     enum NotificationPayloadModel {
         case saerok(SaerokPayload)
         case announcement(AnnouncementPayload)
+        case freeBoard(FreeBoardPayload)
     }
 
     /// 새록 알림 페이로드
@@ -34,6 +35,14 @@ extension Local {
     struct AnnouncementPayload {
         let announcementId: Int?
         let body: String
+    }
+
+    /// 자유게시판 알림 페이로드
+    struct FreeBoardPayload {
+        let actorImageUrl: String
+        let actorNickname: String
+        let postId: Int
+        let comment: String
     }
 }
 
@@ -76,6 +85,14 @@ extension Local.Notification {
                     body: dto.payload.body ?? ""
                 )
             )
+
+        case .commentedOnFreeBoardPost:
+            self.type = .freeBoardComment
+            self.payload = try Self.freeBoardPayload(from: dto)
+
+        case .repliedToFreeBoardComment:
+            self.type = .freeBoardReply
+            self.payload = try Self.freeBoardPayload(from: dto)
         }
     }
 
@@ -95,6 +112,24 @@ extension Local.Notification {
             collectionId: collectionId,
             collectionImageUrl: dto.payload.collectionImageUrl,
             comment: comment
+        ))
+    }
+
+    private static func freeBoardPayload(from dto: DTO.Notification) throws -> Local.NotificationPayloadModel {
+        guard let actorImageUrl = dto.actorProfileImageUrl else {
+            throw NotificationMappingError.missingField("actorProfileImageUrl", notificationType: dto.type)
+        }
+        guard let actorNickname = dto.actorNickname else {
+            throw NotificationMappingError.missingField("actorNickname", notificationType: dto.type)
+        }
+        guard let postId = dto.payload.freeBoardPostId else {
+            throw NotificationMappingError.missingField("freeBoardPostId", notificationType: dto.type)
+        }
+        return .freeBoard(.init(
+            actorImageUrl: actorImageUrl,
+            actorNickname: actorNickname,
+            postId: postId,
+            comment: dto.payload.comment ?? ""
         ))
     }
 }

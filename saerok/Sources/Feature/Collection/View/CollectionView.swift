@@ -17,6 +17,7 @@ enum CollectionRoute: AppRoute {
     case addCollection(bird: Local.Bird?)
     case notification
     case directToBoardDetail(Int)
+    case directToFreeBoardPost(Int)
 }
 
 struct CollectionView: View {
@@ -55,6 +56,8 @@ struct CollectionView: View {
                     NotificationView(viewModel: coordinator.factory.makeNotificationViewModel())
                 case .directToBoardDetail(let id):
                     BoardDetailView(id: id, viewModel: coordinator.factory.makeBoardViewModel())
+                case .directToFreeBoardPost(let id):
+                    CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: id)
                 }
             }
             .onChange(of: viewModel.output, initial: true) { _, output in

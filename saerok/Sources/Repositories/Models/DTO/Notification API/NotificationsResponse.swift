@@ -31,8 +31,10 @@ extension DTO {
         case systemPublishedAnnouncement = "SYSTEM_PUBLISHED_ANNOUNCEMENT"
         case systemAdminMessage = "SYSTEM_ADMIN_MESSAGE"
         case repliedToComment = "REPLIED_TO_COMMENT"
+        case commentedOnFreeBoardPost = "COMMENTED_ON_FREE_BOARD_POST"
+        case repliedToFreeBoardComment = "REPLIED_TO_FREE_BOARD_COMMENT"
     }
-    
+
     struct NotificationPayload: Codable {
         // 새록
         let collectionId: Int?
@@ -40,11 +42,15 @@ extension DTO {
         let suggestedName: String?
         let collectionImageUrl: String?
         let comment: String?
-        
+
         // 공지사항
         let announcementId: Int?
         let body: String?
         let title: String?
         let inAppBody: String?
+
+        // 자유게시판
+        let freeBoardPostId: Int?
+        let freeBoardCommentId: Int?
     }
 }

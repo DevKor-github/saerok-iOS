@@ -123,6 +123,9 @@ extension PushNotificationManager: @MainActor UNUserNotificationCenterDelegate {
         case .system:
             appStore.send(.selectTab(.profile))
             appStore.send(.openBoardDetail(id))
+        case .freeBoardComment, .freeBoardReply:
+            appStore.send(.selectTab(.community))
+            appStore.send(.openFreeBoardPost(id))
         default:
             appStore.send(.selectTab(.collection))
             appStore.send(.openCollectionDetail(id))

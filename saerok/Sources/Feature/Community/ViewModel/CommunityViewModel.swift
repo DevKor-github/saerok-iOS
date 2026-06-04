@@ -11,8 +11,13 @@ import Combine
 extension CommunityView {
     @Observable
     final class ViewModel {
-        
+
+        enum Output: Equatable {
+            case navigateToPostDetail(postId: Int)
+        }
+
         // MARK: State
+        private(set) var output: Output?
         private(set) var searchMainItems: Local.CommunitySearchMainItems = .init()
         private(set) var mainItems: Local.CommunityMainItems = .init()
         private(set) var loadState: LoadState<Void> = .notRequested
@@ -59,6 +64,15 @@ extension CommunityView {
                     }
                     .weakSink(on: self) { viewModel, postId in
                         viewModel.removeFreeBoardPost(postId)
+                    }
+
+                appStore.events
+                    .compactMap { event -> Int? in
+                        guard case .freeBoardPostRequested(let postId) = event else { return nil }
+                        return postId
+                    }
+                    .weakSink(on: self) { viewModel, postId in
+                        viewModel.output = .navigateToPostDetail(postId: postId)
                     }
             }
         }
@@ -144,6 +158,10 @@ extension CommunityView {
                     await self?.performSearch(text, for: searchCase)
                 }
             }
+        }
+
+        func resetOutput() {
+            output = nil
         }
 
         private func removeFreeBoardPost(_ postId: Int) {

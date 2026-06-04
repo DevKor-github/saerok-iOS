@@ -118,8 +118,10 @@ struct UserInteractorImpl: UserInteractor {
         async let like = toggleNotificationSetting(.like)
         async let reply = toggleNotificationSetting(.replied)
         async let system = toggleNotificationSetting(.system)
+        async let freeBoardComment = toggleNotificationSetting(.freeBoardComment)
+        async let freeBoardReply = toggleNotificationSetting(.freeBoardReply)
 
-        let _ = try await (bird, comment, like, reply, system)
+        let _ = try await (bird, comment, like, reply, system, freeBoardComment, freeBoardReply)
     }
 
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool {

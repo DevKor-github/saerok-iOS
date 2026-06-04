@@ -19,6 +19,7 @@ enum AppAction {
     case requestFieldGuideScrollToTop
     case requestCollectionScrollToTop
     case openBoardDetail(Int)
+    case openFreeBoardPost(Int)
     case openCollectionDetail(Int)
     case openMapCoordinate(MapView.Routing.Coordinate)
     case openFieldGuideBird(name: String)
@@ -30,6 +31,7 @@ enum AppEvent: Equatable {
     case fieldGuideScrollToTop
     case collectionScrollToTop
     case boardDetailRequested(Int)
+    case freeBoardPostRequested(Int)
     case collectionDetailRequested(Int)
     case mapNavigationRequested(MapView.Routing.Coordinate)
     case fieldGuideBirdRequested(String)
@@ -97,6 +99,9 @@ final class AppStore {
 
         case .openBoardDetail(let id):
             eventSubject.send(.boardDetailRequested(id))
+
+        case .openFreeBoardPost(let id):
+            eventSubject.send(.freeBoardPostRequested(id))
 
         case .openCollectionDetail(let id):
             eventSubject.send(.collectionDetailRequested(id))

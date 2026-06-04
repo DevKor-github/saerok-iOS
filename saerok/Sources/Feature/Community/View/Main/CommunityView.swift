@@ -45,6 +45,14 @@ struct CommunityView: View {
         content
             .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
+            .onChange(of: viewModel.output, initial: true) { _, output in
+                guard let output else { return }
+                switch output {
+                case .navigateToPostDetail(let postId):
+                    coordinator.push(Route.postDetail(postId: postId))
+                }
+                viewModel.resetOutput()
+            }
             .onPreferenceChange(ScrollPreferenceKey.self) { newValue in
                 let clampedNew = max(min(newValue, 0), -100)
                 let clampedOld = max(min(self.offsetY, 0), -100)
