@@ -58,7 +58,7 @@ struct MapView: View {
                             message: message,
                             placementOffset: -120,
                             transitionOffset: 160,
-                            duration: 3.0
+                            duration: 2.0
                         )
                     )
                 }

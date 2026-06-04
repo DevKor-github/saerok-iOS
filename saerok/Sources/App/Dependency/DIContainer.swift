@@ -69,16 +69,13 @@ extension EnvironmentValues {
 }
 
 extension View {
-    /// DIContainer를 현재 뷰 계층에 주입합니다.
+    /// DIContainer와 AppCoordinator를 현재 뷰 계층에 주입합니다.
     ///
-    /// 이 메서드는 DIContainer를 SwiftUI의 Environment에 등록하여,
-    /// 하위 뷰들이 의존성에 접근할 수 있도록 합니다.
-    ///
-    /// - Parameter container: 주입할 DIContainer 인스턴스
-    /// - Returns: DIContainer가 주입된 새로운 뷰 인스턴스
-    func inject(_ container: DIContainer) -> some View {
+    /// coordinator는 반드시 외부에서 생성된 안정적인 인스턴스를 전달해야 합니다.
+    /// 호출부에서 매번 새로 생성하면 이전 인스턴스의 weak 참조가 댕글링됩니다.
+    func inject(_ container: DIContainer, coordinator: AppCoordinator) -> some View {
         return self
             .environment(\.injected, container)
-            .environmentObject(AppCoordinator(container: container))
+            .environmentObject(coordinator)
     }
 }

@@ -68,12 +68,13 @@ struct PostingView: View {
                         .scrollContentBackground(.hidden)
                         .focused($isFocused)
                 }
+                .frame(maxHeight: .infinity, alignment: .topLeading)
                 .padding(.leading, 26)
                 .padding(.top, 3)
+                .padding(.bottom, 20)
                 .onAppear {
                     isFocused.toggle()
                 }
-                Spacer()
                 Button(action: {
                     isUploading = true
                     Task {

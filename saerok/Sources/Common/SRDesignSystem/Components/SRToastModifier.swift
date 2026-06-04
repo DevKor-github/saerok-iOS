@@ -16,6 +16,7 @@ struct SRToastModifier: ViewModifier {
             .overlay(alignment: .bottom) {
                 if let activeToast {
                     toastView(activeToast)
+                        .id(activeToast.id)
                 }
             }
             .environment(\.showToast) { toast in

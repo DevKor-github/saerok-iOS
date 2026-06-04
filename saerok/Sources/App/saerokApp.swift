@@ -29,7 +29,7 @@ extension AppEnvironment {
     var rootView: some View {
         RootSelectorView()
             .modelContainer(modelContainer)
-            .inject(diContainer)
+            .inject(diContainer, coordinator: coordinator)
             .task {
                 let migrationKey = "lastMigratedAppVersion2.0.2"
                 let context = ModelContext(modelContainer)

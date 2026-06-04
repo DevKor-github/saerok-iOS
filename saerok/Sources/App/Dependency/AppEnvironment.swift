@@ -12,7 +12,8 @@ import Foundation
 struct AppEnvironment {
     let modelContainer: ModelContainer
     let diContainer: DIContainer
-    
+    let coordinator: AppCoordinator
+
     /// 앱 실행 시 필요한 모든 의존성들을 초기화하여 `AppEnvironment`를 생성합니다.
     /// - Returns: 초기화 된 `AppEnvironment` 인스턴스
     static func bootstrap() -> AppEnvironment {
@@ -24,9 +25,10 @@ struct AppEnvironment {
         let mainRepository = configuredRepositories(modelContainer: modelContainer, networkService: networkService)
         let interactors = configuredInteractors(repositories: mainRepository)
         let diContainer = DIContainer(appStore: appStore, interactors: interactors, networkService: networkService)
+        let coordinator = AppCoordinator(container: diContainer)
         Task { try? await interactors.fieldGuide.refreshFieldGuide() }
-        
-        return AppEnvironment(modelContainer: modelContainer, diContainer: diContainer)
+
+        return AppEnvironment(modelContainer: modelContainer, diContainer: diContainer, coordinator: coordinator)
     }
     
     static func resetStoreOnceIfNeeded() {

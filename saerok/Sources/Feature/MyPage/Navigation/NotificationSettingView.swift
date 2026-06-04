@@ -50,7 +50,12 @@ struct NotificationSettingView: View {
     private var toggleSection: some View {
         VStack(spacing: 0) {
             ForEach(
-                Local.NotificationType.allCases.filter { $0 != .adminMessage},
+                Local.NotificationType.allCases.filter {
+                    // 자유게시판 댓글·답글 알림 설정은 일단 숨김 처리
+                    $0 != .adminMessage
+                        && $0 != .freeBoardComment
+                        && $0 != .freeBoardReply
+                },
                 id: \.self
             ) { type in
                 notificationSettingItem(type)

@@ -43,7 +43,6 @@ struct CommunityView: View {
 
     var body: some View {
         content
-            .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
             .onChange(of: viewModel.output, initial: true) { _, output in
                 guard let output else { return }
@@ -139,7 +138,13 @@ private extension CommunityView {
         }
         .modifier(
             FloatingMenuModifier(
-                postAction: { showPostingView.toggle() },
+                postAction: {
+                    if viewModel.isGuestMode {
+                        showLoginPopup = true
+                    } else {
+                        showPostingView.toggle()
+                    }
+                },
                 saerokAction: {
                     if viewModel.isGuestMode {
                         showLoginPopup = true
@@ -166,7 +171,7 @@ private extension CommunityView {
                                 message: "게시글을 올렸어요.",
                                 placementOffset: -120,
                                 transitionOffset: 160,
-                                duration: 3.0
+                                duration: 2.0
                             )
                         )
                     } catch {
@@ -176,7 +181,7 @@ private extension CommunityView {
                                 message: "게시글 업로드에 실패했어요.",
                                 placementOffset: -120,
                                 transitionOffset: 160,
-                                duration: 3.0
+                                duration: 2.0
                             )
                         )
                     }
@@ -401,7 +406,9 @@ private extension CommunityView {
     }
 
     private func iconButton(type: CommunityType, icon: Image.SRIconSet, background: Color) -> some View {
-        Button { coordinator.push(Route.communityType(type: type)) } label: {
+        Button {
+            coordinator.push(Route.communityType(type: type))
+        } label: {
             HStack(spacing: 9) {
                 icon
                     .frame(.default, tintColor: icon == .unknown ? .srWhite : nil)

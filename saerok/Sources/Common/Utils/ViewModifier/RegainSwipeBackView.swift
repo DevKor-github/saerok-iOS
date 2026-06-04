@@ -26,9 +26,7 @@ extension View {
 ///
 /// - 프레임워크 클래스(`UINavigationController`)를 extension에서 override하지 않는다.
 ///   (기존 `override open func viewDidLoad()`는 앱 내 모든 네비게이션 컨트롤러에
-///    전역 적용돼 시스템 화면까지 오염시키던 위험 코드였다.)
 /// - 제스처 델리게이트로 nav 컨트롤러 자신이 아니라 전용 객체를 사용한다.
-/// - 델리게이트 설정을 makeUIViewController에서 1회만 수행해 push마다 도는 작업이 없다.
 struct InteractivePopGestureEnabler: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
         let viewController = UIViewController()

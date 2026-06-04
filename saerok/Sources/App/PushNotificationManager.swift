@@ -43,7 +43,6 @@ final class PushNotificationManager: NSObject {
         else { return }
 
         try? await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
-        try? await interactor.toggleAllNotificationSetting()
     }
     
     func setAPNSToken(_ token: Data) {
