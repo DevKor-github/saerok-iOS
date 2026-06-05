@@ -133,39 +133,69 @@ private extension FieldGuideSearchView {
     
     @ViewBuilder
     func searchResultSection() -> some View {
-        ScrollView {
-            if filterKey.searchText.isEmpty {
-                VStack(spacing: Layout.recentSpacing) {
-                    Color.clear
-                        .frame(height: 0)
-                    
-                    ForEach(recentSearchItems) { search in
-                        recentItem(search)
-                            .listRowInsets(.init())
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    deleteRecentTapped(search)
-                                } label: {
-                                    Label("삭제", systemImage: "trash")
-                                }
-                            }
-                    }
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    Color.clear
-                        .frame(height: Layout.clearColorHeight)
-                    
-                    LazyVStack(spacing: Layout.searchSpacing) {
-                        ForEach(filteredBirds, id: \.id) { bird in
-                            searchItem(bird)
+        if !filterKey.searchText.isEmpty && filteredBirds.isEmpty {
+            emptySearchResultView
+        } else {
+            ScrollView {
+                if filterKey.searchText.isEmpty {
+                    VStack(spacing: Layout.recentSpacing) {
+                        Color.clear
+                            .frame(height: 0)
+
+                        ForEach(recentSearchItems) { search in
+                            recentItem(search)
                                 .listRowInsets(.init())
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        deleteRecentTapped(search)
+                                    } label: {
+                                        Label("삭제", systemImage: "trash")
+                                    }
+                                }
+                        }
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Color.clear
+                            .frame(height: Layout.clearColorHeight)
+
+                        LazyVStack(spacing: Layout.searchSpacing) {
+                            ForEach(filteredBirds, id: \.id) { bird in
+                                searchItem(bird)
+                                    .listRowInsets(.init())
+                            }
                         }
                     }
                 }
             }
+            .background(Color.srLightGray)
         }
-        .background(Color.srLightGray)
+    }
+
+    var emptySearchResultView: some View {
+        ZStack(alignment: .top) {
+            Color.srLightGray
+
+            VStack(spacing: 5) {
+                Text("이곳은 고요한 숲처럼 조용하네요.")
+                    .font(.SRFontSet.subtitle1_2)
+                    .multilineTextAlignment(.center)
+                Text("새록에 등록되어있지 않은 새예요.")
+                    .font(.SRFontSet.caption1)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Image(.logoBack)
+                    .renderingMode(.template)
+                    .resizable()
+                    .foregroundStyle(.srWhite)
+                    .frame(width: 116, height: 128)
+                    .padding(.top, 8)
+            }
+            .padding(.top, 68)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea(edges: .bottom)
     }
     
     func searchItem(_ bird: Local.Bird) -> some View {
