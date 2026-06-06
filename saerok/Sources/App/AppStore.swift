@@ -18,6 +18,7 @@ enum AppAction {
     case selectTab(TabbedItems)
     case requestFieldGuideScrollToTop
     case requestCollectionScrollToTop
+    case requestCommunityScrollToTop
     case openBoardDetail(Int)
     case openFreeBoardPost(Int)
     case openCollectionDetail(Int)
@@ -30,6 +31,7 @@ enum AppAction {
 enum AppEvent: Equatable {
     case fieldGuideScrollToTop
     case collectionScrollToTop
+    case communityScrollToTop
     case boardDetailRequested(Int)
     case freeBoardPostRequested(Int)
     case collectionDetailRequested(Int)
@@ -96,6 +98,9 @@ final class AppStore {
 
         case .requestCollectionScrollToTop:
             eventSubject.send(.collectionScrollToTop)
+
+        case .requestCommunityScrollToTop:
+            eventSubject.send(.communityScrollToTop)
 
         case .openBoardDetail(let id):
             eventSubject.send(.boardDetailRequested(id))

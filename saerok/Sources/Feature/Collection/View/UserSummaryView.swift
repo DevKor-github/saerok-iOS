@@ -10,9 +10,11 @@ import SwiftUI
 struct UserSummaryView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: ViewModel
+    private let onCollectionTap: (Int) -> Void
 
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, onCollectionTap: @escaping (Int) -> Void) {
         self.viewModel = viewModel
+        self.onCollectionTap = onCollectionTap
     }
     
     var body: some View {
@@ -59,7 +61,7 @@ private extension UserSummaryView {
                     header: { countView }
                 ) { bird in
                     CollectionItemView(bird) {
-                        coordinator.push(CommunityView.Route.detailFromProfile(id: bird.id))
+                        onCollectionTap(bird.id)
                     }
                 }
                 .padding(.horizontal, 9)

@@ -32,6 +32,7 @@ struct CommunityView: View {
     @State private var showLoginPopup: Bool = false
     @State private var showPostingView: Bool = false
     @State private var offsetY: CGFloat = 0
+    @State private var scrollToTopTrigger: Bool = false
     @FocusState private var isFocused: Bool
     @Binding private var showFloatingMenu: Bool
 
@@ -49,6 +50,8 @@ struct CommunityView: View {
                 switch output {
                 case .navigateToPostDetail(let postId):
                     coordinator.push(Route.postDetail(postId: postId))
+                case .resetToIdle:
+                    scrollToTopTrigger.toggle()
                 }
                 viewModel.resetOutput()
             }
@@ -92,9 +95,9 @@ private extension CommunityView {
         case .detailFromSearch(let id):
             CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communitySearch)
         case .postDetail(let postId):
-            CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: postId)
+            CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: postId, onUserTap: { coordinator.push(Route.other(id: $0)) })
         case .other(let id):
-            UserSummaryViewWrapper(factory: coordinator.factory, id: id)
+            UserSummaryViewWrapper(factory: coordinator.factory, id: id, onCollectionTap: { coordinator.push(Route.detailFromProfile(id: $0)) })
         case .addCollection:
             CollectionFormViewWrapper(factory: coordinator.factory, mode: .add)
         }
@@ -246,7 +249,7 @@ private extension CommunityView {
                         onCTATap: { coordinator.push(Route.communityType(type: .board)) }
                     )
                     .padding(.bottom, 14)
-                    
+
                     Group {
                         BannerView()
                             .cornerRadius(10)
@@ -261,6 +264,9 @@ private extension CommunityView {
                     }
                     .background(Color.srWhite)
                 }
+            }
+            .onChange(of: scrollToTopTrigger) { _, _ in
+                withAnimation { proxy.scrollTo("community-scrollable", anchor: .top) }
             }
         }
     }
@@ -541,27 +547,31 @@ struct CollectionDetailViewWrapper: View {
 struct CommunityPostDetailViewWrapper: View {
     let factory: ViewModelFactory
     let postId: Int
+    let onUserTap: (Int) -> Void
     @State private var viewModel: CommunityPostDetailView.ViewModel
 
-    init(factory: ViewModelFactory, postId: Int) {
+    init(factory: ViewModelFactory, postId: Int, onUserTap: @escaping (Int) -> Void) {
         self.factory = factory
         self.postId = postId
+        self.onUserTap = onUserTap
         _viewModel = State(wrappedValue: factory.makeCommunityPostDetailViewModel(postId: postId))
     }
 
-    var body: some View { CommunityPostDetailView(viewModel: viewModel) }
+    var body: some View { CommunityPostDetailView(viewModel: viewModel, onUserTap: onUserTap) }
 }
 
 struct UserSummaryViewWrapper: View {
     let factory: ViewModelFactory
     let id: Int
+    let onCollectionTap: (Int) -> Void
     @State private var viewModel: UserSummaryView.ViewModel
 
-    init(factory: ViewModelFactory, id: Int) {
+    init(factory: ViewModelFactory, id: Int, onCollectionTap: @escaping (Int) -> Void) {
         self.factory = factory
         self.id = id
+        self.onCollectionTap = onCollectionTap
         _viewModel = State(wrappedValue: factory.makeUserSummaryViewModel(id))
     }
 
-    var body: some View { UserSummaryView(viewModel: viewModel) }
+    var body: some View { UserSummaryView(viewModel: viewModel, onCollectionTap: onCollectionTap) }
 }

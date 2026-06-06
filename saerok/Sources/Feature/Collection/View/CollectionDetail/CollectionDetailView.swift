@@ -128,7 +128,7 @@ private extension CollectionDetailView {
         case .bird(let id):
             BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(birdID: id))
         case .other(let id):
-            UserSummaryView(viewModel: coordinator.factory.makeUserSummaryViewModel(id))
+            UserSummaryViewWrapper(factory: coordinator.factory, id: id, onCollectionTap: { coordinator.push(CollectionRoute.collectionDetail($0)) })
         }
     }
 }

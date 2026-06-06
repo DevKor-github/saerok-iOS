@@ -14,6 +14,7 @@ extension CommunityView {
 
         enum Output: Equatable {
             case navigateToPostDetail(postId: Int)
+            case resetToIdle(UUID)
         }
 
         // MARK: State
@@ -73,6 +74,16 @@ extension CommunityView {
                     }
                     .weakSink(on: self) { viewModel, postId in
                         viewModel.output = .navigateToPostDetail(postId: postId)
+                    }
+
+                appStore.events
+                    .filter { if case .communityScrollToTop = $0 { return true }; return false }
+                    .weakSink(on: self) { viewModel, _ in
+                        viewModel.searchDebounceTask?.cancel()
+                        viewModel.searchDebounceTask = nil
+                        viewModel.text = ""
+                        viewModel.mode = .idle
+                        viewModel.output = .resetToIdle(UUID())
                     }
             }
         }

@@ -28,12 +28,14 @@ extension Local {
         let actorNickname: String
         let collectionId: Int
         let collectionImageUrl: String?
+        let commentId: Int?
         let comment: String?
     }
 
     /// 공지사항 알림 페이로드
     struct AnnouncementPayload {
         let announcementId: Int?
+        let title: String?
         let body: String
     }
 
@@ -42,6 +44,7 @@ extension Local {
         let actorImageUrl: String
         let actorNickname: String
         let postId: Int
+        let freeBoardCommentId: Int?
         let comment: String
     }
 }
@@ -74,14 +77,17 @@ extension Local.Notification {
             self.payload = .announcement(
                 .init(
                     announcementId: dto.payload.announcementId,
+                    title: dto.payload.title,
                     body: dto.payload.inAppBody ?? dto.payload.body ?? ""
                 )
             )
+
         case .systemAdminMessage:
             self.type = .adminMessage
             self.payload = .announcement(
                 .init(
                     announcementId: nil,
+                    title: nil,
                     body: dto.payload.body ?? ""
                 )
             )
@@ -111,6 +117,7 @@ extension Local.Notification {
             actorNickname: actorNickname,
             collectionId: collectionId,
             collectionImageUrl: dto.payload.collectionImageUrl,
+            commentId: dto.payload.commentId,
             comment: comment
         ))
     }
@@ -129,6 +136,7 @@ extension Local.Notification {
             actorImageUrl: actorImageUrl,
             actorNickname: actorNickname,
             postId: postId,
+            freeBoardCommentId: dto.payload.freeBoardCommentId,
             comment: dto.payload.comment ?? ""
         ))
     }

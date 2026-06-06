@@ -16,8 +16,11 @@ struct CommunityPostDetailView: View {
     @FocusState private var isInputFocused: Bool
     @State private var keyboard: KeyboardObserver = .init()
 
-    init(viewModel: ViewModel) {
+    private let onUserTap: (Int) -> Void
+
+    init(viewModel: ViewModel, onUserTap: @escaping (Int) -> Void) {
         self.viewModel = viewModel
+        self.onUserTap = onUserTap
     }
 
     var body: some View {
@@ -117,9 +120,7 @@ private extension CommunityPostDetailView {
                     comments: viewModel.comments,
                     postUserId: viewModel.post?.userId ?? 0,
                     isMyPost: viewModel.isMyPost,
-                    onUserTap: { userId in
-                        coordinator.push(CommunityView.Route.other(id: userId))
-                    },
+                    onUserTap: onUserTap,
                     onReply: { comment in viewModel.selectedComment = comment },
                     onDelete: { commentId in await viewModel.deleteComment(commentId) }
                 )

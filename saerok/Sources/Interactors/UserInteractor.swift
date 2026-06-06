@@ -239,7 +239,31 @@ struct MockUserInteractorImpl: UserInteractor {
     
     func deleteNotification(_ id: Int) async throws { }
     
-    func fetchNotifications() async throws -> [Local.Notification] { [] }
+    func fetchNotifications() async throws -> [Local.Notification] {
+        let now = Date()
+        return [
+            .init(id: 1, type: .adminMessage,
+                  payload: .announcement(.init(announcementId: nil, title: nil,
+                      body: "안녕하세요! 새록 운영팀입니다. 이번 업데이트를 통해 댓글 기능이 추가되었습니다. 더 재미있는 새록으로 다른 사람들과 소통해보세요. 감사합니다.")),
+                  createdAt: now.addingTimeInterval(-3 * 86400), isRead: false),
+            .init(id: 2, type: .adminMessage,
+                  payload: .announcement(.init(announcementId: nil, title: nil,
+                      body: "'왜가리' 새록이 삭제되었어요. 참 아쉽네요!")),
+                  createdAt: now.addingTimeInterval(-3 * 86400), isRead: true),
+            .init(id: 3, type: .like,
+                  payload: .saerok(.init(actorImageUrl: "", actorNickname: "비둘기짱",
+                      collectionId: 1, collectionImageUrl: nil, commentId: nil, comment: nil)),
+                  createdAt: now.addingTimeInterval(-600), isRead: false),
+            .init(id: 4, type: .comment,
+                  payload: .saerok(.init(actorImageUrl: "", actorNickname: "비둘기짱",
+                      collectionId: 1, collectionImageUrl: nil, commentId: 1, comment: "새 잘 찍으셨네요.")),
+                  createdAt: now.addingTimeInterval(-3 * 86400), isRead: false),
+            .init(id: 5, type: .system,
+                  payload: .announcement(.init(announcementId: 10, title: "공지사항",
+                      body: "공지사항 내용입니다.")),
+                  createdAt: now.addingTimeInterval(-3 * 86400), isRead: true),
+        ]
+    }
     
     func toggleNotificationSetting(_ type: Local.NotificationType) async throws -> Bool { true }
     

@@ -72,5 +72,15 @@ extension NotificationView {
                 items.removeAll()
             }
         }
+
+        func deleteAdminMessages() {
+            Task {
+                let targets = items.filter { $0.type == .adminMessage }
+                for item in targets {
+                    try? await interactor.deleteNotification(item.id)
+                }
+                items.removeAll { $0.type == .adminMessage }
+            }
+        }
     }
 }

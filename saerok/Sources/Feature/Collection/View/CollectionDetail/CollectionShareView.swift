@@ -5,6 +5,7 @@
 //  Created by HanSeung on 6/10/25.
 //
 
+import Photos
 import SwiftUI
 
 struct CollectionShareView: View {
@@ -13,6 +14,8 @@ struct CollectionShareView: View {
     var image: UIImage
     let customImageView: CollectionCustomView
     let snapshot: UIImage
+
+    @Environment(\.showToast) private var showToast
 
     init(collection: Local.CollectionDetail, isPresented: Binding<Bool>, image: UIImage) {
         self.collection = collection
@@ -133,7 +136,22 @@ private extension CollectionShareView {
         case .instagram:
             shareToInstagram(background: self.snapshot, sticker: snapshot)
         case .imageSave:
-            UIImageWriteToSavedPhotosAlbum(self.snapshot, nil, nil, nil)
+            saveImageToAlbum()
+        }
+    }
+
+    func saveImageToAlbum() {
+        let imageToSave = snapshot
+        Task { @MainActor in
+            do {
+                try await PHPhotoLibrary.shared().performChanges {
+                    PHAssetChangeRequest.creationRequestForAsset(from: imageToSave)
+                }
+                isPresented = false
+                showToast(.init(type: .success, message: "이미지를 저장했어요.", placementOffset: -58, transitionOffset: 160, duration: 2.0))
+            } catch {
+                showToast(.init(type: .failure, message: "이미지 저장에 실패했어요.", placementOffset: -58, transitionOffset: 160, duration: 2.0))
+            }
         }
     }
 

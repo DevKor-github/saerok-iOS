@@ -18,6 +18,7 @@ enum CollectionRoute: AppRoute {
     case notification
     case directToBoardDetail(Int)
     case directToFreeBoardPost(Int)
+    case userDetail(userId: Int)
 }
 
 struct CollectionView: View {
@@ -57,7 +58,9 @@ struct CollectionView: View {
                 case .directToBoardDetail(let id):
                     BoardDetailView(id: id, viewModel: coordinator.factory.makeBoardViewModel())
                 case .directToFreeBoardPost(let id):
-                    CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: id)
+                    CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: id, onUserTap: { coordinator.push(CollectionRoute.userDetail(userId: $0)) })
+                case .userDetail(userId: let id):
+                    UserSummaryViewWrapper(factory: coordinator.factory, id: id, onCollectionTap: { coordinator.push(CollectionRoute.collectionDetail($0)) })
                 }
             }
             .onChange(of: viewModel.output, initial: true) { _, output in

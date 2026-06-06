@@ -72,6 +72,7 @@ private struct AppNavigationHost: View {
                         switch tab {
                         case .fieldGuide: injected.appStore.send(.requestFieldGuideScrollToTop)
                         case .collection: injected.appStore.send(.requestCollectionScrollToTop)
+                        case .community: injected.appStore.send(.requestCommunityScrollToTop)
                         default: break
                         }
                     },

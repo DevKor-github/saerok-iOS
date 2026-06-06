@@ -136,7 +136,7 @@ struct FreeBoardListView: View {
 
     private var postList: some View {
         ScrollView(showsIndicators: false) {
-//            BannerView()
+            BannerView()
             LazyVStack(spacing: 0) {
                 ForEach(Array(viewModel.posts.enumerated()), id: \.element.id) { index, post in
                     PostCell(

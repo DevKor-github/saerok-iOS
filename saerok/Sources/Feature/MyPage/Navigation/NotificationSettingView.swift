@@ -53,8 +53,8 @@ struct NotificationSettingView: View {
                 Local.NotificationType.allCases.filter {
                     // 자유게시판 댓글·답글 알림 설정은 일단 숨김 처리
                     $0 != .adminMessage
-                        && $0 != .freeBoardComment
-                        && $0 != .freeBoardReply
+//                        && $0 != .freeBoardComment
+//                        && $0 != .freeBoardReply
                 },
                 id: \.self
             ) { type in
