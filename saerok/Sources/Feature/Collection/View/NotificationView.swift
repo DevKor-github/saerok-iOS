@@ -11,6 +11,7 @@ struct NotificationView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: ViewModel
     @State private var showDeleteAdminConfirm = false
+    @State private var expandedAdminIDs: Set<Int> = []
 
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
@@ -41,19 +42,12 @@ struct NotificationView: View {
                     ForEach(adminItems, id: \.id) { item in
                         NotificationCell(
                             item: item,
+                            isExpanded: expandedAdminIDs.contains(item.id),
+                            onToggleExpand: { toggleExpand(item) },
                             onTap: { handleTap(item) }
                         )
                         .id("\(item.id)")
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(.init(top: 3.5, leading: 9, bottom: 3.5, trailing: 9))
-                        .listRowBackground(Color.clear)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                viewModel.deleteNotification(item)
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                        }
+                        .notificationRowStyle { viewModel.deleteNotification(item) }
                     }
                 } header: {
                     adminSectionHeader
@@ -83,58 +77,69 @@ struct NotificationView: View {
         .listSectionSpacing(0)
     }
 
+    private func toggleExpand(_ item: Local.Notification) {
+        withAnimation(.smooth(duration: 0.4)) {
+            if expandedAdminIDs.contains(item.id) {
+                expandedAdminIDs.remove(item.id)
+            } else {
+                expandedAdminIDs.insert(item.id)
+            }
+        }
+        if !item.isRead {
+            viewModel.readNotification(item)
+        }
+    }
+
     @ViewBuilder
     private func regularCell(for item: Local.Notification) -> some View {
-        NotificationCell(item: item, onTap: { handleTap(item) })
-            .listRowSeparator(.hidden)
-            .listRowInsets(.init(top: 3.5, leading: 9, bottom: 3.5, trailing: 9))
-            .listRowBackground(Color.clear)
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                Button(role: .destructive) {
-                    viewModel.deleteNotification(item)
-                } label: {
-                    Image(systemName: "trash")
-                }
+        NotificationCell(item: item, isExpanded: false, onToggleExpand: {}, onTap: { handleTap(item) })
+            .notificationRowStyle { viewModel.deleteNotification(item) }
+    }
+
+    private func sectionHeaderLabel(_ title: String) -> some View {
+        VStack {
+            Spacer()
+            Text(title)
+                .font(.SRFontSet.body4_3)
+                .foregroundStyle(Color.black)
+                .padding(.leading, 7)
+        }
+    }
+
+    private var deleteButton: some View {
+        Button {
+            if showDeleteAdminConfirm {
+                viewModel.deleteAdminMessages()
+                withAnimation(.easeInOut(duration: 0.2)) { showDeleteAdminConfirm = false }
+            } else {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { showDeleteAdminConfirm = true }
             }
+        } label: {
+            if showDeleteAdminConfirm {
+                Text("지우기")
+                    .font(.SRFontSet.body2_3)
+                    .foregroundStyle(Color.srGray)
+                    .padding(.vertical, 5)
+                    .padding(.horizontal, 11)
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+            } else {
+                Image.SRIconSet.xmark
+                    .frame(.custom(width: 11, height: 10))
+                    .foregroundStyle(Color.srGray)
+                    .padding(8)
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+            }
+        }
+        .background(Color.srLightGray)
+        .clipShape(RoundedRectangle(cornerRadius: .greatestFiniteMagnitude))
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showDeleteAdminConfirm)
     }
 
     private var adminSectionHeader: some View {
         HStack(spacing: 0) {
-            VStack {
-                Spacer()
-                Text("운영팀")
-                    .font(.SRFontSet.body4_3)
-                    .foregroundStyle(Color.black)
-                    .padding(.leading, 7)
-            }
-            
+            sectionHeaderLabel("운영팀")
             Spacer()
-            Button {
-                if showDeleteAdminConfirm {
-                    viewModel.deleteAdminMessages()
-                    withAnimation(.easeInOut(duration: 0.2)) { showDeleteAdminConfirm = false }
-                } else {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { showDeleteAdminConfirm = true }
-                }
-            } label: {
-                if showDeleteAdminConfirm {
-                    Text("지우기")
-                        .font(.SRFontSet.body2_3)
-                        .foregroundStyle(Color.srGray)
-                        .padding(.vertical, 5)
-                        .padding(.horizontal, 11)
-                        .transition(.scale(scale: 0.8).combined(with: .opacity))
-                } else {
-                    Image.SRIconSet.xmark
-                        .frame(.custom(width: 11, height: 10))
-                        .foregroundStyle(Color.srGray)
-                        .padding(8)
-                        .transition(.scale(scale: 0.8).combined(with: .opacity))
-                }
-            }
-            .background(Color.srLightGray)
-            .clipShape(RoundedRectangle(cornerRadius: .greatestFiniteMagnitude))
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showDeleteAdminConfirm)
+            deleteButton
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
@@ -143,15 +148,8 @@ struct NotificationView: View {
     }
 
     private var saerokSectionHeader: some View {
-        HStack {
-            VStack {
-                Spacer()
-                Text("새록")
-                    .font(.SRFontSet.body4_3)
-                    .foregroundStyle(Color.black)
-                    .padding(.leading, 7)
-            }
-            
+        HStack(spacing: 0) {
+            sectionHeaderLabel("새록")
             Spacer()
         }
         .padding(.horizontal, 9)
@@ -175,7 +173,7 @@ struct NotificationView: View {
         }
     }
 
-    var navigationBar: some View {
+    private var navigationBar: some View {
         NavigationBar(
             center: {
                 Text("알림")
@@ -207,6 +205,20 @@ struct NotificationView: View {
                 }
             }
         )
+    }
+}
+
+private extension View {
+    func notificationRowStyle(onDelete: @escaping () -> Void) -> some View {
+        self
+            .listRowSeparator(.hidden)
+            .listRowInsets(.init(top: 3.5, leading: 9, bottom: 3.5, trailing: 9))
+            .listRowBackground(Color.clear)
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash")
+                }
+            }
     }
 }
 
