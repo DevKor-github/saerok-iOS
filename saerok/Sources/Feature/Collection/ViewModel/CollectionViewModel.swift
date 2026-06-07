@@ -21,6 +21,7 @@ extension CollectionView {
     final class ViewModel {
         enum Output: Equatable {
             case navigateToDetail(id: Int)
+            case openNotificationView
             case scrollToTop(UUID)
         }
         
@@ -48,30 +49,27 @@ extension CollectionView {
             
             cancelBag.collect {
                 appStore.events
-                    .filter {
-                        if case .collectionScrollToTop = $0 { return true }
-                        return false
-                    }
+                    .filter { $0 == .collectionScrollToTop }
                     .weakSink(on: self) { viewModel, _ in
                         viewModel.output = .scrollToTop(UUID())
                     }
-                
+
                 appStore.events
-                    .compactMap {
-                        guard case .collectionDetailRequested(let id) = $0 else { return nil }
-                        return id
-                    }
+                    .compactMap { guard case .collectionDetailRequested(let id) = $0 else { return nil }; return id }
                     .weakSink(on: self) { viewModel, id in
                         viewModel.output = .navigateToDetail(id: id)
                     }
-                
+
                 appStore.events
-                    .filter {
-                        if case .collectionsRefreshRequested = $0 { return true }
-                        return false
-                    }
+                    .filter { $0 == .collectionsRefreshRequested }
                     .weakSink(on: self) { viewModel, _ in
                         Task { await viewModel.refresh() }
+                    }
+
+                appStore.events
+                    .filter { $0 == .notificationView }
+                    .weakSink(on: self) { viewModel, _ in
+                        viewModel.output = .openNotificationView
                     }
 
                 appStore

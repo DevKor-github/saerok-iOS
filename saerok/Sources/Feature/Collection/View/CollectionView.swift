@@ -71,6 +71,8 @@ struct CollectionView: View {
                     scrollToTopTrigger.toggle()
                 case .navigateToDetail(let id):
                     coordinator.push(Route.collectionDetailFromDeepLink(id))
+                case .openNotificationView:
+                    coordinator.push(Route.notification)
                 }
                 viewModel.resetOutput()
             }
