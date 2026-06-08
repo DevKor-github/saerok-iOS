@@ -42,6 +42,11 @@ struct RootSelectorView: View {
             if case .notDetermined = newStatus {
                 Task { try? await injected.interactors.user.deleteUser() }
             }
+            // 로그인 콜백은 앱 시작 시점에만 발생하므로, 실행 중 로그인한 계정은
+            // 이 시점에 현재 기기의 FCM 토큰을 재등록해야 푸시를 받을 수 있다.
+            if case .signedIn(let isRegistered) = newStatus, isRegistered {
+                Task { await PushNotificationManager.shared.reRegisterDevice() }
+            }
         }
         .onChange(of: scenePhase) { before, after in
             ATTrackingManager.requestTrackingAuthorization { _ in }

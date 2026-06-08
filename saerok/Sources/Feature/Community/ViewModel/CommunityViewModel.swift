@@ -67,13 +67,15 @@ extension CommunityView {
                         viewModel.removeFreeBoardPost(postId)
                     }
 
-                appStore.events
-                    .compactMap { event -> Int? in
-                        guard case .freeBoardPostRequested(let postId) = event else { return nil }
+                appStore
+                    .updates(for: \.pendingDeepLink)
+                    .compactMap { link -> Int? in
+                        guard case .freeBoardPost(let postId) = link else { return nil }
                         return postId
                     }
                     .weakSink(on: self) { viewModel, postId in
                         viewModel.output = .navigateToPostDetail(postId: postId)
+                        viewModel.appStore.send(.clearPendingDeepLink)
                     }
 
                 appStore.events

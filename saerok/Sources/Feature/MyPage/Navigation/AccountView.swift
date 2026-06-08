@@ -26,6 +26,9 @@ extension AccountView {
         }
 
         func logout() async throws {
+            // 현재 기기의 FCM 토큰을 폐기해, 다른 계정으로 재로그인 시 이전 계정 알림이
+            // 이 기기로 새는 것을 막는다. (BE에 토큰 삭제 API가 없어 토큰 무효화로 처리)
+            await PushNotificationManager.shared.unregisterDevice()
             await tokenManager.clearTokens()
             try await interactor.deleteUser()
             Task { @MainActor in
@@ -34,6 +37,7 @@ extension AccountView {
         }
 
         func deleteAccount() async throws {
+            await PushNotificationManager.shared.unregisterDevice()
             try await interactor.deleteAccount()
             appStore.send(.requireAuthentication)
         }

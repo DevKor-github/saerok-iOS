@@ -38,11 +38,31 @@ final class PushNotificationManager: NSObject {
     }
 
     func reRegisterDevice() async {
-        guard let fcmToken = Messaging.messaging().fcmToken,
-              let interactor = injected?.interactors.user
-        else { return }
+        guard let interactor = injected?.interactors.user else { return }
+
+        // 로그아웃 시 토큰을 폐기했다면 fcmToken이 nil일 수 있으므로,
+        // 비어 있으면 새 토큰을 비동기로 발급받아 등록한다.
+        var fcmToken = Messaging.messaging().fcmToken
+        if fcmToken == nil {
+            fcmToken = try? await Messaging.messaging().token()
+        }
+        guard let fcmToken else { return }
 
         try? await interactor.registerDeviceToken(deviceID: deviceID, fcmToken: fcmToken)
+    }
+
+    /// 로그아웃·회원탈퇴 시 현재 기기의 FCM 토큰을 폐기(rotate)한다.
+    ///
+    /// 백엔드에는 디바이스 토큰을 삭제하는 API가 없으므로, 클라이언트가 FCM 토큰을 직접
+    /// 만료시켜 이전 계정의 `UserDevice` 행에 남은 토큰을 무효화한다.
+    /// - 무효화된 토큰으로의 발송은 즉시 차단되어, 같은 기기에 다른 계정으로 로그인해도
+    ///   이전 계정의 푸시가 새지 않는다(계정 누수 차단).
+    /// - 무효 토큰은 다음 발송 시 FCM이 `UNREGISTERED`를 반환하고, 백엔드의 무효 토큰 정리
+    ///   (`cleanupInvalidTokens`)가 해당 행을 제거한다.
+    /// - 토큰 폐기로 새 FCM 토큰이 발급되어, 다음 로그인 계정은 이전 계정과 공유되지 않는
+    ///   토큰으로 등록된다.
+    func unregisterDevice() async {
+        try? await Messaging.messaging().deleteToken()
     }
     
     func setAPNSToken(_ token: Data) {

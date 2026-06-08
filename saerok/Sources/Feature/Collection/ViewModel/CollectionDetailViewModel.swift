@@ -77,7 +77,7 @@ extension CollectionDetailView {
         // MARK: Side Effect
         func loadInitial() async {
             guard loadState.value == nil else { return }
-            loadState = .loading
+            await MainActor.run { loadState = .loading }
 
             await withTaskGroup(of: Void.self) { group in
                 group.addTask { await self.fetchCollectionDetail() }
@@ -85,22 +85,27 @@ extension CollectionDetailView {
                 group.addTask { await self.fetchSuggestions() }
                 await group.waitForAll()
             }
-            loadState = .success(())
-            
-            // 데이터 로드 완료 후 DetailViewFlow 업데이트
-            if let flow = detailFlow {
-                detailFlow = DetailViewFlow(
-                    recordId: "\(collectionID)",
-                    entrySource: flow.entrySource,
-                    screen: flow.screen,
-                    isOwnRecord: collection?.isMine ?? false,
-                    listLikeCount: collection?.likeCount ?? 0,
-                    listCommentCount: collection?.commentCount ?? 0
-                )
-                
-                // saerok_detail_view 이벤트
-                if let detailFlow = detailFlow {
-                    Analytics.shared.logSaerokDetailView(flow: detailFlow)
+
+            // withTaskGroup 자식 태스크는 메인 밖에서 실행되므로
+            // @Observable 상태 변경은 반드시 메인에서 수행해야 SwiftUI가 관찰한다.
+            await MainActor.run {
+                loadState = .success(())
+
+                // 데이터 로드 완료 후 DetailViewFlow 업데이트
+                if let flow = detailFlow {
+                    detailFlow = DetailViewFlow(
+                        recordId: "\(collectionID)",
+                        entrySource: flow.entrySource,
+                        screen: flow.screen,
+                        isOwnRecord: collection?.isMine ?? false,
+                        listLikeCount: collection?.likeCount ?? 0,
+                        listCommentCount: collection?.commentCount ?? 0
+                    )
+
+                    // saerok_detail_view 이벤트
+                    if let detailFlow = detailFlow {
+                        Analytics.shared.logSaerokDetailView(flow: detailFlow)
+                    }
                 }
             }
         }
@@ -108,16 +113,19 @@ extension CollectionDetailView {
         func fetchCollectionDetail() async {
             do {
                 let result = try await collectionInteractor.fetchCollectionDetail(id: collectionID)
-                collection = result
-                loadState = .success(())
+                await MainActor.run {
+                    collection = result
+                    loadState = .success(())
+                }
             } catch {
-                loadState = .failure(error)
+                await MainActor.run { loadState = .failure(error) }
             }
         }
 
         func fetchComments() async {
             do {
-                comments = try await collectionInteractor.fetchComments(collectionID)
+                let result = try await collectionInteractor.fetchComments(collectionID)
+                await MainActor.run { comments = result }
             } catch {
             }
         }
@@ -125,10 +133,12 @@ extension CollectionDetailView {
         func fetchSuggestions() async {
             do {
                 let result = try await collectionInteractor.fetchBirdSuggestions(collectionID)
-                suggestions = result
-                selectedPreview = result.first
+                await MainActor.run {
+                    suggestions = result
+                    selectedPreview = result.first
+                }
             } catch {
-                suggestions = []
+                await MainActor.run { suggestions = [] }
             }
         }
 

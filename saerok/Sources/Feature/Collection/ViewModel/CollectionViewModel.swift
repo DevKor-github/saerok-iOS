@@ -54,10 +54,12 @@ extension CollectionView {
                         viewModel.output = .scrollToTop(UUID())
                     }
 
-                appStore.events
-                    .compactMap { guard case .collectionDetailRequested(let id) = $0 else { return nil }; return id }
+                appStore
+                    .updates(for: \.pendingDeepLink)
+                    .compactMap { link -> Int? in guard case .collectionDetail(let id) = link else { return nil }; return id }
                     .weakSink(on: self) { viewModel, id in
                         viewModel.output = .navigateToDetail(id: id)
+                        viewModel.appStore.send(.clearPendingDeepLink)
                     }
 
                 appStore.events
@@ -66,10 +68,12 @@ extension CollectionView {
                         Task { await viewModel.refresh() }
                     }
 
-                appStore.events
-                    .filter { $0 == .notificationView }
+                appStore
+                    .updates(for: \.pendingDeepLink)
+                    .filter { if case .notificationView = $0 { return true }; return false }
                     .weakSink(on: self) { viewModel, _ in
                         viewModel.output = .openNotificationView
+                        viewModel.appStore.send(.clearPendingDeepLink)
                     }
 
                 appStore

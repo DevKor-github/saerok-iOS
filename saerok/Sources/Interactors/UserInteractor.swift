@@ -29,7 +29,7 @@ protocol UserInteractor {
     func getAnnouncements() async throws -> [DTO.Announcement]
     func getAnnouncementDetail(_ id: Int) async throws -> DTO.AnnouncementDetail
     func registerDeviceToken(deviceID: String, fcmToken: String) async throws
-    
+
     // 사용자 차단
     func blockUser(userId: Int) async throws
     func syncBlockable() async

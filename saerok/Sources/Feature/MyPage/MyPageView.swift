@@ -47,13 +47,15 @@ extension MyPageView {
             self.isGuest = appStore[\.authStatus] == .guest
             
             cancelBag.collect {
-                appStore.events
-                    .compactMap {
-                        guard case .boardDetailRequested(let id) = $0 else { return nil }
+                appStore
+                    .updates(for: \.pendingDeepLink)
+                    .compactMap { link -> Int? in
+                        guard case .boardDetail(let id) = link else { return nil }
                         return id
                     }
                     .weakSink(on: self) { viewModel, id in
                         viewModel.output = .navigateToBoardDetail(id)
+                        viewModel.appStore.send(.clearPendingDeepLink)
                     }
 
                 appStore

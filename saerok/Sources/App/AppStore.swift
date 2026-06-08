@@ -23,6 +23,7 @@ enum AppAction {
     case openFreeBoardPost(Int)
     case openCollectionDetail(Int)
     case openNotificationView
+    case clearPendingDeepLink
     case openMapCoordinate(MapView.Routing.Coordinate)
     case openFieldGuideBird(name: String)
     case refreshCollections
@@ -33,14 +34,10 @@ enum AppEvent: Equatable {
     case fieldGuideScrollToTop
     case collectionScrollToTop
     case communityScrollToTop
-    case boardDetailRequested(Int)
-    case freeBoardPostRequested(Int)
-    case collectionDetailRequested(Int)
     case mapNavigationRequested(MapView.Routing.Coordinate)
     case fieldGuideBirdRequested(String)
     case collectionsRefreshRequested
     case freeBoardPostDeleted(Int)
-    case notificationView
 }
 
 final class AppStore {
@@ -105,16 +102,19 @@ final class AppStore {
             eventSubject.send(.communityScrollToTop)
 
         case .openBoardDetail(let id):
-            eventSubject.send(.boardDetailRequested(id))
+            updateState(\.pendingDeepLink, to: .boardDetail(id))
 
         case .openFreeBoardPost(let id):
-            eventSubject.send(.freeBoardPostRequested(id))
+            updateState(\.pendingDeepLink, to: .freeBoardPost(id))
 
         case .openCollectionDetail(let id):
-            eventSubject.send(.collectionDetailRequested(id))
-            
+            updateState(\.pendingDeepLink, to: .collectionDetail(id))
+
         case .openNotificationView:
-            eventSubject.send(.notificationView)
+            updateState(\.pendingDeepLink, to: .notificationView)
+
+        case .clearPendingDeepLink:
+            updateState(\.pendingDeepLink, to: nil)
 
         case .openMapCoordinate(let coordinate):
             eventSubject.send(.mapNavigationRequested(coordinate))
