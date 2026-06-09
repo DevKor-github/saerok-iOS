@@ -18,3 +18,8 @@ AMPLITUDE_API_KEY = $(SECRET_AMPLITUDE_API_KEY)
 
 SLASH = /
 BASE_URL = http:$(SLASH)$(SLASH)dev-api.saerok.app/api/v1/
+
+// 앱 번들 분리 (테스트 환경) — 운영 빌드와 한 기기에 공존
+APP_BUNDLE_ID = com.apu.saerok.dev
+APP_DISPLAY_NAME = 새록 Dev
+APP_ICON_NAME = AppIcon-Dev

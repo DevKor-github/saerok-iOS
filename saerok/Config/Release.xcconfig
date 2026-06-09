@@ -18,3 +18,8 @@ AMPLITUDE_API_KEY = $(SECRET_AMPLITUDE_API_KEY)
 
 SLASH = /
 BASE_URL = https:$(SLASH)$(SLASH)api.saerok.app/api/v1/
+
+// 앱 번들 분리 (운영 환경)
+APP_BUNDLE_ID = com.apu.saerok
+APP_DISPLAY_NAME = 새록
+APP_ICON_NAME = AppIcon
