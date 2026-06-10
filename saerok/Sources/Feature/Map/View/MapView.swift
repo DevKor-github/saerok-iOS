@@ -105,6 +105,7 @@ private extension MapView {
                     .frame(width: 120)
             }
             .srStyled(.primaryButton)
+            .padding(.horizontal, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.srWhite)

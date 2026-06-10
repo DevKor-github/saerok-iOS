@@ -22,6 +22,10 @@ struct AppEnvironment {
         let appStore = AppStore(AppState())
         let modelContainer = configuredModelContainer()
         let networkService = SRNetworkServiceImpl()
+        // 401 → 토큰 갱신까지 실패(세션 만료) 시 로그인 화면으로 전환
+        networkService.onSessionExpired = {
+            Task { @MainActor in appStore.send(.requireAuthentication) }
+        }
         let mainRepository = configuredRepositories(modelContainer: modelContainer, networkService: networkService)
         let interactors = configuredInteractors(repositories: mainRepository)
         let diContainer = DIContainer(appStore: appStore, interactors: interactors, networkService: networkService)

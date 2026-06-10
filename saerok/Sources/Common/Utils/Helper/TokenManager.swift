@@ -58,18 +58,42 @@ actor TokenManager {
         HTTPCookieStorage.shared.cookies?.first(where: { $0.name == "refreshToken" })?.value
     }
 
+    // MARK: - 세션 갱신
+
+    private var refreshTask: Task<DTO.AuthResponse, Error>?
+
+    /// refresh token으로 access token을 갱신한다.
+    /// 동시 호출(포그라운드 복귀 + 401 인터셉터 등)은 단일 갱신 Task로 합쳐져
+    /// refresh token이 중복 회전되지 않는다.
+    @discardableResult
+    func refreshSession() async throws -> DTO.AuthResponse {
+        if let task = refreshTask {
+            return try await task.value
+        }
+        guard let refreshToken = getRefreshToken() else {
+            throw NetworkError.unauthorized
+        }
+
+        let task = Task<DTO.AuthResponse, Error> {
+            let endpoint = SREndpoint.refreshToken(refreshToken: refreshToken)
+            let response: DTO.AuthResponse = try await SRNetworkServiceImpl().performSRRequest(endpoint)
+
+            let newRefreshToken = extractRefreshTokenFromCookies() ?? refreshToken
+            saveTokens(accessToken: response.accessToken, refreshToken: newRefreshToken)
+            return response
+        }
+        refreshTask = task
+        defer { refreshTask = nil }
+        return try await task.value
+    }
+
     // MARK: - 자동 로그인
     func tryAutoLogin() async throws  -> AppState.AuthStatus {
-        guard let refreshToken = getRefreshToken() else {
+        guard getRefreshToken() != nil else {
             return .notDetermined
         }
-        
-        let endpoint = SREndpoint.refreshToken(refreshToken: refreshToken)
-        let response: DTO.AuthResponse = try await SRNetworkServiceImpl().performSRRequest(endpoint)
-        
-        let newRefreshToken = extractRefreshTokenFromCookies() ?? refreshToken
-        saveTokens(accessToken: response.accessToken, refreshToken: newRefreshToken)
-        
+
+        let response = try await refreshSession()
         return .signedIn(isRegistered: response.signupStatus == .completed)
     }
 

@@ -52,11 +52,12 @@ extension MainRepository: UserRepository {
         }
 
         if let existing = try await getUser() {
-            try await deleteUser(existing)
+            modelContext.delete(existing)
         }
 
         let newUser = User(dto: userDTO)
         modelContext.insert(newUser)
+        try modelContext.save()
         return newUser
     }
     
@@ -73,10 +74,10 @@ extension MainRepository: UserRepository {
         let _: EmptyResponse = try await networkService.performSRRequest(
             .deleteMe
         )
-        
-        if let bundleID = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: bundleID)
-        }
+
+        // 계정 귀속 데이터만 제거한다. 도메인 전체 삭제는 마이그레이션 플래그·온보딩 기록 등
+        // 기기 단위 상태까지 초기화해 다음 사용자가 SwiftData 리셋/온보딩을 다시 겪게 된다.
+        BlockedUserStorage.clear()
     }
     
     func getProfilePresignedURL(_ contentType: String) async throws -> DTO.PresignedURLResponse {

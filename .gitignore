@@ -68,6 +68,7 @@ Config/Secrets.Release.xcconfig
 
 # AI Agentic Coding
 docs/WEAKNESSES.md
+docs/ARCHITECTURE-REVIEW.md
 phases/**/phase*-output.json
 phases/**/step*-output.json
 .claude/commands/

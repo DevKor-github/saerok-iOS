@@ -109,7 +109,7 @@ struct CommunityInteractorTests {
         var searchUserItems: [DTO.CommunitySearchUserItem] = []
 
         func fetchCommunityMain() async throws -> DTO.CommunityMainResponse {
-            .init(recentCollections: recentItems, popularCollections: popularItems, pendingCollections: pendingItems)
+            .init(recentCollections: recentItems, popularCollections: popularItems, pendingCollections: pendingItems, recentFreeBoardPosts: [])
         }
         func fetchPendingBirdId(page: Int?, size: Int?) async throws -> DTO.CommunityPendingBirdIdResponse { .init(items: pendingItems) }
         func fetchPopular(page: Int?, size: Int?) async throws -> DTO.CommunityPopularResponse { .init(items: popularItems) }

@@ -62,10 +62,9 @@ struct UserInteractorImpl: UserInteractor {
     
     func deleteAccount() async throws {
         try await repository.deleteAccount()
-        if let user = try await repository.getUser() {
-            try await repository.deleteUser(user)
-            await TokenManager.shared.clearTokens()
-        }
+        // 서버 계정은 이미 삭제됐으므로, 로컬 정리 실패가 토큰 폐기를 막아선 안 된다
+        try? await repository.deleteUser(nil)
+        await TokenManager.shared.clearTokens()
     }
     
     func updateProfileImage(_ image: Data) async throws -> DTO.MeResponse {

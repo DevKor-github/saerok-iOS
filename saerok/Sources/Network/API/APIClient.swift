@@ -28,9 +28,9 @@ final class DefaultAPIClient: APIClient {
             throw NetworkError.unknownError
         }
 
-//        #if DEBUG
+        #if DEBUG
         logResponse(data: data, response: httpResponse)
-//        #endif
+        #endif
 
         guard 200..<300 ~= httpResponse.statusCode else {
             throw self.validateStatusCode(httpResponse.statusCode)

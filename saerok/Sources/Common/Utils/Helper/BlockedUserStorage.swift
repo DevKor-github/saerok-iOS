@@ -26,4 +26,9 @@ struct BlockedUserStorage {
 //        UserDefaults.standard.bool(forKey: blockableKey)
         false
     }
+
+    static func clear() {
+        UserDefaults.standard.removeObject(forKey: blockedUserIdsKey)
+        UserDefaults.standard.removeObject(forKey: blockableKey)
+    }
 }

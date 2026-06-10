@@ -49,14 +49,22 @@ struct RootSelectorView: View {
             }
         }
         .onChange(of: scenePhase) { before, after in
-            ATTrackingManager.requestTrackingAuthorization { _ in }
+            if after == .active, ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+                ATTrackingManager.requestTrackingAuthorization { _ in }
+            }
             if before == .background && after == .inactive {
+                // 게스트는 갱신할 세션이 없다 — tryAutoLogin이 .notDetermined를 반환해
+                // 로그인 화면으로 떨어지므로 자동로그인 자체를 건너뛴다.
+                guard injected.appStore[\.authStatus] != .guest else { return }
                 Task { @MainActor in
                     do {
                         let status = try await TokenManager.shared.tryAutoLogin()
                         await applyAuthStatus(status)
-                    } catch {
+                    } catch NetworkError.unauthorized, NetworkError.forbidden {
+                        // refresh token 무효 — 세션 만료로 보고 재로그인 요구
                         injected.appStore.send(.requireAuthentication)
+                    } catch {
+                        // 일시적 네트워크 오류 등 — 기존 세션 유지
                     }
                 }
             }
