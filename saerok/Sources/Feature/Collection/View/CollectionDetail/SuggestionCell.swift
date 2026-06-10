@@ -11,9 +11,10 @@ struct SuggestionCell: View {
     @Binding var item: Local.BirdSuggestion
     var selectedId: Int?
     let isMine: Bool
+    let isAdopting: Bool
     let onAgree: () -> Void
     let onDisagree: () -> Void
-    let onAdopt: (() -> Void)? 
+    let onAdopt: (() -> Void)?
     let onTap: () -> Void
     
     private var isSelcted: Bool { selectedId == item.bird.id }
@@ -104,7 +105,7 @@ struct SuggestionCell: View {
     
     private var mySection: some View {
         VStack(alignment: .center, spacing: 7) {
-            AdoptButton(onAdopt: onAdopt)
+            AdoptButton(isOn: isAdopting, onAdopt: onAdopt)
             
             HStack(spacing: 18) {
                 HStack(spacing: 5) {
@@ -128,13 +129,12 @@ struct SuggestionCell: View {
     }
     
     private struct AdoptButton: View {
+        let isOn: Bool
         let onAdopt: (() -> Void)?
-        @State private var isOn: Bool = false
-        
+
         var body: some View {
             Button {
                 (onAdopt ?? {})()
-                isOn.toggle()
             } label: {
                 HStack(spacing: 8) {
                     Image.SRIconSet.adopt
@@ -155,6 +155,7 @@ struct SuggestionCell: View {
                         .inset(by: 0.17)
                         .stroke(Color.srGray, lineWidth: 0.35)
                 )
+                .animation(.easeInOut(duration: 0.15), value: isOn)
             }
             .buttonStyle(.plain)
         }

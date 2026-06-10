@@ -84,11 +84,12 @@ private extension SuggestionSheet {
                         item: item,
                         selectedId: selectedPreview?.bird.id,
                         isMine: isMine,
+                        isAdopting: showAdoptPopup && selectedAdopting?.bird.id == item.wrappedValue.bird.id,
                         onAgree: { toggle(.agree, suggestion: item) },
                         onDisagree: { toggle(.disagree, suggestion: item) },
                         onAdopt: {
-                            showAdoptPopup = true
                             selectedAdopting = item.wrappedValue
+                            showAdoptPopup = true
                         },
                         onTap: { selectedPreview = item.wrappedValue },
                     )
