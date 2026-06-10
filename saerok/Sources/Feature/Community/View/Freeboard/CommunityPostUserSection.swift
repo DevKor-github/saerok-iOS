@@ -13,34 +13,42 @@ struct FreeBoardPostUserSection: View {
     let createdAt: Date
     let commentCount: Int
     let showsCommentCount: Bool
+    let onUserTap: (() -> Void)?
 
     init(
         profileImageUrl: String?,
         nickname: String,
         createdAt: Date,
         commentCount: Int,
-        showsCommentCount: Bool = true
+        showsCommentCount: Bool = true,
+        onUserTap: (() -> Void)? = nil
     ) {
         self.profileImageUrl = profileImageUrl
         self.nickname = nickname
         self.createdAt = createdAt
         self.commentCount = commentCount
         self.showsCommentCount = showsCommentCount
+        self.onUserTap = onUserTap
     }
 
     var body: some View {
         HStack(spacing: 7) {
-            ReactiveAsyncImage(
-                url: profileImageUrl ?? "",
-                scale: .small,
-                size: .init(width: 25, height: 25),
-                downsampling: true
-            )
-            .srAvatarStyle()
+            HStack(spacing: 7) {
+                ReactiveAsyncImage(
+                    url: profileImageUrl ?? "",
+                    scale: .small,
+                    size: .init(width: 25, height: 25),
+                    downsampling: true
+                )
+                .srAvatarStyle()
 
-            Text(nickname)
-                .font(.SRFontSet.body3_2)
-            
+                Text(nickname)
+                    .font(.SRFontSet.body3_2)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { onUserTap?() }
+            .allowsHitTesting(onUserTap != nil)
+
             Rectangle()
                 .foregroundColor(.clear)
                 .frame(width: 2, height: 2)

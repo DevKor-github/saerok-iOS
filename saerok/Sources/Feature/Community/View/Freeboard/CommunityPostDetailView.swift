@@ -97,7 +97,15 @@ private extension CommunityPostDetailView {
     var navigationBar: some View {
         NavigationBar(
             center: {
-                Text("도란도란").font(.SRFontSet.subtitle2)
+                HStack(spacing: 6) {
+                    Image.SRIconSet.post
+                        .frame(.default, tintColor: nil)
+                        .padding(4)
+                        .background(Color.srGreen)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    Text("도란도란")
+                        .font(.SRFontSet.subtitle2)
+                }
             },
             leading: {
                 Button { coordinator.pop() } label: {
@@ -141,7 +149,8 @@ private extension CommunityPostDetailView {
                 nickname: post.nickname,
                 createdAt: post.createdAt,
                 commentCount: post.commentCount,
-                showsCommentCount: false
+                showsCommentCount: false,
+                onUserTap: { onUserTap(post.userId) }
             )
             .overlay(alignment: .trailing) {
                 Menu {

@@ -98,10 +98,10 @@ extension CommunityView {
         }
         
         func loadPosts() async {
-            if case .notRequested = loadState {
-                loadState = await loadState.load {
-                    self.mainItems = try await interactor.fetchMain()
-                }
+            let shouldLoad: Bool = { if case .notRequested = loadState { return true }; return loadState.inError }()
+            guard shouldLoad else { return }
+            loadState = await loadState.load {
+                self.mainItems = try await interactor.fetchMain()
             }
         }
         

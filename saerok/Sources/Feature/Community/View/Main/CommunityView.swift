@@ -44,6 +44,7 @@ struct CommunityView: View {
 
     var body: some View {
         content
+            .onAppear { Task { await viewModel.loadPosts() } }
             .navigationDestination(for: Route.self) { route in routeView(for: route) }
             .onChange(of: viewModel.output, initial: true) { _, output in
                 guard let output else { return }
