@@ -11,11 +11,9 @@
 		213C1CC72FD9E55D00AEF578 /* UI-GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CC12FD9E55D00AEF578 /* UI-GUIDE.md */; };
 		213C1CC82FD9E55D00AEF578 /* PRD.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CC02FD9E55D00AEF578 /* PRD.md */; };
 		213C1CC92FD9E55D00AEF578 /* ADD-ENDPOINT-GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CBC2FD9E55D00AEF578 /* ADD-ENDPOINT-GUIDE.md */; };
-		213C1CCA2FD9E55D00AEF578 /* WEAKNESSES.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CC42FD9E55D00AEF578 /* WEAKNESSES.md */; };
 		213C1CCB2FD9E55D00AEF578 /* ADR.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CBD2FD9E55D00AEF578 /* ADR.md */; };
 		213C1CCC2FD9E55D00AEF578 /* VIEWMODEL-GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CC32FD9E55D00AEF578 /* VIEWMODEL-GUIDE.md */; };
 		213C1CCD2FD9E55D00AEF578 /* ARCHITECTURE.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CBE2FD9E55D00AEF578 /* ARCHITECTURE.md */; };
-		213C1CCE2FD9E55D00AEF578 /* ARCHITECTURE-REVIEW.md in Resources */ = {isa = PBXBuildFile; fileRef = 213C1CBF2FD9E55D00AEF578 /* ARCHITECTURE-REVIEW.md */; };
 		213D6B792DCA55CE00B17243 /* NMapsMap in Frameworks */ = {isa = PBXBuildFile; productRef = 213D6B782DCA55CE00B17243 /* NMapsMap */; };
 		21405C152E99265900C94754 /* AdFitSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 21405C142E99265900C94754 /* AdFitSDK */; };
 		2179235D2ECC4C7C005B8122 /* AmplitudeUnified in Frameworks */ = {isa = PBXBuildFile; productRef = 2179235C2ECC4C7C005B8122 /* AmplitudeUnified */; };
@@ -47,12 +45,10 @@
 		213C1CBC2FD9E55D00AEF578 /* ADD-ENDPOINT-GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ADD-ENDPOINT-GUIDE.md"; sourceTree = "<group>"; };
 		213C1CBD2FD9E55D00AEF578 /* ADR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ADR.md; sourceTree = "<group>"; };
 		213C1CBE2FD9E55D00AEF578 /* ARCHITECTURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ARCHITECTURE.md; sourceTree = "<group>"; };
-		213C1CBF2FD9E55D00AEF578 /* ARCHITECTURE-REVIEW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ARCHITECTURE-REVIEW.md"; sourceTree = "<group>"; };
 		213C1CC02FD9E55D00AEF578 /* PRD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD.md; sourceTree = "<group>"; };
 		213C1CC12FD9E55D00AEF578 /* UI-GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "UI-GUIDE.md"; sourceTree = "<group>"; };
 		213C1CC22FD9E55D00AEF578 /* VIEW-GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "VIEW-GUIDE.md"; sourceTree = "<group>"; };
 		213C1CC32FD9E55D00AEF578 /* VIEWMODEL-GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "VIEWMODEL-GUIDE.md"; sourceTree = "<group>"; };
-		213C1CC42FD9E55D00AEF578 /* WEAKNESSES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = WEAKNESSES.md; sourceTree = "<group>"; };
 		219F722D2D89ABEB00C04738 /* saerok.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = saerok.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		21C90E9F2FAE21ED00410E33 /* CollectionInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionInteractorTests.swift; sourceTree = "<group>"; };
 		21C90EA02FAE21ED00410E33 /* CommunityInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityInteractorTests.swift; sourceTree = "<group>"; };
@@ -117,12 +113,10 @@
 				213C1CBC2FD9E55D00AEF578 /* ADD-ENDPOINT-GUIDE.md */,
 				213C1CBD2FD9E55D00AEF578 /* ADR.md */,
 				213C1CBE2FD9E55D00AEF578 /* ARCHITECTURE.md */,
-				213C1CBF2FD9E55D00AEF578 /* ARCHITECTURE-REVIEW.md */,
 				213C1CC02FD9E55D00AEF578 /* PRD.md */,
 				213C1CC12FD9E55D00AEF578 /* UI-GUIDE.md */,
 				213C1CC22FD9E55D00AEF578 /* VIEW-GUIDE.md */,
 				213C1CC32FD9E55D00AEF578 /* VIEWMODEL-GUIDE.md */,
-				213C1CC42FD9E55D00AEF578 /* WEAKNESSES.md */,
 			);
 			path = docs;
 			sourceTree = "<group>";
@@ -269,11 +263,9 @@
 				213C1CC72FD9E55D00AEF578 /* UI-GUIDE.md in Resources */,
 				213C1CC82FD9E55D00AEF578 /* PRD.md in Resources */,
 				213C1CC92FD9E55D00AEF578 /* ADD-ENDPOINT-GUIDE.md in Resources */,
-				213C1CCA2FD9E55D00AEF578 /* WEAKNESSES.md in Resources */,
 				213C1CCB2FD9E55D00AEF578 /* ADR.md in Resources */,
 				213C1CCC2FD9E55D00AEF578 /* VIEWMODEL-GUIDE.md in Resources */,
 				213C1CCD2FD9E55D00AEF578 /* ARCHITECTURE.md in Resources */,
-				213C1CCE2FD9E55D00AEF578 /* ARCHITECTURE-REVIEW.md in Resources */,
 				21D268942F63C1A800942051 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
