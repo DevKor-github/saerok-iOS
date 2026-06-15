@@ -14,6 +14,13 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
+## Build artifacts
+.derivedData/
+build/
+
+## Xcode Cloud
+xcodecloud/
+
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
@@ -63,12 +70,17 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 
 # Local secret configuration
-Config/Secrets.Debug.xcconfig
-Config/Secrets.Release.xcconfig
+saerok/Config/Secrets.Debug.xcconfig
+saerok/Config/Secrets.Release.xcconfig
+
+# Firebase config (contains client API keys)
+saerok/GoogleService-Info.plist
+saerok/GoogleService-Info-Dev.plist
 
 # AI Agentic Coding
-docs/WEAKNESSES.md
-docs/ARCHITECTURE-REVIEW.md
+# 로컬 전용 내부 문서(AI 생성 분석·리뷰·포스트모템 등) — 저장소에 올리지 않음.
+# 기존 WEAKNESSES.md / ARCHITECTURE-REVIEW.md 등 내부 문서도 이 디렉토리에 둔다.
+docs/internal/
 phases/**/phase*-output.json
 phases/**/step*-output.json
 .claude/commands/
