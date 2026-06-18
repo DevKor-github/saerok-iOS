@@ -11,6 +11,7 @@ enum CollectionDetailRoute: AppRoute {
     case edit
     case bird(_ id: Int)
     case other(_ id: Int)
+    case collectionDetail(_ id: Int)
 }
 
 struct CollectionDetailView: View {
@@ -128,7 +129,9 @@ private extension CollectionDetailView {
         case .bird(let id):
             BirdDetailView(viewModel: coordinator.factory.makeBirdDetailViewModel(birdID: id))
         case .other(let id):
-            UserSummaryViewWrapper(factory: coordinator.factory, id: id, onCollectionTap: { coordinator.push(CollectionRoute.collectionDetail($0)) })
+            UserSummaryViewWrapper(factory: coordinator.factory, id: id, onCollectionTap: { coordinator.push(CollectionDetailRoute.collectionDetail($0)) })
+        case .collectionDetail(let id):
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .userProfile)
         }
     }
 }
