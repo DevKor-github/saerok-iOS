@@ -84,34 +84,35 @@ final class DefaultAPIClient: APIClient {
 
 private extension APIClient {
     func logRequest(_ request: URLRequest) {
-        print("🚀 [REQUEST]")
-        print("URL:", request.url?.absoluteString ?? "")
-        print("Method:", request.httpMethod ?? "")
-        
+        var lines = ["🚀 [REQUEST]"]
+        lines.append("URL: \(request.url?.absoluteString ?? "")")
+        lines.append("Method: \(request.httpMethod ?? "")")
+
         if let headers = request.allHTTPHeaderFields {
-            print("Headers:", headers)
+            lines.append("Headers: \(headers)")
         }
-        
+
         if let body = request.httpBody,
            let bodyString = String(data: body, encoding: .utf8) {
-            print("Body:", bodyString)
+            lines.append("Body: \(bodyString)")
         }
-        
-        print("-----------------------")
+
+        // DEBUG 전용 컴파일 경로이므로 값을 그대로 노출(.public)한다.
+        SRLog.network.debug("\(lines.joined(separator: "\n"), privacy: .public)")
     }
-    
+
     func logResponse(data: Data, response: HTTPURLResponse) {
-        print("📦 [RESPONSE]")
-        print("StatusCode:", response.statusCode)
-        print("URL:", response.url?.absoluteString ?? "")
-        print("Headers:", response.allHeaderFields)
-        
+        var lines = ["📦 [RESPONSE]"]
+        lines.append("StatusCode: \(response.statusCode)")
+        lines.append("URL: \(response.url?.absoluteString ?? "")")
+        lines.append("Headers: \(response.allHeaderFields)")
+
         if let jsonString = String(data: data, encoding: .utf8) {
-            print("Body:", jsonString)
+            lines.append("Body: \(jsonString)")
         } else {
-            print("⚠️ Body 디코딩 불가")
+            lines.append("⚠️ Body 디코딩 불가")
         }
-        
-        print("-----------------------")
+
+        SRLog.network.debug("\(lines.joined(separator: "\n"), privacy: .public)")
     }
 }

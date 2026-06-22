@@ -42,9 +42,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        #if DEBUG
-        print("[Push] APNs 등록 실패: \(error.localizedDescription)")
-        #endif
+        SRLog.push.error("APNs 등록 실패: \(error.localizedDescription, privacy: .public)")
     }
 
     private func startSDKs(application: UIApplication) {
