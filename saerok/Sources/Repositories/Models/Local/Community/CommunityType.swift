@@ -52,6 +52,30 @@ extension CommunityType: Hashable {
 }
 
 extension CommunityType {
+    /// 전체보기 목록 화면에서 상세로 진입할 때 기록할 Amplitude entry_source.
+    /// 둥지 메인(home_feed)과 구분해 어느 목록에서 들어왔는지 식별한다.
+    var entrySource: EntrySource {
+        switch self {
+        case .popular: return .popular
+        case .recent: return .recent
+        case .suggestion: return .suggestion
+        case .board, .search: return .communityFeed
+        }
+    }
+
+    /// 전체보기 목록(CommunityDetailView)에서 상세 진입 시 기록할 screen.
+    /// 한 뷰가 목록 종류로 분기되므로 분기 대상을 접미사로 구분한다.
+    var detailScreen: Screen {
+        switch self {
+        case .popular: return .communityDetailPopular
+        case .recent: return .communityDetailRecent
+        case .suggestion: return .communityDetailSuggestion
+        case .board, .search: return .unknown
+        }
+    }
+}
+
+extension CommunityType {
     var responseType: Decodable.Type {
         switch self {
         case .recent:

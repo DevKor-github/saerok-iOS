@@ -37,7 +37,7 @@ struct MapView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route  {
                 case .detail(let id):
-                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .map))
+                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .map, screen: .map))
                 }
             }
             .onChange(of: viewModel.mapController.selectedBird) { _, newBird in

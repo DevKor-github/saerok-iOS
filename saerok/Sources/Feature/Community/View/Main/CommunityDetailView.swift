@@ -76,7 +76,7 @@ struct CommunityDetailView: View {
             LazyVStack(spacing: 0) {
                 ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
                     Button {
-                        coordinator.push(CommunityView.Route.detailFromFeed(id: item.id))
+                        coordinator.push(CommunityView.Route.detailFromCommunityList(id: item.id, type: viewModel.type))
                     } label: {
                         CommunityCell(item: item, type: viewModel.type)
                     }

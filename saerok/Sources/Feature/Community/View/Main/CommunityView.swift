@@ -11,6 +11,8 @@ import SwiftUI
 enum CommunityRoute: AppRoute {
     case communityType(type: CommunityType)
     case detailFromFeed(id: Int)
+    /// 전체보기 목록 화면(인기/최근/이새이름)에서 상세 진입. type으로 어느 목록인지 구분.
+    case detailFromCommunityList(id: Int, type: CommunityType)
     case detailFromProfile(id: Int)
     case detailFromSearch(id: Int)
     case postDetail(postId: Int)
@@ -90,11 +92,13 @@ private extension CommunityView {
         case .communityType(let type):
             CommunityDetailViewWrapper(factory: coordinator.factory, type: type)
         case .detailFromFeed(let id):
-            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communityFeed)
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communityFeed, screen: .community)
+        case .detailFromCommunityList(let id, let type):
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: type.entrySource, screen: type.detailScreen)
         case .detailFromProfile(let id):
-            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .userProfile)
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .userProfile, screen: .userSummary)
         case .detailFromSearch(let id):
-            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communitySearch)
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .communitySearch, screen: .communitySearchResults)
         case .postDetail(let postId):
             CommunityPostDetailViewWrapper(factory: coordinator.factory, postId: postId, onUserTap: { coordinator.push(Route.other(id: $0)) })
         case .other(let id):
@@ -533,13 +537,15 @@ struct CollectionDetailViewWrapper: View {
     let factory: ViewModelFactory
     let id: Int
     let entrySource: EntrySource
+    let screen: Screen
     @State private var viewModel: CollectionDetailView.ViewModel
 
-    init(factory: ViewModelFactory, id: Int, entrySource: EntrySource) {
+    init(factory: ViewModelFactory, id: Int, entrySource: EntrySource, screen: Screen = .unknown) {
         self.factory = factory
         self.id = id
         self.entrySource = entrySource
-        _viewModel = State(wrappedValue: factory.makeCollectionDetailViewModel(id: id, entrySource: entrySource))
+        self.screen = screen
+        _viewModel = State(wrappedValue: factory.makeCollectionDetailViewModel(id: id, entrySource: entrySource, screen: screen))
     }
 
     var body: some View { CollectionDetailView(viewModel: viewModel) }

@@ -21,7 +21,8 @@ xcodebuild test -scheme saerok -destination 'platform=iOS Simulator,name=iPhone 
 - **UI**: SwiftUI + `@Observable` (iOS 17+)
 - **아키텍처**: MVVM + Clean Architecture (5계층)
 - **로컬 저장소**: SwiftData
-- **네트워킹**: URLSession 기반 `SRNetworkService` 프로토콜 추상화 (Alamofire 미사용)
+- **네트워킹**: URLSession 기반 `SRNetworkService` 프로토콜 추상화 (Alamofire 미사용). 401 응답 시 `TokenManager`로 세션을 1회 자동 갱신 후 원 요청 재시도, 갱신까지 실패하면 `onSessionExpired` → `appStore.send(.requireAuthentication)`로 세션 만료 처리
+- **앱 환경**: Debug/Release를 dev·production으로 분리 (`Config/*.xcconfig`, Firebase `GoogleService-Info.plist` 분기). 시크릿은 `Secrets.*.xcconfig`로 분리되며 Xcode Cloud에서 복원
 - **전역 상태**: `AppStore` — `Store<AppState>` (상태) + `PassthroughSubject<AppEvent, Never>` (이벤트) 두 채널로 구성. 변경은 `appStore.send(AppAction)` 단방향으로만.
 - **의존성 주입**: `DIContainer` + `@Environment`
 - **주요 SDK**: Kakao(소셜 로그인), Firebase(푸시·원격설정), Naver Maps, Lottie, Amplitude
@@ -34,7 +35,7 @@ xcodebuild test -scheme saerok -destination 'platform=iOS Simulator,name=iPhone 
 | 새 화면 추가 | `saerok/Sources/Feature/{기능}/View/` + `ViewModel/` — **반드시 [VIEW-GUIDE](docs/VIEW-GUIDE.md)·[VIEWMODEL-GUIDE](docs/VIEWMODEL-GUIDE.md) 참고** |
 | 비즈니스 로직 수정 | `saerok/Sources/Interactors/` |
 | 데이터 모델·API 응답 변환 | `saerok/Sources/Repositories/Models/` |
-| API 엔드포인트 추가 | `saerok/Sources/Network/EndPoint/` — **반드시 [ADD-ENDPOINT-GUIDE](docs/ADD-ENDPOINT-GUIDE.md) 참고** |
+| API 엔드포인트 추가 | `saerok/Sources/Network/EndPoint/SREndpoint+{도메인}.swift` — 도메인별 파일 분리. **반드시 [ADD-ENDPOINT-GUIDE](docs/ADD-ENDPOINT-GUIDE.md) 참고** |
 | 공통 컴포넌트·디자인 토큰 | `saerok/Sources/Common/SRDesignSystem/` |
 | 공통 뷰 재사용 | `saerok/Sources/Common/Views/` |
 | 유틸·익스텐션 | `saerok/Sources/Common/Utils/` |
@@ -200,8 +201,10 @@ items = await items.load { try await interactor.fetchItems() }
 
 | 채널 | 타입 | 용도 | 사용법 |
 |------|------|------|--------|
-| 상태 | `Store<AppState>` (CurrentValueSubject) | 영속 값 (authStatus, currentUser, 탭 선택 등) | `appStore.updates(for: keyPath)` / `appStore[keyPath]` |
-| 이벤트 | `PassthroughSubject<AppEvent, Never>` | 일회성 명령 (스크롤-투-탑, 탭 간 화면 전환 등) | `appStore.events` |
+| 상태 | `Store<AppState>` (CurrentValueSubject) | 영속 값 (authStatus, currentUser, 탭 선택, `pendingDeepLink` 등) | `appStore.updates(for: keyPath)` / `appStore[keyPath]` |
+| 이벤트 | `PassthroughSubject<AppEvent, Never>` | 일회성 명령 (스크롤-투-탑, 좌표·도감 내비게이션 등) | `appStore.events` |
+
+CRITICAL: 푸시 딥링크(게시글·컬렉션 상세·알림 화면 진입)는 **이벤트가 아니라 `AppState.pendingDeepLink` 상태**로 처리한다. 일회성 이벤트는 콜드 스타트 시 구독자(탭 ViewModel)가 생성되기 전에 발행되면 유실되지만, `CurrentValueSubject` 상태는 늦게 구독해도 현재값을 즉시 받는다. 처리한 ViewModel은 `appStore.send(.clearPendingDeepLink)`로 소비해 중복 내비게이션을 막는다. (`AppState.DeepLink`: `boardDetail` / `freeBoardPost` / `collectionDetail` / `notificationView`)
 
 ```swift
 // 상태 변경 — 반드시 send()로만
@@ -216,8 +219,16 @@ appStore.updates(for: \.authStatus)
 
 // 이벤트 구독
 appStore.events
-    .compactMap { guard case .collectionDetailRequested(let id) = $0 else { return nil }; return id }
-    .weakSink(on: self) { vm, id in vm.output = .navigateToDetail(id: id) }
+    .compactMap { guard case .freeBoardPostDeleted(let id) = $0 else { return nil }; return id }
+    .weakSink(on: self) { vm, id in vm.removePost(id) }
+
+// 딥링크 상태 구독 (콜드 스타트 유실 방지)
+appStore.updates(for: \.pendingDeepLink)
+    .compactMap { guard case .collectionDetail(let id) = $0 else { return nil }; return id }
+    .weakSink(on: self) { vm, id in
+        vm.output = .navigateToDetail(id: id)
+        vm.appStore.send(.clearPendingDeepLink)
+    }
 
 // 상태 읽기 (단순 초기값 세팅용)
 let isGuest = appStore[\.authStatus] == .guest
@@ -228,10 +239,11 @@ let isGuest = appStore[\.authStatus] == .guest
 `AppAction` (→ `appStore.send()`로 전달):
 - **인증**: `enterGuestMode` / `requireAuthentication` / `finishSignIn(isRegistered:)` / `restoreSession(_:)` / `syncCurrentUser(_:)` / `clearCurrentUser`
 - **탭**: `selectTab(_:)`
-- **이벤트 발행**: `requestFieldGuideScrollToTop` / `requestCollectionScrollToTop` / `openBoardDetail(_:)` / `openCollectionDetail(_:)` / `openMapCoordinate(_:)` / `openFieldGuideBird(name:)` / `refreshCollections` / `notifyFreeBoardPostDeleted(_:)`
+- **딥링크 상태 세팅**(`pendingDeepLink`): `openBoardDetail(_:)` / `openFreeBoardPost(_:)` / `openCollectionDetail(_:)` / `openNotificationView` / `clearPendingDeepLink`
+- **이벤트 발행**: `requestFieldGuideScrollToTop` / `requestCollectionScrollToTop` / `requestCommunityScrollToTop` / `openMapCoordinate(_:)` / `openFieldGuideBird(name:)` / `refreshCollections` / `notifyFreeBoardPostDeleted(_:)`
 
 `AppEvent` (`appStore.events`로 수신):
-`fieldGuideScrollToTop` / `collectionScrollToTop` / `boardDetailRequested(Int)` / `collectionDetailRequested(Int)` / `mapNavigationRequested(Coordinate)` / `fieldGuideBirdRequested(String)` / `collectionsRefreshRequested` / `freeBoardPostDeleted(Int)`
+`fieldGuideScrollToTop` / `collectionScrollToTop` / `communityScrollToTop` / `mapNavigationRequested(Coordinate)` / `fieldGuideBirdRequested(String)` / `collectionsRefreshRequested` / `freeBoardPostDeleted(Int)`
 
 ## API 엔드포인트 추가
 

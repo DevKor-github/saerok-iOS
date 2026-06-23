@@ -60,7 +60,8 @@ extension CollectionDetailView {
                 screen: screen,
                 isOwnRecord: false, // 초기값, loadInitial에서 업데이트
                 listLikeCount: 0,
-                listCommentCount: 0
+                listCommentCount: 0,
+                detailUiVariant: ABTestManager.shared.detailUIVariant
             )
 
             appStore
@@ -91,21 +92,17 @@ extension CollectionDetailView {
             await MainActor.run {
                 loadState = .success(())
 
-                // 데이터 로드 완료 후 DetailViewFlow 업데이트
+                // 데이터 로드 완료 후 DetailViewFlow 갱신
+                // (재생성하지 않고 갱신해 detailViewId·detailTapTs를 보존 → 퍼널 조인·load_duration_ms 정확)
                 if let flow = detailFlow {
-                    detailFlow = DetailViewFlow(
-                        recordId: "\(collectionID)",
-                        entrySource: flow.entrySource,
-                        screen: flow.screen,
+                    flow.updateRecordInfo(
                         isOwnRecord: collection?.isMine ?? false,
                         listLikeCount: collection?.likeCount ?? 0,
                         listCommentCount: collection?.commentCount ?? 0
                     )
 
                     // saerok_detail_view 이벤트
-                    if let detailFlow = detailFlow {
-                        Analytics.shared.logSaerokDetailView(flow: detailFlow)
-                    }
+                    Analytics.shared.logSaerokDetailView(flow: flow)
                 }
             }
         }
@@ -244,17 +241,26 @@ extension CollectionDetailView {
             try? await userInteractor.blockUser(userId: userId)
         }
         
+        /// 상세 화면 내 모든 인터랙션(동정·도감·사진확대·프로필·지도 등) 발생 표시.
+        /// 좋아요·댓글은 Analytics 로깅 시 자체적으로 표시된다.
+        func markInteraction() {
+            detailFlow?.markHadInteraction()
+            detailFlow?.setLastAction(.other)
+        }
+
         func navigateToMap() {
             guard let collection, let coordinate = collection.coordinate else { return }
+            markInteraction()
             appStore.send(.selectTab(.map))
             appStore.send(.openMapCoordinate(.init(
                 latitude: coordinate.latitude,
                 longitude: coordinate.longitude
             )))
         }
-        
+
         func navigateToFieldGuide() {
             guard let birdName = collection?.birdName else { return }
+            markInteraction()
             appStore.send(.selectTab(.fieldGuide))
             appStore.send(.openFieldGuideBird(name: birdName))
         }

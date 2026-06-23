@@ -54,7 +54,7 @@ final class Analytics {
         
         let payload = SaerokDetailViewPayload(
             recordId: flow.recordId,
-            screen: flow.screen,
+            screen: .collectionDetail,
             entrySource: flow.entrySource,
             detailViewId: flow.detailViewId,
             detailUiVariant: flow.detailUiVariant,
@@ -75,10 +75,11 @@ final class Analytics {
     
     func logSaerokLikeToggle(flow: DetailViewFlow, likeState: LikeState) {
         flow.markHadInteraction()
+        flow.setLastAction(.other)
         
         let payload = SaerokLikeTogglePayload(
             recordId: flow.recordId,
-            screen: flow.screen,
+            screen: .collectionDetail,
             entrySource: flow.entrySource,
             detailViewId: flow.detailViewId,
             detailUiVariant: flow.detailUiVariant,
@@ -87,6 +88,8 @@ final class Analytics {
             server: .current,
             timestamp: iso8601String(from: Date()),
             isOwnRecord: flow.isOwnRecord,
+            listLikeCount: flow.listLikeCount,
+            listCommentCount: flow.listCommentCount,
             detailTapTs: iso8601String(from: flow.detailTapTs),
             detailLoadedTs: iso8601String(from: flow.detailLoadedTs ?? Date()),
             viewtolikeMs: flow.viewToLikeMs(),
@@ -97,13 +100,14 @@ final class Analytics {
     
     func logSaerokCommentOpen(flow: DetailViewFlow, commentLoaded: Bool) {
         flow.markHadInteraction()
+        flow.markCommentOpened()
         if commentLoaded {
             flow.markCommentLoaded()
         }
         
         let payload = SaerokCommentOpenPayload(
             recordId: flow.recordId,
-            screen: flow.screen,
+            screen: .collectionDetail,
             entrySource: flow.entrySource,
             detailViewId: flow.detailViewId,
             detailUiVariant: flow.detailUiVariant,
@@ -112,6 +116,8 @@ final class Analytics {
             server: .current,
             timestamp: iso8601String(from: Date()),
             isOwnRecord: flow.isOwnRecord,
+            listLikeCount: flow.listLikeCount,
+            listCommentCount: flow.listCommentCount,
             detailTapTs: iso8601String(from: flow.detailTapTs),
             detailLoadedTs: iso8601String(from: flow.detailLoadedTs ?? Date()),
             viewtocommentMs: flow.viewToCommentMs(),
@@ -119,11 +125,14 @@ final class Analytics {
         )
         log(.saerokCommentOpen(payload))
     }
-    
-    func logSaerokCommentClose(flow: DetailViewFlow) {
-        let payload = SaerokCommentClosePayload(
+
+    func logSaerokCommentSubmit(flow: DetailViewFlow, commentLength: Int, isReply: Bool) {
+        flow.markHadInteraction()
+        flow.setLastAction(.commentSubmit)
+
+        let payload = SaerokCommentSubmitPayload(
             recordId: flow.recordId,
-            screen: flow.screen,
+            screen: .collectionDetail,
             entrySource: flow.entrySource,
             detailViewId: flow.detailViewId,
             detailUiVariant: flow.detailUiVariant,
@@ -132,6 +141,27 @@ final class Analytics {
             server: .current,
             timestamp: iso8601String(from: Date()),
             isOwnRecord: flow.isOwnRecord,
+            commentLength: commentLength,
+            isReply: isReply,
+            commenttosubmitMs: flow.commentToSubmitMs()
+        )
+        log(.saerokCommentSubmit(payload))
+    }
+
+    func logSaerokCommentClose(flow: DetailViewFlow) {
+        let payload = SaerokCommentClosePayload(
+            recordId: flow.recordId,
+            screen: .collectionDetail,
+            entrySource: flow.entrySource,
+            detailViewId: flow.detailViewId,
+            detailUiVariant: flow.detailUiVariant,
+            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "",
+            platform: "iOS",
+            server: .current,
+            timestamp: iso8601String(from: Date()),
+            isOwnRecord: flow.isOwnRecord,
+            listLikeCount: flow.listLikeCount,
+            listCommentCount: flow.listCommentCount,
             detailTapTs: iso8601String(from: flow.detailTapTs),
             detailLoadedTs: iso8601String(from: flow.detailLoadedTs ?? Date())
         )
@@ -141,7 +171,7 @@ final class Analytics {
     func logSaerokDetailExit(flow: DetailViewFlow, exitReason: ExitReason) {
         let payload = SaerokDetailExitPayload(
             recordId: flow.recordId,
-            screen: flow.screen,
+            screen: .collectionDetail,
             entrySource: flow.entrySource,
             detailViewId: flow.detailViewId,
             detailUiVariant: flow.detailUiVariant,
@@ -150,11 +180,14 @@ final class Analytics {
             server: .current,
             timestamp: iso8601String(from: Date()),
             isOwnRecord: flow.isOwnRecord,
+            listLikeCount: flow.listLikeCount,
+            listCommentCount: flow.listCommentCount,
             detailTapTs: iso8601String(from: flow.detailTapTs),
             detailLoadedTs: flow.detailLoadedTs.map { iso8601String(from: $0) },
             viewtoexitMs: flow.viewToExitMs(),
             exitReason: exitReason,
             hadInteraction: flow.hadInteraction,
+            lastAction: flow.lastAction,
             imageLoaded: flow.imageLoaded,
             commentLoaded: flow.commentLoaded
         )
@@ -182,7 +215,11 @@ final class Analytics {
         case .saerokCommentOpen(let p):
             dict["event"] = "saerok_comment_open"
             dict.merge(p.toDict())
-            
+
+        case .saerokCommentSubmit(let p):
+            dict["event"] = "saerok_comment_submit"
+            dict.merge(p.toDict())
+
         case .saerokCommentClose(let p):
             dict["event"] = "saerok_comment_close"
             dict.merge(p.toDict())

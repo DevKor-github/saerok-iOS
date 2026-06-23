@@ -25,4 +25,13 @@ final class ABTestManager {
         UserDefaults.standard.set(variant.rawValue, forKey: key)
         return variant
     }
+
+    /// Amplitude 로깅용 변형. UI 렌더링에 쓰는 `interactionZoneVariant`와
+    /// 동일한 저장값에서 파생되므로 화면과 로그가 항상 일치한다.
+    var detailUIVariant: DetailUIVariant {
+        switch interactionZoneVariant {
+        case .a: return .variantA
+        case .b: return .variantB
+        }
+    }
 }

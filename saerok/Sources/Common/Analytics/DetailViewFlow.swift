@@ -23,13 +23,13 @@ final class DetailViewFlow {
     let screen: Screen
     
     /// 본인 레코드 여부
-    let isOwnRecord: Bool
-    
+    private(set) var isOwnRecord: Bool
+
     /// 목록에서의 좋아요 수
-    let listLikeCount: Int
-    
+    private(set) var listLikeCount: Int
+
     /// 목록에서의 댓글 수
-    let listCommentCount: Int
+    private(set) var listCommentCount: Int
     
     /// UI 변형 버전 (A/B 테스트용)
     let detailUiVariant: DetailUIVariant
@@ -41,7 +41,10 @@ final class DetailViewFlow {
     
     /// 상세 화면 로드 완료 시각
     private(set) var detailLoadedTs: Date?
-    
+
+    /// 댓글창 열기 시각 (commenttosubmit_ms 기준점)
+    private(set) var commentOpenedTs: Date?
+
     // MARK: - State Flags
     
     /// 이미지 로드 완료 여부
@@ -52,6 +55,9 @@ final class DetailViewFlow {
     
     /// 사용자 인터랙션 발생 여부 (좋아요, 댓글 등)
     private(set) var hadInteraction: Bool = false
+
+    /// 이탈 직전 마지막 행동 (퍼널 2). 기본값 .other
+    private(set) var lastAction: LastAction = .other
     
     // MARK: - Initialization
     
@@ -75,8 +81,23 @@ final class DetailViewFlow {
         self.detailTapTs = Date()
     }
     
+    // MARK: - Record Info Update
+
+    /// 데이터 로드 완료 후 레코드 정보를 갱신한다.
+    /// 플로우를 재생성하지 않으므로 `detailViewId`·`detailTapTs`가 보존되어
+    /// 퍼널 조인과 load_duration_ms 계산이 정확하게 유지된다.
+    func updateRecordInfo(
+        isOwnRecord: Bool,
+        listLikeCount: Int,
+        listCommentCount: Int
+    ) {
+        self.isOwnRecord = isOwnRecord
+        self.listLikeCount = listLikeCount
+        self.listCommentCount = listCommentCount
+    }
+
     // MARK: - State Marking Methods
-    
+
     /// 상세 화면 로드 완료 표시
     func markDetailLoaded() {
         detailLoadedTs = Date()
@@ -95,6 +116,17 @@ final class DetailViewFlow {
     /// 사용자 인터랙션 발생 표시
     func markHadInteraction() {
         hadInteraction = true
+    }
+
+    /// 댓글창 열기 표시 (commenttosubmit_ms 기준점 + last_action)
+    func markCommentOpened() {
+        commentOpenedTs = Date()
+        lastAction = .commentOpen
+    }
+
+    /// 이탈 직전 마지막 행동 갱신 (퍼널 2)
+    func setLastAction(_ action: LastAction) {
+        lastAction = action
     }
     
     // MARK: - Duration Calculation Methods
@@ -120,5 +152,11 @@ final class DetailViewFlow {
     /// 탭부터 나가기까지 총 소요 시간 (ms)
     func viewToExitMs() -> Int {
         return Int(Date().timeIntervalSince(detailTapTs) * 1000)
+    }
+
+    /// 댓글창 열기부터 올리기 버튼 탭까지 소요 시간 (ms)
+    func commentToSubmitMs() -> Int {
+        guard let openedTs = commentOpenedTs else { return 0 }
+        return Int(Date().timeIntervalSince(openedTs) * 1000)
     }
 }

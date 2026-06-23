@@ -6,34 +6,44 @@ import Foundation
 
 // MARK: - Enums
 
+/// 이벤트가 발생한 실제 View 이름.
 enum Screen: String, Codable {
-    case collectionMap = "collection_map"
-    case collectionList = "collection_list"
-    case communityFeed = "community_feed"
-    case communityDetail = "community_detail"
-    case myPage = "my_page"
-    case userProfile = "user_profile"
-    case fieldGuide = "field_guide"
-    case unknown = "unknown"
+    case collection                                              // CollectionView
+    case map                                                     // MapView
+    case community                                               // CommunityView
+    case communityDetailPopular = "community_detail_popular"     // CommunityDetailView(.popular)
+    case communityDetailRecent = "community_detail_recent"       // CommunityDetailView(.recent)
+    case communityDetailSuggestion = "community_detail_suggestion" // CommunityDetailView(.suggestion)
+    case communitySearchResults = "community_search_results"     // CommunitySearchResultsView
+    case userSummary = "profile"                            // UserSummaryView
+    case collectionDetail = "collection_detail"                  // CollectionDetailView
+    case myPage = "my_page"                                      // MyPageView
+    case fieldGuide = "field_guide"                              // FieldGuideView
+    case deeplink                                                // 알림·딥링크 등 외부 진입
+    case unknown
 }
 
 enum EntrySource: String, Codable {
     case map
     case `self` = "self_saerok"
-    case communityFeed = "community_feed"
+    case communityFeed = "home_feed"
+    case popular
+    case recent
+    case suggestion
     case communitySearch = "community_search"
-    case userProfile = "user_profile"
-    case notiCenter = "notification_center"
+    case userProfile = "profile"
+    case notiCenter = "notification"
     case deeplink
     case unknown
 }
 
 enum ExitReason: String, Codable {
-    case backButton = "back_button"
-    case swipeBack = "swipe_back"
+    case backButton = "back"
+    case swipeBack = "swipe"
+    case appBackground = "app_background"
+    case appOff = "app_off"
     case outsideTap = "outside_tap"
     case navigationTap = "navigation_tap"
-    case appBackground = "app_background"
     case unknown = "unknown"
 }
 
@@ -45,6 +55,14 @@ enum DetailUIVariant: String, Codable {
 enum LikeState: String, Codable {
     case on = "on"
     case off = "off"
+}
+
+/// 상세 이탈 직전 마지막으로 취한 행동 (퍼널 2: 댓글 심화)
+enum LastAction: String, Codable {
+    case commentSubmit = "comment_submit"
+    case commentOpen = "comment_open"
+    case commentWrite = "comment_write"
+    case other
 }
 
 enum ServerEnvironment: String, Codable {
@@ -114,6 +132,8 @@ struct SaerokLikeTogglePayload: EventPayload {
     let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
+    let listLikeCount: Int
+    let listCommentCount: Int
     let detailTapTs: String
     let detailLoadedTs: String
     let viewtolikeMs: Int
@@ -132,10 +152,29 @@ struct SaerokCommentOpenPayload: EventPayload {
     let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
+    let listLikeCount: Int
+    let listCommentCount: Int
     let detailTapTs: String
     let detailLoadedTs: String
     let viewtocommentMs: Int
     let commentLoaded: Bool
+}
+
+/// 4-1. saerok_comment_submit - 댓글 올리기 버튼 탭 (퍼널 2)
+struct SaerokCommentSubmitPayload: EventPayload {
+    let recordId: String
+    let screen: Screen
+    let entrySource: EntrySource
+    let detailViewId: String
+    let detailUiVariant: DetailUIVariant
+    let appVersion: String
+    let platform: String
+    let server: ServerEnvironment
+    let timestamp: String
+    let isOwnRecord: Bool
+    let commentLength: Int
+    let isReply: Bool
+    let commenttosubmitMs: Int
 }
 
 /// 5. saerok_comment_close - 댓글 시트 닫힘
@@ -150,6 +189,8 @@ struct SaerokCommentClosePayload: EventPayload {
     let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
+    let listLikeCount: Int
+    let listCommentCount: Int
     let detailTapTs: String
     let detailLoadedTs: String
 }
@@ -166,11 +207,14 @@ struct SaerokDetailExitPayload: EventPayload {
     let server: ServerEnvironment
     let timestamp: String
     let isOwnRecord: Bool
+    let listLikeCount: Int
+    let listCommentCount: Int
     let detailTapTs: String
     let detailLoadedTs: String?
     let viewtoexitMs: Int
     let exitReason: ExitReason
     let hadInteraction: Bool
+    let lastAction: LastAction
     let imageLoaded: Bool
     let commentLoaded: Bool
 }
@@ -182,6 +226,7 @@ enum AnalyticsEvent {
     case saerokDetailView(SaerokDetailViewPayload)
     case saerokLikeToggle(SaerokLikeTogglePayload)
     case saerokCommentOpen(SaerokCommentOpenPayload)
+    case saerokCommentSubmit(SaerokCommentSubmitPayload)
     case saerokCommentClose(SaerokCommentClosePayload)
     case saerokDetailExit(SaerokDetailExitPayload)
 }

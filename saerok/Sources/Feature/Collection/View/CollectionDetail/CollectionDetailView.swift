@@ -41,13 +41,24 @@ struct CollectionDetailView: View {
     @State private var error: Error? = nil
     @FocusState private var isFocused
     @State private var keyboard = KeyboardObserver()
-        
+    // 이탈 사유 판별용: 백 버튼 탭 여부 / 중복 로깅 방지
+    @State private var didTapBack = false
+    @State private var hasLoggedExit = false
+
     // MARK: Environment
     @EnvironmentObject private var coordinator: AppCoordinator
+    @Environment(\.scenePhase) private var scenePhase
     
     // MARK: Init
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
+    }
+
+    // saerok_detail_exit를 진입 1회당 한 번만 발행 (백그라운드/종료/이탈 중복 방지)
+    private func logDetailExit(_ reason: ExitReason) {
+        guard !hasLoggedExit, let flow = viewModel.detailFlow else { return }
+        hasLoggedExit = true
+        Analytics.shared.logSaerokDetailExit(flow: flow, exitReason: reason)
     }
     
     // MARK: Body
@@ -77,7 +88,7 @@ struct CollectionDetailView: View {
             }
             
             if viewModel.loadState.inError {
-                InvalidAlertView(action: { coordinator.pop() })
+                InvalidAlertView(action: { didTapBack = true; coordinator.pop() })
                     .ignoresSafeArea(.all)
             }
         }
@@ -92,10 +103,18 @@ struct CollectionDetailView: View {
         }
         .onDisappear {
             // saerok_detail_exit 이벤트 (화면 이탈)
-            if let flow = viewModel.detailFlow {
-                let exitReason: ExitReason = coordinator.path.isEmpty ? .backButton : .navigationTap
-                Analytics.shared.logSaerokDetailExit(flow: flow, exitReason: exitReason)
-            }
+            // 앞으로 push(navigationTap) / 백 버튼(back) / 스와이프 백(swipe) 구분
+            let reason: ExitReason = !coordinator.path.isEmpty
+                ? .navigationTap
+                : (didTapBack ? .backButton : .swipeBack)
+            logDetailExit(reason)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // 상세 체류 중 앱이 백그라운드로 전환되면 이탈로 기록
+            if phase == .background { logDetailExit(.appBackground) }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
+            logDetailExit(.appOff)
         }
         .navigationDestination(for: Route.self) { route in
             routeView(for: route)
@@ -109,7 +128,18 @@ struct CollectionDetailView: View {
             )
         }
         .onChange(of: uiState.showFullImage) { _, isShown in
-            if isShown { loadFullImageIfNeeded() }
+            if isShown {
+                viewModel.markInteraction()
+                loadFullImageIfNeeded()
+            }
+        }
+        .onChange(of: uiState.text) { old, new in
+            // 댓글 입력 시작(빈→비어있지 않음) → last_action = comment_write
+            let wasEmpty = old.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            let isEmpty = new.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            if wasEmpty && !isEmpty {
+                viewModel.detailFlow?.setLastAction(.commentWrite)
+            }
         }
         .onChange(of: uiState.showShareSheet) { _, isShown in
             if isShown { loadFullImageIfNeeded() }
@@ -131,7 +161,7 @@ private extension CollectionDetailView {
         case .other(let id):
             UserSummaryViewWrapper(factory: coordinator.factory, id: id, onCollectionTap: { coordinator.push(CollectionDetailRoute.collectionDetail($0)) })
         case .collectionDetail(let id):
-            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .userProfile)
+            CollectionDetailViewWrapper(factory: coordinator.factory, id: id, entrySource: .userProfile, screen: .userSummary)
         }
     }
 }
@@ -190,9 +220,18 @@ private extension CollectionDetailView {
                 selectedNickname: uiState.selectedComment?.user.nickname,
                 nickname: viewModel.collection?.user.nickname ?? "",
                 onSubmit: {
+                    // saerok_comment_submit 이벤트 (올리기 버튼 탭 시점, 서버 응답 전)
+                    let parentId = uiState.selectedComment?.id
+                    if let flow = viewModel.detailFlow {
+                        Analytics.shared.logSaerokCommentSubmit(
+                            flow: flow,
+                            commentLength: uiState.text.count,
+                            isReply: parentId != nil
+                        )
+                    }
                     await viewModel.postComment(
                         text: uiState.text,
-                        parentId: uiState.selectedComment?.id
+                        parentId: parentId
                     )
                     uiState.selectedComment = nil
                 },
@@ -254,7 +293,7 @@ private extension CollectionDetailView {
     @ViewBuilder
     var leadingButton: some View {
         if !coordinator.path.isEmpty {
-            Button { coordinator.pop() } label: {
+            Button { didTapBack = true; coordinator.pop() } label: {
                 Image.SRIconSet.chevronLeft
                     .frame(.default)
             }
@@ -300,15 +339,17 @@ private extension CollectionDetailView {
                 uiState.showBlockUserPopup.toggle()
                 
             case .suggestTap:
+                viewModel.markInteraction()
                 uiState.showSuggestionSheet.toggle()
-                
+
             case .navigateToFieldGuide:
                 viewModel.navigateToFieldGuide()
-                
+
             case .navigateToMap:
                 viewModel.navigateToMap()
-                
+
             case .navigateToOther(let userId):
+                viewModel.markInteraction()
                 coordinator.push(Route.other(userId))
             }
         }

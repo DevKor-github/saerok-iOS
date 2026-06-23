@@ -46,11 +46,11 @@ struct CollectionView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .collectionDetail(let id):
-                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .`self`))
+                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .`self`, screen: .collection))
                 case .collectionDetailFromNotiCenter(let id):
-                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .notiCenter))
+                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .notiCenter, screen: .deeplink))
                 case .collectionDetailFromDeepLink(let id):
-                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .deeplink))
+                    CollectionDetailView(viewModel: coordinator.factory.makeCollectionDetailViewModel(id: id, entrySource: .deeplink, screen: .deeplink))
                 case .addCollection(let bird):
                     CollectionFormViewWrapper(factory: coordinator.factory, mode: .add, bird: bird)
                 case .notification:
