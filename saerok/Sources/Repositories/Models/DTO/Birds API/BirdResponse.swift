@@ -63,6 +63,7 @@ extension DTO {
         let description: Description
         let bodyLengthCm: Double
         let nibrUrl: String
+        let conservationGrade: String?
         let habitats: [String]
         let seasonsWithRarity: [SeasonRarity]
         let images: [Image]

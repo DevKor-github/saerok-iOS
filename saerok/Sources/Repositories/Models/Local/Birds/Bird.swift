@@ -22,7 +22,8 @@ extension Local {
         var size: BirdSize            // 크기 (열거형)
         var imageURL: String?         // 이미지 URL
         var isBookmarked: Bool        // 북마크 여부
-        
+        var isProtected: Bool = false // 보호종 여부 (보호등급이 NONE이 아니면 true)
+
         // MARK: #Predicate 지원
         var seasonRaw: String
         var habitatRaw: String
@@ -38,7 +39,8 @@ extension Local {
             habitats: [Habitat],
             size: BirdSize,
             imageURL: String? = nil,
-            isBookmarked: Bool = false
+            isBookmarked: Bool = false,
+            isProtected: Bool = false
         ) {
             self.id = id
             self.name = name
@@ -50,6 +52,7 @@ extension Local {
             self.size = size
             self.imageURL = imageURL
             self.isBookmarked = isBookmarked
+            self.isProtected = isProtected
             self.seasonRaw = seasons.map { $0.rawValue }.joined()
             self.habitatRaw = habitats.map { $0.rawValue }.joined()
             self.sizeRaw = size.rawValue
@@ -78,7 +81,8 @@ extension Local.Bird {
             seasons: seasons,
             habitats: habitats,
             size: size,
-            imageURL: imageURL
+            imageURL: imageURL,
+            isProtected: (dto.conservationGrade ?? "NONE") != "NONE"
         )
     }
 }
