@@ -108,6 +108,7 @@ extension SREndpoint {
     static func freeBoardPostComments(postId: Int, page: Int? = nil, size: Int? = nil) -> SREndpoint {
         SREndpoint(
             path: "community/freeboard/posts/\(postId)/comments",
+            auth: .ifLoggedIn,
             query: pageQuery(page: page, size: size),
             response: DTO.FreeBoardCommentsResponse.self
         )
