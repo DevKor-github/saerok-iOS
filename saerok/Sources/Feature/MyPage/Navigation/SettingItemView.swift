@@ -35,10 +35,7 @@ extension MyPageView {
                         Text(title)
                             .font(.SRFontSet.body2)
                     }
-                    .padding(.vertical, 9)
-                    .padding(.horizontal, 15)
-                    .background(Color.srLightGray)
-                    .cornerRadius(.infinity)
+                    .srStyled(.chip(background: .srLightGray))
                     
                     Spacer()
                     if let trailing = trailing {

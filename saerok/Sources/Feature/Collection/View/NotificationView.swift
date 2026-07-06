@@ -110,7 +110,7 @@ struct NotificationView: View {
         Button {
             if showDeleteAdminConfirm {
                 viewModel.deleteAdminMessages()
-                withAnimation(.easeInOut(duration: 0.2)) { showDeleteAdminConfirm = false }
+                withAnimation(SRAnimation.easeInOut20) { showDeleteAdminConfirm = false }
             } else {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { showDeleteAdminConfirm = true }
             }

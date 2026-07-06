@@ -69,7 +69,7 @@ struct AccountView: View {
                     deleteAccountRow
                 }
             }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             
             Spacer()
         }
@@ -122,10 +122,7 @@ struct AccountView: View {
                 Text("로그아웃")
                     .font(.SRFontSet.body2)
             }
-            .padding(.vertical, 9)
-            .padding(.horizontal, 15)
-            .background(Color.srLightGray)
-            .cornerRadius(.infinity)
+            .srStyled(.chip(background: .srLightGray))
         }
         .buttonStyle(.plain)
     }
@@ -142,10 +139,7 @@ struct AccountView: View {
                 Text("회원탈퇴")
                     .font(.SRFontSet.body2)
             }
-            .padding(.vertical, 9)
-            .padding(.horizontal, 15)
-            .background(Color.srLightGray)
-            .cornerRadius(.infinity)
+            .srStyled(.chip(background: .srLightGray))
         }
         .buttonStyle(.plain)
     }

@@ -47,7 +47,7 @@ struct SuggestionCell: View {
                 .stroke(isSelcted ? Color.splash : .clear, lineWidth: 1)
         )
         .cornerRadius(20)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .onTapGesture {
             onTap()
         }

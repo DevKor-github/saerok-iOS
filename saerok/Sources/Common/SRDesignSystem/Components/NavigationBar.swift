@@ -41,7 +41,7 @@ struct NavigationBar<Center: View, Leading: View, Trailing: View>: View {
                 Spacer()
                 trailing
             }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             HStack {
                 center
             }

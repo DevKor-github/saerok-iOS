@@ -29,8 +29,8 @@ struct CollectionHeaderView: View {
             addButton
         }
         .frame(height: 170)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
-        .padding(.top, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
+        .padding(.top, SRSpacing.screenHorizontal)
         .padding(.bottom, 8)
     }
     
@@ -38,8 +38,7 @@ struct CollectionHeaderView: View {
         Button(action: addButtonTapped) {
             Image(isGuest ? .floatingButtonInactive : .floatingButton)
                 .resizable()
-                .frame(width: 61, height: 61)
-                .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 0)
+                .srStyled(.floatingButton())
         }
     }
 }

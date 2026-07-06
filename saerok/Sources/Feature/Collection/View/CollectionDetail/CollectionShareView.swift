@@ -121,10 +121,7 @@ private extension CollectionShareView {
                     .font(.SRFontSet.button2)
                     .foregroundStyle(.black)
             }
-            .padding(.horizontal, 15)
-            .padding(.vertical, 9)
-            .background(Color.srWhite)
-            .cornerRadius(.infinity)
+            .srStyled(.chip(background: .srWhite))
         }
         .disabled(type == .export)
     }

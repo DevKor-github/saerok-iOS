@@ -127,7 +127,7 @@ private extension FieldGuideSearchView {
         .padding(.leading, Layout.horizontalPadding)
         .frame(height: 44)
         .srStyled(.textField(isFocused: $isSearchBarFocused, alwaysFocused: true))
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .padding(.top, 7)
     }
     
@@ -260,7 +260,7 @@ private extension FieldGuideSearchView {
         .buttonStyle(.plain)
         .frame(height: Layout.recentItemHeight)
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .background(Color.srWhite)
     }
     

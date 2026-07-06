@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension View {
-    func bottomSheet<SheetContent: View>(
+    func srDynamicSheet<SheetContent: View>(
         isShowing: Binding<Bool>? = nil,
         isFocused: FocusState<Bool>? = nil,
         alwaysOnDisplay: Bool = false,

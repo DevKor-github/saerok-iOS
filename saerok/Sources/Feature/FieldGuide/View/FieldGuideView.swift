@@ -87,7 +87,7 @@ private extension FieldGuideView {
     enum Constants {
         static let headerHeight: CGFloat = 100
         static let headerTopPadding: CGFloat = 16
-        static let navBarSpacerHeight: CGFloat = 64
+        static let navBarSpacerHeight: CGFloat = SRSpacing.navBarSpacer
         static let scrollableID: String = "scrollable"
     }
 
@@ -161,7 +161,7 @@ private extension FieldGuideView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: Constants.headerHeight)
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(SRSpacing.screenHorizontal)
     }
 
     var scrollableContent: some View {
@@ -205,7 +205,7 @@ private extension FieldGuideView {
         }
         .srStyled(.iconButton)
         .padding(.bottom, 114)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .opacity(offsetY > 0 ? 0 : 1)
     }
 

@@ -105,7 +105,7 @@ private extension MapView {
                     .frame(width: 120)
             }
             .srStyled(.primaryButton)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.srWhite)
@@ -119,7 +119,7 @@ private extension MapView {
             
             if viewModel.isModeIdle {
                 Text("")
-                    .bottomSheet(alwaysOnDisplay: true, keyboard: KeyboardObserver()) {
+                    .srDynamicSheet(alwaysOnDisplay: true, keyboard: KeyboardObserver()) {
                         NearbySheet(address: viewModel.address, item: viewModel.item) { item in
                             coordinator.push(Route.detail(item.collectionId))
                         }
@@ -201,7 +201,7 @@ private extension MapView {
                 }
             }
         }
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(SRSpacing.screenHorizontal)
         .padding(.bottom, 152)
         .opacity(viewModel.isModeIdle ? 1 : 0)
     }
@@ -238,7 +238,7 @@ private extension MapView {
                 .frame(.small)
                 .foregroundStyle(.black)
         }
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(SRSpacing.screenHorizontal)
         .frame(height: 68)
         .frame(maxWidth: .infinity)
         .background(Color.srWhite)
@@ -295,7 +295,7 @@ struct SearchInputBar: View, Equatable {
         .padding(.leading, 14)
         .textFieldDeletable(text: $text)
         .srStyled(.textField(isFocused: $isFocused, alwaysFocused: true, tintColor: tintColor))
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
         .onChange(of: text) { _, new in
@@ -319,10 +319,7 @@ extension MapView {
                     Text("이 지역 재검색하기")
                         .font(.SRFontSet.body2)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.srWhite)
-                .cornerRadius(.infinity)
+                .srStyled(.chip(background: .srWhite, horizontalPadding: 16, verticalPadding: 10))
                 .shadow(radius: 2)
             }
             .buttonStyle(.plain)

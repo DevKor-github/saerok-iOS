@@ -18,12 +18,6 @@ struct SRToastModifier: ViewModifier {
                         .id(activeToast.id)
                 }
             }
-            // 환경값은 반드시 '안정적인 참조 타입'으로 주입한다.
-            // 클로저((Toast) -> ())를 주입하면 Equatable이 아니라 매 렌더마다 새 값으로 간주돼,
-            // @Environment(\.showToast)를 읽는 consumer(Community·Map 등)의 body가 무한 재평가된다.
-            // (iOS 26은 coalesce해서 버티지만 iOS 18 / 27beta는 그대로 폭주 → 메모리 폭증 → 크래시)
-            // @Observable 객체는 동일 인스턴스(@State)라 churn이 없고, callAsFunction 덕분에
-            // 기존 호출부 `showToast(.init(...))`는 그대로 동작한다.
             .environment(\.showToast, toastAction)
     }
 
@@ -193,7 +187,5 @@ extension View {
 }
 
 extension EnvironmentValues {
-    /// 토스트 표시 액션. 클로저가 아니라 참조 타입을 기본값으로 둬야
-    /// consumer가 매 렌더마다 "값이 바뀌었다"고 오인해 무한 재평가되는 것을 막는다.
     @Entry var showToast = ToastAction()
 }

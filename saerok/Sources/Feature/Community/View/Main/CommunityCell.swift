@@ -91,7 +91,7 @@ struct CommunityCell: View {
             imageCaptionView
                 .frame(height: 20)
                 .padding(.vertical, 8)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, SRSpacing.screenHorizontal)
         }
     }
     
@@ -202,7 +202,7 @@ struct CommunityCell: View {
         Rectangle()
             .foregroundColor(.clear)
             .frame(width: 2, height: 2)
-            .background(Color(red: 0.59, green: 0.59, blue: 0.59))
+            .background(Color.srGray59)
             .cornerRadius(1)
     }()
     

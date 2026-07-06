@@ -52,7 +52,7 @@ struct CollectionEmptyStateView: View {
 
                 Spacer()
             }
-            .padding(SRDesignConstant.defaultPadding)
+            .padding(SRSpacing.screenHorizontal)
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .background(Color.srWhite)
@@ -73,10 +73,7 @@ struct CollectionEmptyStateView: View {
                         .font(.SRFontSet.body2)
                         .foregroundStyle(.srWhite)
                 }
-                .padding(.vertical, 9)
-                .padding(.horizontal, 15)
-                .background(Color.splash)
-                .cornerRadius(.infinity)
+                .srStyled(.chip(background: .splash))
         }
         .padding(.bottom, 30)
         .buttonStyle(.plain)

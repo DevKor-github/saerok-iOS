@@ -22,7 +22,7 @@ struct FloatingMenuModifier: ViewModifier {
                     Color.black
                         .opacity(showMenu ? 0.5 : 0)
                         .ignoresSafeArea()
-                        .animation(.easeInOut(duration: 0.2), value: showMenu)
+                        .animation(SRAnimation.easeInOut20, value: showMenu)
                         .allowsHitTesting(showMenu)
                         .onTapGesture {
                             showMenu = false
@@ -52,7 +52,7 @@ struct FloatingMenuView: View {
     let postAction: () -> Void
     let saerokAction: () -> Void
     
-    private let springAnimation: Animation = .spring(response: 0.35, dampingFraction: 0.9)
+    private let springAnimation: Animation = SRAnimation.spring35_90
     
     var body: some View {
         ZStack {
@@ -87,8 +87,7 @@ struct FloatingMenuView: View {
             } label: {
                 Image(.comAddButton)
                     .resizable()
-                    .frame(width: 62, height: 62)
-                    .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 0)
+                    .srStyled(.floatingButton(size: 62))
             }
             .rotationEffect(.degrees(showMenu ? 45 : 0))
             .animation(.easeInOut(duration: 0.3), value: showMenu)

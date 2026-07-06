@@ -23,7 +23,7 @@ struct EnrollView: View {
                     .frame(height: 40)
                 EnrollFirstFormView(user: $user, onEnrollmentComplete: onEnrollmentComplete)
             }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
     }
     

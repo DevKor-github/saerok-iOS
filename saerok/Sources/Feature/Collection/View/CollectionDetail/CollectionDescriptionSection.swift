@@ -65,9 +65,7 @@ private extension CollectionDescriptionSection {
         .padding(.vertical, 19)
         .padding(.leading, 17)
         .padding(.trailing, 13.5)
-        .background(Color.srWhite)
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
+        .srStyled(.card(shadow: .black(0.15, radius: 5)))
         .onTapGesture {
             if !isUnknownBird {
                 if coordinator.path.isEmpty {
@@ -93,19 +91,11 @@ private extension CollectionDescriptionSection {
         HStack(spacing: 9) {
             if isUnknownBird {
                 suggestButton
-                    .background(
-                        Circle()
-                            .fill(Color.white)
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                    )
+                    .srStyled(.circleIconChip())
             }
-            
+
             additionalButton
-                .background(
-                    Circle()
-                        .fill(Color.white)
-                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                )
+                .srStyled(.circleIconChip())
         }
     }
     
@@ -149,13 +139,7 @@ private extension CollectionDescriptionSection {
                     size: .init(width: 25, height: 25),
                     downsampling: true
                 )
-                .frame(width: 25, height: 25)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .inset(by: 0.6)
-                        .stroke(.srLightGray, lineWidth: 2)
-                )
+                .srStyled(.avatar())
                 .id(collection.id)
                 
                 Text(collection.user.nickname)
@@ -230,8 +214,7 @@ private extension CollectionDescriptionSection {
         .padding(.horizontal, 16)
         .padding(.vertical, 15)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.srWhite)
-        .cornerRadius(20)
+        .srStyled(.card(shadow: nil))
     }
     
     var suggestButton: some View {

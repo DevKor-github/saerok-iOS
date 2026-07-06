@@ -38,7 +38,7 @@ struct CommunityUserCell: View {
                 .foregroundStyle(.srGray)
         }
         .padding(.vertical, 11)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .background(Color.srWhite)
         .overlay(alignment: .top) {
             divider

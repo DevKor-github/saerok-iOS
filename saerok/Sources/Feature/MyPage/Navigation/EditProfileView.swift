@@ -133,7 +133,7 @@ struct EditProfileView: View {
                 Spacer()
                 saveButton
             }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
         .sheet(isPresented: $showOption) {
             VStack(spacing: 36) {

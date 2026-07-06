@@ -203,7 +203,7 @@ private extension CollectionFormView {
                 submitButton
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
         .srPopup(
             isPresented: Binding(

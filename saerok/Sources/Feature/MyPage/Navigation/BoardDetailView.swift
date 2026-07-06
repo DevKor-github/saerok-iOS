@@ -53,7 +53,7 @@ struct BoardDetailView: View {
                     }
                     .padding(.vertical, 60)
                 }
-                .padding(.horizontal, SRDesignConstant.defaultPadding)
+                .padding(.horizontal, SRSpacing.screenHorizontal)
                 
                 navigationBar
                     .background(Color.clear)

@@ -61,7 +61,7 @@ struct NotificationSettingView: View {
                 notificationSettingItem(type)
             }
         }
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
     
     var navigationBar: some View {

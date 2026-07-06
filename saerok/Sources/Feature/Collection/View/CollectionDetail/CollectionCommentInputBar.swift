@@ -62,7 +62,7 @@ struct CollectionCommentInputBar: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 23)
                     .inset(by: 0.5)
-                    .stroke(Color(red: 0.85, green: 0.88, blue: 0.87), lineWidth: 1)
+                    .stroke(Color.srInputBorder, lineWidth: 1)
                 
             )
             .cornerRadius(23)

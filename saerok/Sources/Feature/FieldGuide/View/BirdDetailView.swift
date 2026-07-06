@@ -130,7 +130,7 @@ private extension BirdDetailView {
             }
         }
         .srStyled(.iconButton)
-        .padding(.leading, SRDesignConstant.defaultPadding)
+        .padding(.leading, SRSpacing.screenHorizontal)
         .padding(.trailing, 16)
     }
     
@@ -155,7 +155,10 @@ private extension BirdDetailView {
                 .font(.SRFontSet.body2)
                 .lineSpacing(Constants.lineSpacing)
         }
-        .modifier(CardStyleModifier())
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 20)
+        .srStyled(.card(shadow: nil))
     }
     
     
@@ -170,7 +173,10 @@ private extension BirdDetailView {
                 .font(.SRFontSet.body2)
                 .lineSpacing(Constants.lineSpacing)
         }
-        .modifier(CardStyleModifier())
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 20)
+        .srStyled(.card(shadow: nil))
         
         Color.clear.frame(height: Constants.bottomSpacerHeight)
     }
@@ -199,16 +205,6 @@ private extension BirdDetailView {
         }
     }
     
-    struct CardStyleModifier: ViewModifier {
-        func body(content: Content) -> some View {
-            content
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 14)
-                .padding(.horizontal, 20)
-                .background(Color.srWhite)
-                .cornerRadius(20)
-        }
-    }
 }
 
 // MARK: - Button Actions

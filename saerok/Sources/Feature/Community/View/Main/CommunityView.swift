@@ -112,7 +112,7 @@ private extension CommunityView {
 // MARK: - Loaded View
 private extension CommunityView {
     enum Constants {
-        static let navBarSpacerHeight: CGFloat = 64
+        static let navBarSpacerHeight: CGFloat = SRSpacing.navBarSpacer
         static let bottomPadding: CGFloat = 114
     }
 
@@ -292,9 +292,8 @@ private extension CommunityView {
                 iconButton(type: .board, icon: .post, background: .srGreen)
             }
         }
-        .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.srLightGray, lineWidth: 1))
-        .padding(.horizontal, 24)
+        .srStyled(.card(radius: SRRadius.item, background: .clear, shadow: nil, strokeColor: .srLightGray))
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
 
     func boardSection(
@@ -370,8 +369,7 @@ private extension CommunityView {
         } label: {
             Image(viewModel.isGuestMode ? .floatingButtonInactive : .floatingButton)
                 .resizable()
-                .frame(width: 61, height: 61)
-                .shadow(color: .black.opacity(0.25), radius: 5)
+                .srStyled(.floatingButton())
         }
     }
 
@@ -413,7 +411,7 @@ private extension CommunityView {
                 }
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
 
     private func iconButton(type: CommunityType, icon: Image.SRIconSet, background: Color) -> some View {

@@ -40,7 +40,7 @@ struct FreeBoardPostUserSection: View {
                     size: .init(width: 25, height: 25),
                     downsampling: true
                 )
-                .srAvatarStyle()
+                .srStyled(.avatar())
 
                 Text(nickname)
                     .font(.SRFontSet.body3_2)
@@ -62,13 +62,7 @@ struct FreeBoardPostUserSection: View {
             Spacer()
 
             if showsCommentCount, commentCount > 0 {
-                HStack(spacing: 3) {
-                    Image.SRIconSet.commentFilled
-                        .frame(.default, tintColor: .srLightGray)
-                    Text("\(commentCount)")
-                        .font(.SRFontSet.caption1_2)
-                        .foregroundStyle(.srGray)
-                }
+                SRCountLabel(count: commentCount)
             }
         }
     }

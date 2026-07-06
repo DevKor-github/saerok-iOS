@@ -30,8 +30,7 @@ struct CollectionCustomView: View {
             bottomIconSection
         }
         .frame(width: Layout.viewWidth, height: Layout.viewHeight)
-        .background(Color.srWhite)
-        .cornerRadius(20)
+        .srStyled(.card(shadow: nil))
     }
 
     private var collectionInfoSection: some View {

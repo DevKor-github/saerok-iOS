@@ -33,7 +33,7 @@ struct SuggestionSheet: View {
             header
             content
         }
-        .srbottomSheetStyle(presentationDetent: [.medium])
+        .srBottomSheet(presentationDetent: [.medium])
         .onChange(of: selectedBird) { _, newValue in
             guard let _ = newValue else { return }
             showSuggestPopup = true
@@ -64,7 +64,7 @@ private extension SuggestionSheet {
             .font(.SRFontSet.body2)
             .foregroundStyle(.srGray)
         }
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
     
     @ViewBuilder
@@ -144,13 +144,12 @@ private extension SuggestionSheet {
                                 .frame(width: 40, height: 40)
                         )
                         .frame(width: 40, height: 40)
-                        .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 0)
+                        .srShadow(.black(0.15, radius: 5))
                         .padding(11)
                 }
             }
-            .background(Color.srWhite)
-            .cornerRadius(20)
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .srStyled(.card(shadow: nil))
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
     }
 }

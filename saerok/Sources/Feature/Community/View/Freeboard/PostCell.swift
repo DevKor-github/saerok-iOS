@@ -25,7 +25,7 @@ struct PostCell: View {
                 user
                 content
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             .padding(.vertical, 13)
             .overlay(alignment: .bottom) {
                 divider
@@ -37,15 +37,9 @@ struct PostCell: View {
             }
 
             if post.commentCount > 0 {
-                HStack(spacing: 3) {
-                    Image.SRIconSet.commentFilled
-                        .frame(.default, tintColor: .srLightGray)
-                    Text("\(post.commentCount)")
-                        .font(.SRFontSet.caption1_2)
-                        .foregroundStyle(.srGray)
-                }
-                .padding(.trailing, 24)
-                .padding(.top, 13)
+                SRCountLabel(count: post.commentCount)
+                    .padding(.trailing, 24)
+                    .padding(.top, 13)
             }
         }
     }
@@ -69,9 +63,5 @@ struct PostCell: View {
             .padding(.leading, 30)
     }
 
-    private let divider: some View = {
-        Rectangle()
-            .fill(Color.srLightGray)
-            .frame(height: 1)
-    }()
+    private let divider = SRDivider()
 }

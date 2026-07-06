@@ -67,7 +67,7 @@ struct CollectionCommentSheet: View {
             .contentShape(Rectangle())
         }
         .font(.SRFontSet.subtitle2)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
     
     private var emptyView: some View {

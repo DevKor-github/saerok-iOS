@@ -99,13 +99,7 @@ private extension UserSummaryView {
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundColor(.clear)
         .frame(height: 82)
-        .background(Color.srWhite)
-        .cornerRadius(20)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .inset(by: 0.5)
-                .stroke(.splash, lineWidth: 1)
-        )
+        .srStyled(.card(shadow: nil, strokeColor: .splash, strokeInset: 0.5))
         .fixedSize(horizontal: false, vertical: true)
     }
 }

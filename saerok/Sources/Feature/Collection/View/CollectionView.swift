@@ -94,7 +94,7 @@ struct CollectionView: View {
 
 private extension CollectionView {
     enum Constants {
-        static let navBarSpacerHeight: CGFloat = 64
+        static let navBarSpacerHeight: CGFloat = SRSpacing.navBarSpacer
         static let scrollableID = "CollectionView"
         static let backgroundColor: Color = .red
     }
@@ -137,7 +137,7 @@ private extension CollectionView {
             
             Text(viewModel.birdQuote)
                 .font(.SRFontSet.headline1)
-                .padding(.horizontal, SRDesignConstant.defaultPadding)
+                .padding(.horizontal, SRSpacing.screenHorizontal)
                 .padding(.top, 12)
         }
     }

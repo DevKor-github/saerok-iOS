@@ -105,7 +105,7 @@ private extension LoginView {
             KakaoLoginView(user: $user, onSignIn: onSignIn)
             continueWithoutLoginButton
         }
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .padding(.bottom, Constants.bottomPadding)
         .ignoresSafeArea(.all)
     }

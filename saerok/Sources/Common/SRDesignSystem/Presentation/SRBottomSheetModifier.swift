@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension View {
-    func srbottomSheetStyle(presentationDetent det: Set<PresentationDetent> = [.medium, .large], backgroundColor: Color = .srLightGray) -> some View {
+    func srBottomSheet(presentationDetent det: Set<PresentationDetent> = [.medium, .large], backgroundColor: Color = .srLightGray) -> some View {
         self.modifier(SRBottomSheetModifier(detent: det, backgroundColor: backgroundColor))
     }
 }

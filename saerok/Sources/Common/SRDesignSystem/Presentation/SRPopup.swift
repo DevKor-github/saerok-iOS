@@ -25,7 +25,7 @@ struct PopupConfig {
 /// 현재는 단일 버튼 또는 좌우 2개 버튼만 지원한다.
 enum PopupButtonLayout {
     
-    /// 버튼 1개 (보통 확인)
+    /// 버튼 1개 
     case single(PopupButtonConfig)
     
     /// 버튼 2개 (예: 취소 / 확인)

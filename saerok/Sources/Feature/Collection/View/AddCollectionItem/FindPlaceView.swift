@@ -116,7 +116,7 @@ private extension FindPlaceView {
             .frame(height: 44)
             .srStyled(.textField(isFocused: $isFocused))
             .textFieldDeletable(text: $searchText)
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             .padding(.bottom, 20)
             .frame(maxWidth: .infinity)
             .background(Color.srWhite)
@@ -145,7 +145,7 @@ private extension FindPlaceView {
                         .frame(maxWidth: .infinity)
                 }
                 .srStyled(.primaryButton)
-                .padding(SRDesignConstant.defaultPadding)
+                .padding(SRSpacing.screenHorizontal)
             }
             .opacity(viewModel.mode == .idle ? 1 : 0)
             .allowsHitTesting(viewModel.mode == .idle)
@@ -193,7 +193,7 @@ private extension FindPlaceView {
                 Spacer()
             }
         }
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(SRSpacing.screenHorizontal)
         .frame(maxWidth: .infinity)
         .background(Color.srWhite)
     }
@@ -257,7 +257,7 @@ private extension FindPlaceView {
                 Text(placeAddress)
                     .font(.SRFontSet.caption1)
                     .foregroundStyle(.secondary)
-                    .padding(.leading, SRDesignConstant.defaultPadding / 2)
+                    .padding(.leading, SRSpacing.screenHorizontal / 2)
                 
                 Spacer()
                 
@@ -270,7 +270,7 @@ private extension FindPlaceView {
                 .frame(height: 53)
                 .disabled(text.isEmpty)
             }
-            .padding(SRDesignConstant.defaultPadding)
+            .padding(SRSpacing.screenHorizontal)
         }
     }
 }

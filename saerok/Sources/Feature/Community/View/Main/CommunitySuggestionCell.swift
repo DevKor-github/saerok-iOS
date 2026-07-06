@@ -17,9 +17,7 @@ struct CommunitySuggestionCell: View {
             Spacer()
         }
         .frame(width: 107, height: 127)
-        .background(.srWhite)
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 0)
+        .srStyled(.card())
     }
     
     private var imageSection: some View {

@@ -269,7 +269,7 @@ struct FreeBoardPostCarouselCard: View {
                         size: .init(width: 20, height: 20),
                         downsampling: true
                     )
-                    .srAvatarStyle_2()
+                    .srStyled(.avatar(size: 21))
                     Text(post.nickname)
                         .font(.SRFontSet.caption1)
                         .lineLimit(1)
@@ -289,14 +289,7 @@ struct FreeBoardPostCarouselCard: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .frame(width: 300, height: 83)
-            .background(Color.srWhite)
-            .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .inset(by: 0.5)
-                    .stroke(Color.whiteGray, lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.07), radius: 6, x: 0, y: 2)
+            .srStyled(.card(shadow: .black(0.07, radius: 6, y: 2), strokeColor: .whiteGray, strokeInset: 0.5))
         }
         .buttonStyle(.plain)
     }
@@ -321,9 +314,7 @@ struct FreeBoardCTACarouselCard: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .frame(width: 300, height: 83)
-            .background(Color.srWhite)
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.07), radius: 6, x: 0, y: 2)
+            .srStyled(.card(shadow: .black(0.07, radius: 6, y: 2)))
         }
         .buttonStyle(.plain)
     }

@@ -179,7 +179,7 @@ private extension CollectionDetailView {
                         .shimmerIfLoading(viewModel.loadState.value == nil)
                     
                     descriptionSection
-                        .padding(.horizontal, SRDesignConstant.defaultPadding)
+                        .padding(.horizontal, SRSpacing.screenHorizontal)
                         .offset(y: -20)
                     
                     Color.clear
@@ -191,7 +191,7 @@ private extension CollectionDetailView {
             navigationBar
         }
         .background(Color.srLightGray)
-        .bottomSheet(isShowing: $uiState.showCommentSheet, isFocused: _isFocused, keyboard: keyboard) {
+        .srDynamicSheet(isShowing: $uiState.showCommentSheet, isFocused: _isFocused, keyboard: keyboard) {
             CollectionCommentSheet(
                 viewModel: viewModel,
                 collectionId: viewModel.collectionID,
@@ -241,7 +241,7 @@ private extension CollectionDetailView {
                 isGuest: viewModel.isGuest
             )
         }
-        .bottomSheet(isShowing: $uiState.showSuggestionSheet, keyboard: keyboard, isExtendable: false) {
+        .srDynamicSheet(isShowing: $uiState.showSuggestionSheet, keyboard: keyboard, isExtendable: false) {
             SuggestionSheet(
                 isMine: viewModel.collection?.isMine ?? false,
                 collectionID: viewModel.collectionID,
@@ -318,7 +318,7 @@ private extension CollectionDetailView {
             .frame(width: UIScreen.main.bounds.width)
             .clipped()
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.35)) {
+                withAnimation(SRAnimation.easeInOut35) {
                     uiState.showFullImage = true
                 }
             }

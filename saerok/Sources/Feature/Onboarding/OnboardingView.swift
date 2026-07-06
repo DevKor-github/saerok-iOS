@@ -109,7 +109,7 @@ struct OnboardingView: View {
                 }
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: currentIndex)
+        .animation(SRAnimation.easeInOut25, value: currentIndex)
         .padding(.bottom, 16)
     }
     
@@ -121,8 +121,7 @@ struct OnboardingView: View {
                         .frame(maxWidth: .infinity)
                         .font(.SRFontSet.button1_2)
                         .padding(.vertical, 16)
-                        .background(Color.splash)
-                        .cornerRadius(20)
+                        .srStyled(.card(background: .splash, shadow: nil))
                         .foregroundColor(.srWhite)
                         .transition(.asymmetric(
                             insertion: .opacity,
@@ -138,7 +137,7 @@ struct OnboardingView: View {
                         ))
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: currentIndex)
+            .animation(SRAnimation.easeInOut20, value: currentIndex)
         }
         .buttonStyle(.plain)
     }

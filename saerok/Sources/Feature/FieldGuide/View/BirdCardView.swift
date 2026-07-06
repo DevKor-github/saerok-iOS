@@ -37,7 +37,7 @@ struct BirdCardView: View {
         .frame(height: Const.cardHeight)
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 0)
+        .srShadow(.card10)
         .contentShape(Rectangle())
     }
 }

@@ -105,7 +105,7 @@ struct BoardCell: View {
                 .frame(.default, tintColor: .primary)
         }
         .padding(.vertical, 15)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .background(Color.srWhite)
         .overlay(alignment: .top) {
             divider
@@ -118,8 +118,6 @@ struct BoardCell: View {
     }
     
     private let divider: some View = {
-        Rectangle()
-            .fill(Color.srLightGray)
-            .frame(height: 1)
+        SRDivider()
     }()
 }

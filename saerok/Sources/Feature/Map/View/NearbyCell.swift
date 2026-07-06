@@ -18,8 +18,7 @@ struct NearbyCell: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 141)
-        .background(Color.srWhite)
-        .cornerRadius(20)
+        .srStyled(.card(shadow: nil))
     }
 }
 
@@ -52,13 +51,7 @@ private extension NearbyCell {
                     size: .init(width: 25, height: 25),
                     downsampling: true
                 )
-                .frame(width: 25, height: 25)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .inset(by: 0.8)
-                        .stroke(.srLightGray, lineWidth: 2)
-                )
+                .srStyled(.avatar(strokeInset: 0.8))
                 
                 Text(item.user.nickname)
                     .font(.SRFontSet.caption1)

@@ -35,9 +35,7 @@ struct CollectionItemView: View {
             .padding(.horizontal, 5)
             .padding(.top, 5)
             .padding(.bottom, 8)
-            .background(Color.srWhite)
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 0)
+            .srStyled(.card(shadow: .black(0.2, radius: 5)))
         }
         .buttonStyle(.plain)
     }

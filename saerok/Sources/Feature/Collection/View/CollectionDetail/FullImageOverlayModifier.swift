@@ -51,7 +51,7 @@ struct FullImageOverlayModifier: ViewModifier {
     }
     
     private func close() {
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(SRAnimation.easeInOut25) {
             isPresented = false
         }
     }

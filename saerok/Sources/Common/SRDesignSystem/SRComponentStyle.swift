@@ -36,12 +36,38 @@ enum SRComponentStyle {
     case defaultItem
     /// 기본 주요 액션(Primary)에 사용하는 버튼 스타일
     case primaryButton
+    /// 보조 액션(Secondary) 버튼 스타일 (투명 배경, 텍스트 중심)
+    case secondaryButton
     /// 아이콘 전용 버튼 스타일 (배경/크기/터치 영역 최적화)
     case iconButton
     /// 테두리가 있는 아이콘 버튼 스타일
     case borderedIconButton
-    /// 아바타(프로필 이미지/이니셜) 스타일
-    case avatar
+    /// 아바타(프로필 이미지) 스타일 — 크기·스트로크는 호출부 실측값을 그대로 전달
+    /// - Parameters:
+    ///   - size: 아바타 한 변 크기 (기본 25)
+    ///   - strokeColor: 테두리 색 (기본 .srLightGray)
+    ///   - strokeWidth: 테두리 두께 (기본 2). 0이면 테두리 생략
+    ///   - strokeInset: 테두리 inset (기본 0.6)
+    case avatar(size: CGFloat = 25, strokeColor: Color = .srLightGray, strokeWidth: CGFloat = 2, strokeInset: CGFloat = 0.6)
+    /// 카드 스타일: 배경 + 코너 + (옵션) 테두리 + (옵션) 그림자. 값 표준화 없음 — 실측값을 파라미터로 전달
+    /// - Parameters:
+    ///   - radius: 코너 라디우스 (기본 SRRadius.card = 20)
+    ///   - background: 배경색 (기본 .srWhite)
+    ///   - shadow: 그림자 토큰. nil이면 그림자 없음 (기본 .card10)
+    ///   - strokeColor: 테두리 색. nil이면 테두리 없음 (기본 nil)
+    ///   - strokeWidth: 테두리 두께 (기본 1)
+    ///   - strokeInset: 테두리 inset (기본 0)
+    case card(radius: CGFloat = SRRadius.card, background: Color = .srWhite, shadow: SRShadow? = .card10, strokeColor: Color? = nil, strokeWidth: CGFloat = 1, strokeInset: CGFloat = 0)
+    /// 캡슐 칩: 패딩 + 배경 + 무한 코너. 전경색은 호출부 스타일 보존을 위해 미포함
+    /// - Parameters:
+    ///   - background: 배경색 (필수 — 호출부마다 분산되어 기본값 없음)
+    ///   - horizontalPadding: 좌우 패딩 (기본 15)
+    ///   - verticalPadding: 상하 패딩 (기본 9)
+    case chip(background: Color, horizontalPadding: CGFloat = 15, verticalPadding: CGFloat = 9)
+    /// 원형 아이콘 칩: 아이콘 뒤 흰 원 + 그림자 배경
+    case circleIconChip(fill: Color = .white, shadow: SRShadow? = .chipIcon10)
+    /// 플로팅 원형 버튼 이미지 스타일: Button label 안의 Image에 적용 (`.resizable()`은 호출부 유지)
+    case floatingButton(size: CGFloat = 61, shadow: SRShadow = .floating25)
     /// 경고(Alert) 컨텍스트에서 사용하는 버튼 스타일 집합
     /// - Parameter type: 확인/삭제/보더 등 세부 알럿 버튼 스타일 타입
     case alert(_ type: SRAlertStyle)
@@ -62,10 +88,20 @@ enum SRComponentStyle {
             view.buttonStyle(.icon)
         case .borderedIconButton:
             view.buttonStyle(.borderedIcon)
-        case .avatar:
-            view.srAvatarStyle()
+        case .avatar(let size, let strokeColor, let strokeWidth, let strokeInset):
+            view.modifier(SRAvatarStyle(size: size, strokeColor: strokeColor, strokeWidth: strokeWidth, strokeInset: strokeInset))
+        case .card(let radius, let background, let shadow, let strokeColor, let strokeWidth, let strokeInset):
+            view.modifier(SRCardStyle(radius: radius, background: background, shadow: shadow, strokeColor: strokeColor, strokeWidth: strokeWidth, strokeInset: strokeInset))
+        case .chip(let background, let horizontalPadding, let verticalPadding):
+            view.modifier(SRChipStyle(background: background, horizontalPadding: horizontalPadding, verticalPadding: verticalPadding))
+        case .circleIconChip(let fill, let shadow):
+            view.modifier(SRCircleIconChipStyle(fill: fill, shadow: shadow))
+        case .floatingButton(let size, let shadow):
+            view.modifier(SRFloatingButtonStyle(size: size, shadow: shadow))
         case .primaryButton:
             view.buttonStyle(.primary)
+        case .secondaryButton:
+            view.buttonStyle(.secondary)
         case .alert(.confirm):
             view.buttonStyle(.alert_confirm)
         case .alert(.delete):

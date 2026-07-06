@@ -49,7 +49,7 @@ struct CommunityFilterBar: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .padding(.vertical, 15)
     }
 }

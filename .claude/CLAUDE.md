@@ -272,12 +272,17 @@ extension SREndpoint {
 - 호출부는 기존과 동일: `networkService.performSRRequest(.somethingList(page:size:))`.
 
 ## UI 규칙
-- CRITICAL: 색상은 반드시 **Asset Catalog 이름**으로 참조 (`Color.main`, `.srWhite`, `.srGray` 등). hex 하드코딩 금지.
+
+디자인 시스템 구조·진입점·토큰 규칙은 **[DESIGN-SYSTEM-GUIDE](docs/DESIGN-SYSTEM-GUIDE.md)** 참고. 핵심 규칙:
+
+- CRITICAL: 뷰 외형 스타일링은 **`.srStyled(_:)` 단일 진입점**으로만. (card/chip/avatar/floatingButton/버튼류 전부 `SRComponentStyle` case) `.buttonStyle(.primary)` 등 static 직접 접근은 디자인 시스템 내부 전용.
+- CRITICAL: 색상은 반드시 **Asset Catalog 이름**으로 참조 (`Color.main`, `.srWhite`, `.srGray` 등). hex·RGB 하드코딩 금지.
 - CRITICAL: 폰트는 반드시 **`SRFontSet`** 을 통해 적용 (`.font(.SRFontSet.body1)`). 시스템 폰트 직접 사용 금지.
-- 레이아웃 상수는 가능하면 `SRDesignConstant` 사용 (cornerRadius: 24, cardCornerRadius: 10, defaultPadding: 24)
-- 버튼 스타일: `PrimaryButtonStyle` / `SecondaryButtonStyle` / `FilterButtonStyle` / `SRIconButtonStyle` 재사용
-- 바텀시트·팝업·토스트는 `.srBottomSheet()` / `.srPopup()` / `.srToast()` modifier 사용
+- 디자인 값은 Foundation 토큰 사용: `SRShadow`(그림자, `.srShadow()` modifier) / `SRRadius`(sheet 24·card 20·item 10) / `SRSpacing`(screenHorizontal 24·navBarSpacer 64) / `SRAnimation`. 리터럴로 새로 쓰기 전에 토큰 확인.
+- 바텀시트·팝업·토스트는 `.srBottomSheet()`(시스템 detent 래퍼) / `.srDynamicSheet()`(커스텀 드래그 시트) / `.srPopup()` / `.srToast()` modifier 사용
 - `.navigationTitle()` 사용 금지 — 공통 `NavigationBar` 컴포넌트 사용
+- 반복 UI 조각은 Components 재사용: `SRTagBadge` / `SRCountLabel` / `SRDivider`
+- 디자인 시스템 전체 미리보기: `Catalog/DesignSystemCatalogView.swift` (#Preview)
 
 **UI 안티패턴 (절대 금지)**
 - `blur` / `ultraThinMaterial` 남용

@@ -51,7 +51,7 @@ private extension TermsAgreementSheet {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .srbottomSheetStyle(presentationDetent: [.fraction(0.55)], backgroundColor: .srWhite)
+        .srBottomSheet(presentationDetent: [.fraction(0.55)], backgroundColor: .srWhite)
     }
     
     var header: some View {

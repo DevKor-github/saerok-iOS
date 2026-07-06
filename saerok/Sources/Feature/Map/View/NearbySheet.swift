@@ -23,7 +23,7 @@ struct NearbySheet: View {
                     .lineLimit(1)
                     .shimmer(when: Binding(get: { address.isEmpty }, set: {_ in}))
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             .padding(.bottom, 18)
             .frame(maxWidth: .infinity, alignment: .leading)
             

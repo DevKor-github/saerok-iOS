@@ -155,7 +155,7 @@ private extension MyPageView {
                 settingsSection
                 Spacer()
             }
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
         .ignoresSafeArea(.all)
         .regainSwipeBack()
@@ -218,10 +218,7 @@ private extension MyPageView {
                     .font(.SRFontSet.body2)
                     .foregroundStyle(.srWhite)
             }
-            .padding(.vertical, 9)
-            .padding(.horizontal, 15)
-            .background(Color.splash)
-            .cornerRadius(.infinity)
+            .srStyled(.chip(background: .splash))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onTapGesture {

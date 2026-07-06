@@ -33,14 +33,8 @@ struct CollectionCommentCell: View {
                 size: .init(width: 25, height: 25),
                 downsampling: true
             )
-            .frame(width: 25, height: 25)
-            .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .inset(by: 0.8)
-                    .stroke(.srLightGray, lineWidth: 2)
-            )
-            .onTapGesture(perform: onTap) 
+            .srStyled(.avatar(strokeInset: 0.8))
+            .onTapGesture(perform: onTap)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(alignment: .top, spacing: 10) {
@@ -73,14 +67,11 @@ struct CollectionCommentCell: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 10)
-        .background(isReply ? Color.clear : (isSelected ? selectedColor : Color.srWhite))
-        .cornerRadius(20)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .srStyled(.card(background: isReply ? Color.clear : (isSelected ? selectedColor : Color.srWhite), shadow: nil))
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
-    
-    private let selectedColor: Color = {
-        .init(red: 0.92, green: 0.92, blue: 0.92)
-    }()
+
+    private let selectedColor: Color = .srDivider92
     
     @ViewBuilder
     private var replyButton: some View {
@@ -121,13 +112,5 @@ struct CollectionCommentCell: View {
         }
     }
     
-    private let writerTag: some View = {
-        Text("글쓴이")
-            .font(.SRFontSet.caption3_2)
-            .padding(.horizontal, 3)
-            .padding(.vertical, 1)
-            .foregroundStyle(.srWhite)
-            .background(Color.splash)
-            .cornerRadius(5)
-    }()
+    private let writerTag = SRTagBadge(text: "글쓴이")
 }

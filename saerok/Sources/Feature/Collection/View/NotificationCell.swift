@@ -49,8 +49,7 @@ struct NotificationCell: View {
         }
         .padding(10)
         .frame(minHeight: Self.collapsedHeight, alignment: .top)
-        .background(isAdmin ? Color.srLightGray : Color.srWhite)
-        .cornerRadius(20)
+        .srStyled(.card(background: isAdmin ? Color.srLightGray : Color.srWhite, shadow: nil))
         .overlay(overlayStroke)
         .simultaneousGesture(TapGesture().onEnded { _ in onTap() })
     }
@@ -105,7 +104,7 @@ struct NotificationCell: View {
                 size: .init(width: 25, height: 25),
                 downsampling: true
             )
-            .srStyled(.avatar)
+            .srStyled(.avatar())
             .overlay(alignment: .bottomTrailing) {
                 if item.type == .like {
                     likeIconOverlay
@@ -118,12 +117,12 @@ struct NotificationCell: View {
                 size: .init(width: 25, height: 25),
                 downsampling: true
             )
-            .srStyled(.avatar)
+            .srStyled(.avatar())
         case .announcement:
             Image(.default)
                 .resizable()
                 .frame(width: 25, height: 25)
-                .srStyled(.avatar)
+                .srStyled(.avatar())
         }
     }
 
@@ -211,13 +210,7 @@ struct NotificationCell: View {
     private var announcementTag: some View {
         let label = item.type == .adminMessage ? "새록 운영팀" : "공지사항"
         let color: Color = item.type == .adminMessage ? .srGray : .pointtext
-        return Text(label)
-            .font(.SRFontSet.caption3_2)
-            .padding(.horizontal, 3)
-            .padding(.vertical, 1)
-            .foregroundStyle(.srWhite)
-            .background(item.isRead && !isAdmin ? .whiteGray : color)
-            .cornerRadius(5)
+        return SRTagBadge(text: label, background: item.isRead && !isAdmin ? .whiteGray : color)
     }
 
     private var overlayStroke: some View {

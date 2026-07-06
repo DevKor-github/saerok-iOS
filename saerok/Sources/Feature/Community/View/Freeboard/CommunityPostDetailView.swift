@@ -181,7 +181,7 @@ private extension CommunityPostDetailView {
                 .font(.SRFontSet.body4_2)
                 .lineSpacing(10)
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
 
     var inputBar: some View {

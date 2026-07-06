@@ -105,7 +105,7 @@ struct CommunitySearchResultsView: View {
                 }
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
         .padding(.vertical, 18)
         .background(Color.srWhite)
     }

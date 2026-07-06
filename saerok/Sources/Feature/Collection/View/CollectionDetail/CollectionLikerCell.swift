@@ -39,8 +39,7 @@ struct CollectionLikerCell: View {
         .frame(height: 61)
         .padding(.leading, 7)
         .padding(.trailing, 11)
-        .background(Color.srWhite)
-        .cornerRadius(20)
-        .padding(.horizontal, SRDesignConstant.defaultPadding)
+        .srStyled(.card(shadow: nil))
+        .padding(.horizontal, SRSpacing.screenHorizontal)
     }
 }

@@ -92,7 +92,7 @@ struct PostingView: View {
                 .disabled(isUploading || contents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .safeAreaPadding(.bottom, 17)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
         }
         .presentationDetents([.large])
         .presentationCornerRadius(20)
@@ -125,7 +125,7 @@ private extension PostingView {
                 size: .init(width: 25, height: 25),
                 downsampling: true
             )
-            .srAvatarStyle()
+            .srStyled(.avatar())
             Text(nickname)
                 .font(.SRFontSet.body3_2)
         }

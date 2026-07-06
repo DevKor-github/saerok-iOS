@@ -56,7 +56,7 @@ private extension CollectionLikerSheet {
             header
             likerList
         }
-        .srbottomSheetStyle(presentationDetent: [.fraction(0.7)])
+        .srBottomSheet(presentationDetent: [.fraction(0.7)])
     }
     
     var header: some View {
@@ -75,7 +75,7 @@ private extension CollectionLikerSheet {
                 .contentShape(Rectangle())
             }
             .font(.SRFontSet.subtitle2)
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             .padding(.vertical, 22)
             .background(.srLightGray)
             sheetIndicator

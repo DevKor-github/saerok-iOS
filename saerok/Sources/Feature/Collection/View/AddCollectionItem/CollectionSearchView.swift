@@ -101,7 +101,7 @@ private extension CollectionSearchView {
             .padding(.leading, 18)
             .frame(height: 44)
             .srStyled(.textField(isFocused: $isSearchBarFocused))
-            .padding(.horizontal, SRDesignConstant.defaultPadding)
+            .padding(.horizontal, SRSpacing.screenHorizontal)
             .padding(.bottom, 14)
     }
     
@@ -158,7 +158,7 @@ private extension CollectionSearchView {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
-        .padding(SRDesignConstant.defaultPadding)
+        .padding(SRSpacing.screenHorizontal)
         .background(Color.srWhite)
     }
 }
