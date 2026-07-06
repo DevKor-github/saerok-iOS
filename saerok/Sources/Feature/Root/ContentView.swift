@@ -24,6 +24,7 @@ struct ContentView: View {
             .onAppear(perform: configureNavigationBar)
             .onAppear {
                 let _ = coordinator.fieldGuideViewModel // lazy 강제초기화
+                let _ = coordinator.mapViewModel // 탭 진입 전 mapNavigationRequested 이벤트 유실 방지
             }
     }
     
