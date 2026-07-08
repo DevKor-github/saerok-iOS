@@ -12,7 +12,7 @@ struct CollectionDescriptionSection: View {
     typealias Route = CollectionDetailRoute
     //사용자 차단
     @AppStorage("blockable") var isBlockable: Bool = false
-
+    
     enum Action {
         case reportTap
         case suggestTap
@@ -27,7 +27,7 @@ struct CollectionDescriptionSection: View {
     let collection: Local.CollectionDetail
     let onAction: (Action) -> Void
     private var isUnknownBird: Bool { collection.birdID == nil }
-
+    
     var body: some View {
         ZStack(alignment: .topLeading) {
             VStack(alignment: .leading, spacing: 10) {
@@ -93,7 +93,7 @@ private extension CollectionDescriptionSection {
                 suggestButton
                     .srStyled(.circleIconChip())
             }
-
+            
             additionalButton
                 .srStyled(.circleIconChip())
         }
@@ -157,11 +157,10 @@ private extension CollectionDescriptionSection {
     
     var infoView: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 5) {
-                Image.SRIconSet.pin
-                    .frame(.default, tintColor: collection.coordinate != nil ? .pointtext : .srGray)
-
-                if collection.coordinate != nil {
+            if collection.coordinate != nil {
+                HStack(alignment: .top, spacing: 5) {
+                    Image.SRIconSet.pin
+                        .frame(.default, tintColor: collection.coordinate != nil ? .pointtext : .srGray)
                     Button(action: {
                         coordinator.clear()
                         onAction(.navigateToMap)
@@ -176,19 +175,14 @@ private extension CollectionDescriptionSection {
                                         .foregroundStyle(.secondary)
                                 }
                             }
-
+                            
                             Spacer()
-
+                            
                             Image.SRIconSet.chevronRight
                                 .frame(.default, tintColor: .srGray)
                         }
                     }
                     .buttonStyle(.plain)
-                } else {
-                    Text("위치 비공개")
-                        .font(.SRFontSet.body4)
-                        .foregroundStyle(.secondary)
-                    Spacer()
                 }
             }
             

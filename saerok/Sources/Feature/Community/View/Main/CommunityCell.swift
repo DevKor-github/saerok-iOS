@@ -129,7 +129,7 @@ struct CommunityCell: View {
             Text(item.createdAt.timeAgoText)
             comma
             if item.isLocationHidden {
-                Text("위치 비공개")
+                Text("어딘가에서")
                     .lineLimit(1)
             } else {
                 Text("\(item.locationAlias)에서")
