@@ -10,6 +10,7 @@ import SwiftUI
 struct CommunityDetailView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: ViewModel
+    @State private var showLoginPopup: Bool = false
 
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
@@ -29,6 +30,52 @@ struct CommunityDetailView: View {
                 .foregroundStyle(.srGray)
             itemList
         }
+        .overlay(alignment: .bottomTrailing) {
+            collectionAddButton
+                .padding(.trailing, 23)
+        }
+        .srPopup(
+            isPresented: $showLoginPopup,
+            config: showLoginPopup ? loginPopupConfig : nil
+        )
+    }
+
+    private var collectionAddButton: some View {
+        Button {
+            if viewModel.isGuestMode {
+                showLoginPopup = true
+            } else {
+                coordinator.push(CommunityView.Route.addCollection)
+            }
+        } label: {
+            Image(viewModel.isGuestMode ? .floatingButtonInactive : .floatingButton)
+                .resizable()
+                .srStyled(.floatingButton())
+        }
+    }
+
+    private var loginPopupConfig: PopupConfig {
+        PopupConfig(
+            title: "로그인이 필요한 기능이에요",
+            message: "로그인하고 더 많은 기능을 사용해보세요!",
+            buttons: .double(
+                .init(
+                    title: "취소",
+                    style: .bordered,
+                    action: {
+                        showLoginPopup = false
+                    }
+                ),
+                .init(
+                    title: "로그인",
+                    style: .confirm,
+                    action: {
+                        showLoginPopup = false
+                        viewModel.initLoginStatus()
+                    }
+                )
+            )
+        )
     }
 
     private var navigationBar: some View {

@@ -87,6 +87,7 @@ extension Image {
         case shieldBlueDefault
         case shieldBlueSelected
         case shieldYellowDefault
+        case freeboardAdd
         
         // MARK: Tabbar
         case doongzi
@@ -238,6 +239,7 @@ extension Image.SRIconSet {
         case .shieldBlueDefault: return Image(.shieldBlueDefault)
         case .shieldBlueSelected: return Image(.shieldBlueSelected)
         case .shieldYellowDefault: return Image(.shieldYellow)
+        case .freeboardAdd: return Image(.freeboardAdd)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)

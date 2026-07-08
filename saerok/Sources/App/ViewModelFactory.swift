@@ -102,7 +102,8 @@ extension ViewModelFactory {
     func makeCommunityDetailViewModel(for type: CommunityType) -> CommunityDetailView.ViewModel {
         .init(
             type: type,
-            interactor: container.interactors.community
+            interactor: container.interactors.community,
+            appStore: container.appStore
         )
     }
 
