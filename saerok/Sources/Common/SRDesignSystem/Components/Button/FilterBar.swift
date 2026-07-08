@@ -17,7 +17,8 @@ struct FilterBar: View {
     private var isActive: Bool {
         filterKey.selectedHabitats.count > 0 ||
         filterKey.selectedSeasons.count > 0 ||
-        filterKey.selectedSizes.count > 0
+        filterKey.selectedSizes.count > 0 ||
+        filterKey.isProtectedOnly
     }
     
     var body: some View {
@@ -53,7 +54,24 @@ struct FilterBar: View {
                     detents: [.fraction(0.45)],
                     style: .birdSize
                 )
-                
+
+                Button {
+                    filterKey.isProtectedOnly.toggle()
+                } label: {
+                    HStack(spacing: 4) {
+                        if filterKey.isProtectedOnly {
+                            Image.SRIconSet.shieldBlueSelected
+                                .frame(.large)
+                        } else {
+                            Image.SRIconSet.shieldBlueDefault
+                                .frame(.large)
+                        }
+                        Text("보호종")
+                            .font(.SRFontSet.button2)
+                    }
+                }
+                .srStyled(.filterButton(isActive: filterKey.isProtectedOnly))
+
                 if isActive {
                     Button {
                         filterKey.reset()

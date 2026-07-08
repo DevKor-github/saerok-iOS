@@ -93,6 +93,9 @@ private extension BirdDetailView {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Constants.chipSpacing) {
                     Color.clear.frame(width: Constants.chipSidePadding)
+                    if bird.isProtected {
+                        ProtectedChip()
+                    }
                     ChipList(icon: .seasonWhite, list: bird.seasons)
                     ChipList(icon: .habitatWhite, list: bird.habitats)
                     ChipList(icon: .sizeWhite, list: [bird.size])
@@ -204,7 +207,24 @@ private extension BirdDetailView {
             .cornerRadius(.infinity)
         }
     }
-    
+
+    struct ProtectedChip: View {
+        var body: some View {
+            HStack {
+                Image.SRIconSet.shieldYellowDefault
+                    .frame(.large)
+                Text("보호종")
+            }
+            .font(.SRFontSet.button2)
+            .padding(.leading, 12)
+            .padding(.trailing, 15)
+            .padding(.vertical, 9)
+            .foregroundStyle(.srWhite)
+            .background(Color.pointtext)
+            .cornerRadius(.infinity)
+        }
+    }
+
 }
 
 // MARK: - Button Actions

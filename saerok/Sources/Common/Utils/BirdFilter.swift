@@ -15,13 +15,15 @@ struct BirdFilter: Equatable {
     var selectedHabitats: Set<Habitat> = []
     var selectedSeasons: Set<Season> = []
     var selectedSizes: Set<BirdSize> = []
-    
+    var isProtectedOnly: Bool = false
+
     func build() -> Predicate<Local.Bird> {
         let predicates: [Predicate<Local.Bird>] = [
             bookmarkFilter(),
             seasonFilter(),
             habitatFilter(),
-            sizeFilter()
+            sizeFilter(),
+            protectedFilter()
         ].compactMap { $0 }
         
         return predicates
@@ -36,6 +38,7 @@ struct BirdFilter: Equatable {
         selectedSizes.removeAll()
         selectedHabitats.removeAll()
         selectedSeasons.removeAll()
+        isProtectedOnly = false
     }
 }
 
@@ -53,6 +56,14 @@ private extension BirdFilter {
 
         return #Predicate { bird in
             bird.isBookmarked
+        }
+    }
+
+    func protectedFilter() -> Predicate<Local.Bird>? {
+        guard isProtectedOnly else { return nil }
+
+        return #Predicate { bird in
+            bird.isProtected
         }
     }
 

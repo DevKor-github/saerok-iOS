@@ -84,6 +84,9 @@ extension Image {
         case commentCommunity
         case megaphone
         case post
+        case shieldBlueDefault
+        case shieldBlueSelected
+        case shieldYellowDefault
         
         // MARK: Tabbar
         case doongzi
@@ -232,6 +235,9 @@ extension Image.SRIconSet {
         case .commentCommunity: return Image(.communityComment)
         case .megaphone: return Image(.megaphone)
         case .post: return Image(.post)
+        case .shieldBlueDefault: return Image(.shieldBlueDefault)
+        case .shieldBlueSelected: return Image(.shieldBlueSelected)
+        case .shieldYellowDefault: return Image(.shieldYellow)
             
         case .dogam: return Image(.dogam)
         case .dogamFilled: return Image(.dogamFilled)
