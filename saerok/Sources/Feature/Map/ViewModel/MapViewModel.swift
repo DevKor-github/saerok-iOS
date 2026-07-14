@@ -51,6 +51,7 @@ extension MapView {
         var isMineOnly: Bool = false
         var item: [Local.NearbyCollectionSummary] = []
         var isNavigating: Bool = false
+        private(set) var recentSearches: [Local.RecentMapSearch] = []
 
         private var searchDebounceTask: Task<Void, Never>? = nil
         private var addressDebounceTask: Task<Void, Never>? = nil
@@ -123,8 +124,41 @@ extension MapView {
 
         @MainActor
         func searchCellTapped(_ item: Local.KakaoPlace) {
-            position = (item.latitude, item.longitude)
-            mapController.moveCamera(lat: item.latitude, lng: item.longitude, animated: true)
+            moveToCoordinate(lat: item.latitude, lng: item.longitude)
+            Task {
+                try? await mapInteractor.saveRecentPlaceSearch(item)
+                await loadRecentSearches()
+            }
+        }
+
+        @MainActor
+        func loadRecentSearches() async {
+            recentSearches = (try? await mapInteractor.recentSearches()) ?? []
+        }
+
+        @MainActor
+        func recentSearchTapped(_ search: Local.RecentMapSearch) {
+            switch search.kind {
+            case .place:
+                guard let lat = search.latitude, let lng = search.longitude else { return }
+                moveToCoordinate(lat: lat, lng: lng)
+            case .bird:
+                break // 추후 새 검색 필터 적용
+            }
+        }
+
+        @MainActor
+        func deleteRecentSearch(id: UUID) {
+            Task {
+                try? await mapInteractor.deleteRecentSearch(id: id)
+                await loadRecentSearches()
+            }
+        }
+
+        @MainActor
+        func moveToCoordinate(lat: Double, lng: Double) {
+            position = (lat, lng)
+            mapController.moveCamera(lat: lat, lng: lng, animated: true)
             mode = .idle
         }
 

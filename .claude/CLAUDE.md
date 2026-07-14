@@ -46,6 +46,7 @@ xcodebuild test -scheme saerok -destination 'platform=iOS Simulator,name=iPhone 
 - [VIEW-GUIDE](docs/VIEW-GUIDE.md) — View 작성 규칙 (라우팅, 생명주기, 컴포넌트 사용, 금지 패턴)
 - [VIEWMODEL-GUIDE](docs/VIEWMODEL-GUIDE.md) — ViewModel 작성 규칙 (LoadState, Output, CancelBag, 비동기 패턴)
 - [ADD-ENDPOINT-GUIDE](docs/ADD-ENDPOINT-GUIDE.md) — API 연동 순서 (DTO → Local → Endpoint → Repository → Interactor)
+- [MAP-SEARCH-HISTORY](docs/internal/MAP-SEARCH-HISTORY.md) — 지도 검색 기록 설계·새 종류(kind) 추가 절차 (위치/새 검색) *(gitignore 대상, 로컬 전용)*
 
 ## 아키텍처 규칙
 - CRITICAL: 레이어 흐름은 **View → ViewModel → Interactor → Repository → Network/SwiftData** 방향만 허용. 역방향 참조 금지.

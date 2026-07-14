@@ -3,7 +3,12 @@ import Foundation
 protocol MapInteractor {
     func search(keyword: String) async throws -> [Local.KakaoPlace]
     func address(for longitude: Double, latitude: Double) async throws -> String
-    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] 
+    func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary]
+
+    // MARK: 검색 기록
+    func recentSearches() async throws -> [Local.RecentMapSearch]
+    func saveRecentPlaceSearch(_ place: Local.KakaoPlace) async throws
+    func deleteRecentSearch(id: UUID) async throws
 }
 
 struct MapInteractorImpl: MapInteractor {
@@ -33,6 +38,18 @@ struct MapInteractorImpl: MapInteractor {
         )
         return try await repository.fetchNearbyCollections(request)
     }
+
+    func recentSearches() async throws -> [Local.RecentMapSearch] {
+        try await repository.fetchRecentMapSearches()
+    }
+
+    func saveRecentPlaceSearch(_ place: Local.KakaoPlace) async throws {
+        try await repository.upsertRecentPlaceSearch(place)
+    }
+
+    func deleteRecentSearch(id: UUID) async throws {
+        try await repository.deleteRecentMapSearch(id: id)
+    }
 }
 
 struct MockMapInteractorImpl: MapInteractor {
@@ -41,4 +58,8 @@ struct MockMapInteractorImpl: MapInteractor {
     func address(for longitude: Double, latitude: Double) async throws -> String { "" }
     
     func fetchNearbyCollections(lat: Double, lng: Double, rad: Double, isMineOnly: Bool, isGuest: Bool) async throws -> [Local.NearbyCollectionSummary] { [] }
+
+    func recentSearches() async throws -> [Local.RecentMapSearch] { [] }
+    func saveRecentPlaceSearch(_ place: Local.KakaoPlace) async throws { }
+    func deleteRecentSearch(id: UUID) async throws { }
 }

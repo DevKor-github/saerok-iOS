@@ -13,7 +13,7 @@ enum MapRoute: AppRoute {
 
 struct MapView: View {
     typealias Route = MapRoute
-    
+
     // MARK: - Dependencies
     @EnvironmentObject private var coordinator: AppCoordinator
     @Environment(\.showToast) private var showToast
@@ -31,6 +31,7 @@ struct MapView: View {
             .onAppear {
                 Task {
                     viewModel.onAppear()
+                    await viewModel.loadRecentSearches()
                     await viewModel.initialLoad()
                 }
             }
@@ -209,20 +210,83 @@ private extension MapView {
     func searchResultSection() -> some View {
         ScrollView {
             Color.clear.frame(height: 140)
-            VStack(spacing: 2) {
-                Divider()
-                ForEach(viewModel.response, id: \.id) { item in
-                    VStack(spacing: 0) {
-                        searchCell(item)
-                        Divider()
+            if viewModel.text.isEmpty {
+                recentSearchSection
+            } else {
+                VStack(spacing: 2) {
+                    Divider()
+                    ForEach(viewModel.response, id: \.id) { item in
+                        VStack(spacing: 0) {
+                            searchCell(item)
+                            Divider()
+                        }
+                        .listRowInsets(.init())
                     }
-                    .listRowInsets(.init())
                 }
             }
         }
         .background(Color.srWhite)
     }
-    
+
+    var recentSearchSection: some View {
+        VStack(spacing: 2) {
+            Divider()
+            ForEach(viewModel.recentSearches) { search in
+                VStack(spacing: 0) {
+                    recentSearchCell(search)
+                    Divider()
+                }
+                .listRowInsets(.init())
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        viewModel.deleteRecentSearch(id: search.id)
+                    } label: {
+                        Label("삭제", systemImage: "trash")
+                    }
+                }
+            }
+        }
+    }
+
+    /// 종류별 리딩 아이콘. 검색 종류가 늘면 이 매핑에만 case를 추가한다.
+    @ViewBuilder
+    func recentSearchIcon(for kind: Local.MapSearchKind) -> some View {
+        switch kind {
+        case .place: Image.SRIconSet.pin.frame(.large, tintColor: .whiteGray)
+        case .bird: Image.SRIconSet.saerok.frame(.large, tintColor: .whiteGray)
+        }
+    }
+
+    func recentSearchCell(_ search: Local.RecentMapSearch) -> some View {
+        HStack {
+            recentSearchIcon(for: search.kind)
+
+            Button(action: { viewModel.recentSearchTapped(search) }) {
+                HStack(spacing: 0) {
+                    Text(search.keyword)
+                        .font(.SRFontSet.body2)
+                        .foregroundStyle(.srDarkGray)
+
+                    Spacer()
+                    Text(search.createdAt.toShortString)
+                        .foregroundColor(.srGray)
+                        .font(.caption)
+                }
+                .contentShape(Rectangle())
+            }
+
+            Button(action: { viewModel.deleteRecentSearch(id: search.id) }) {
+                Image.SRIconSet.delete
+                    .frame(.small, tintColor: .secondary)
+            }
+        }
+        .buttonStyle(.plain)
+        .frame(height: 55)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, SRSpacing.screenHorizontal)
+        .background(Color.srWhite)
+    }
+
     func searchCell(_ item: Local.KakaoPlace) -> some View {
         HStack(spacing: 15) {
             Image.SRIconSet.pin.frame(.large)
