@@ -23,13 +23,20 @@ enum AppVersionMigrator {
         UserDefaults.standard.set(currentVersion(), forKey: key)
     }
     
+    /// 도감·지도 검색 기록 전체 삭제.
+    /// 검색 기록 엔티티에 필드가 추가될 때(예: `uuid` 도메인 식별자) 라이트웨이트 마이그레이션의
+    /// 기본값 채움을 신뢰하는 대신, 소모성 데이터인 검색 기록을 wipe하고 새로 쌓는다.
     static func wipeRecentSearches(_ modelContext: ModelContext) {
-        let descriptor = FetchDescriptor<Local.RecentSearchEntity>()
-        if let items = try? modelContext.fetch(descriptor) {
+        if let items = try? modelContext.fetch(FetchDescriptor<Local.RecentSearchEntity>()) {
             for item in items {
                 modelContext.delete(item)
             }
-            try? modelContext.save()
         }
+        if let items = try? modelContext.fetch(FetchDescriptor<Local.RecentMapSearchEntity>()) {
+            for item in items {
+                modelContext.delete(item)
+            }
+        }
+        try? modelContext.save()
     }
 }
