@@ -17,6 +17,11 @@ protocol BirdsRepository {
     func checkIsBirdsEmpty() throws -> Bool
     func syncBookmarks() async throws
     func toggleBookmark(for id: Int) async throws -> Bool
+
+    // MARK: 검색 기록 (SwiftData)
+    func fetchRecentBirdSearches() async throws -> [Local.RecentBirdSearch]
+    func upsertRecentBirdSearch(birdID: Int) async throws
+    func deleteRecentBirdSearch(id: UUID) async throws
 }
 
 enum BirdsRepositoryError: Error {
@@ -79,6 +84,42 @@ extension MainRepository: @preconcurrency BirdsRepository {
     func toggleBookmark(for id: Int) async throws -> Bool {
         let result: DTO.ToggleBookmarkResponse = try await networkService.performSRRequest(.toggleBookmark(birdId: id))
         return result.bookmarked
+    }
+
+    // MARK: - 검색 기록 (SwiftData)
+
+    func fetchRecentBirdSearches() async throws -> [Local.RecentBirdSearch] {
+        let descriptor = FetchDescriptor<Local.RecentSearchEntity>(
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        return try modelContext.fetch(descriptor).map { $0.snapshot }
+    }
+
+    func upsertRecentBirdSearch(birdID: Int) async throws {
+        let existingRequest = FetchDescriptor<Local.RecentSearchEntity>(
+            predicate: #Predicate { $0.bird.id == birdID },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+
+        if let existing = try modelContext.fetch(existingRequest).first {
+            existing.createdAt = .now
+        } else {
+            let birdRequest = FetchDescriptor<Local.Bird>(predicate: #Predicate { $0.id == birdID })
+            guard let bird = try modelContext.fetch(birdRequest).first else {
+                throw BirdsRepositoryError.birdNotFound
+            }
+            modelContext.insert(Local.RecentSearchEntity(bird: bird))
+        }
+        try save()
+    }
+
+    func deleteRecentBirdSearch(id: UUID) async throws {
+        let request = FetchDescriptor<Local.RecentSearchEntity>(
+            predicate: #Predicate { $0.uuid == id }
+        )
+        guard let entity = try modelContext.fetch(request).first else { return }
+        modelContext.delete(entity)
+        try save()
     }
 }
 

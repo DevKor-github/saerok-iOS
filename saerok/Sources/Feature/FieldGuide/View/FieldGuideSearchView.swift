@@ -18,6 +18,7 @@ extension FieldGuideSearchView {
         private let appStore: AppStore
         private let interactor: FieldGuideInteractor
         private(set) var isGuest: Bool
+        private(set) var recentSearches: [Local.RecentBirdSearch] = []
         private let cancelBag = CancelBag()
 
         init(appStore: AppStore, interactor: FieldGuideInteractor) {
@@ -38,14 +39,40 @@ extension FieldGuideSearchView {
         func toggleBookmark(birdId: Int) async throws -> Bool {
             try await interactor.toggleBookmark(birdID: birdId)
         }
+
+        /// 최근 검색 기록 로드. `@Query` 자동 갱신을 대체하므로 저장·삭제 후 반드시 재호출한다.
+        @MainActor
+        func loadRecentSearches() async {
+            recentSearches = (try? await interactor.recentSearches()) ?? []
+        }
+
+        @MainActor
+        func saveRecentSearch(birdID: Int) {
+            Task {
+                try? await interactor.saveRecentSearch(birdID: birdID)
+                await loadRecentSearches()
+            }
+        }
+
+        @MainActor
+        func deleteRecentSearch(id: UUID) {
+            Task {
+                try? await interactor.deleteRecentSearch(id: id)
+                await loadRecentSearches()
+            }
+        }
+
+        /// 최근 검색 기록 → 상세 이동을 위한 `Local.Bird` 재조회.
+        @MainActor
+        func loadBird(id: Int) async throws -> Local.Bird {
+            try await interactor.loadBirdDetails(birdID: id)
+        }
     }
 }
 
 struct FieldGuideSearchView: View {
     // MARK: View State
     @State private var viewModel: ViewModel
-    @Query(sort: \Local.RecentSearchEntity.createdAt, order: .reverse)
-    private var recentSearchItems: [Local.RecentSearchEntity]
     @State private var filterKey: BirdFilter = .init()
     @State private var fieldGuide: [Local.Bird]
     @State private var filteredBirds: [Local.Bird] = []
@@ -57,8 +84,7 @@ struct FieldGuideSearchView: View {
     
     // MARK:  Dependencies
     @EnvironmentObject private var coordinator: AppCoordinator
-    @Environment(\.modelContext) var modelContext
-    
+
     // MARK: Init
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
@@ -90,6 +116,7 @@ struct FieldGuideSearchView: View {
             if filterKey.searchText.isEmpty {
                 isSearchBarFocused = true
             }
+            Task { await viewModel.loadRecentSearches() }
         }
     }
 }
@@ -142,12 +169,12 @@ private extension FieldGuideSearchView {
                         Color.clear
                             .frame(height: 0)
 
-                        ForEach(recentSearchItems) { search in
+                        ForEach(viewModel.recentSearches) { search in
                             recentItem(search)
                                 .listRowInsets(.init())
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
-                                        deleteRecentTapped(search)
+                                        viewModel.deleteRecentSearch(id: search.id)
                                     } label: {
                                         Label("삭제", systemImage: "trash")
                                     }
@@ -239,11 +266,11 @@ private extension FieldGuideSearchView {
         }
     }
     
-    func recentItem(_ search: Local.RecentSearchEntity) -> some View {
+    func recentItem(_ search: Local.RecentBirdSearch) -> some View {
         HStack {
             Button(action: { recentItemTapped(search) }) {
                 HStack(spacing: 0) {
-                    Text(search.bird.name)
+                    Text(search.birdName)
                     Spacer()
                     Text(search.createdAt.toShortString)
                         .foregroundColor(.srGray)
@@ -251,8 +278,8 @@ private extension FieldGuideSearchView {
                 }
                 .contentShape(Rectangle())
             }
-            
-            Button(action: { deleteRecentTapped(search) }) {
+
+            Button(action: { viewModel.deleteRecentSearch(id: search.id) }) {
                 Image.SRIconSet.delete
                     .frame(.small, tintColor: .secondary)
             }
@@ -297,28 +324,13 @@ private extension FieldGuideSearchView {
     
     func searchItemTapped(_ bird: Local.Bird) {
         coordinator.push(FieldGuideView.Route.birdDetail(bird))
-        updateRecentItem(bird)
+        viewModel.saveRecentSearch(birdID: bird.id)
     }
-    
-    func recentItemTapped(_ search: Local.RecentSearchEntity) {
-        coordinator.push(FieldGuideView.Route.birdDetail(search.bird))
-    }
-    
-    func deleteRecentTapped(_ search: Local.RecentSearchEntity) {
-        modelContext.delete(search)
-    }
-    
-    func updateRecentItem(_ bird: Local.Bird) {
-        let birdName = bird.name
-        let request = FetchDescriptor<Local.RecentSearchEntity>(
-            predicate: #Predicate { $0.bird.name == birdName },
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
-        
-        if let existing = try? modelContext.fetch(request).first {
-            existing.createdAt = .now
-        } else {
-            modelContext.insert(Local.RecentSearchEntity(bird: bird))
+
+    func recentItemTapped(_ search: Local.RecentBirdSearch) {
+        Task {
+            guard let bird = try? await viewModel.loadBird(id: search.birdId) else { return }
+            coordinator.push(FieldGuideView.Route.birdDetail(bird))
         }
     }
 }

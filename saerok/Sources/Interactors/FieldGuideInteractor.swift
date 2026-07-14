@@ -13,6 +13,11 @@ protocol FieldGuideInteractor {
     func refreshBookmarks() async throws
     func loadBirdDetails(birdID: Int) async throws -> Local.Bird
     func toggleBookmark(birdID: Int) async throws -> Bool
+
+    // MARK: 검색 기록
+    func recentSearches() async throws -> [Local.RecentBirdSearch]
+    func saveRecentSearch(birdID: Int) async throws
+    func deleteRecentSearch(id: UUID) async throws
 }
 
 enum FieldGuideInteractorError: Error {
@@ -56,6 +61,18 @@ struct FieldGuideInteractorImpl: FieldGuideInteractor {
     func toggleBookmark(birdID: Int) async throws -> Bool {
         return try await repository.toggleBookmark(for: birdID)
     }
+
+    func recentSearches() async throws -> [Local.RecentBirdSearch] {
+        try await repository.fetchRecentBirdSearches()
+    }
+
+    func saveRecentSearch(birdID: Int) async throws {
+        try await repository.upsertRecentBirdSearch(birdID: birdID)
+    }
+
+    func deleteRecentSearch(id: UUID) async throws {
+        try await repository.deleteRecentBirdSearch(id: id)
+    }
 }
 
 private extension FieldGuideInteractorImpl {
@@ -83,4 +100,8 @@ struct MockFieldGuideInteractorImpl: FieldGuideInteractor {
     func loadBirdDetails(birdID: Int) throws -> Local.Bird { throw FieldGuideInteractorError.birdNotFound }
     
     func toggleBookmark(birdID: Int) async throws -> Bool { true }
+
+    func recentSearches() async throws -> [Local.RecentBirdSearch] { [] }
+    func saveRecentSearch(birdID: Int) async throws { }
+    func deleteRecentSearch(id: UUID) async throws { }
 }
