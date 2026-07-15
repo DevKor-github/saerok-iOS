@@ -88,6 +88,9 @@ struct FieldGuideInteractorTests {
         func checkIsBirdsEmpty() throws -> Bool { isEmpty }
         func syncBookmarks() async throws {}
         func toggleBookmark(for id: Int) async throws -> Bool { true }
+        func fetchRecentBirdSearches() async throws -> [Local.RecentBirdSearch] { [] }
+        func upsertRecentBirdSearch(birdID: Int) async throws {}
+        func deleteRecentBirdSearch(id: UUID) async throws {}
     }
 
     private final class ThrowingBirdsRepository: BirdsRepository, @unchecked Sendable {
@@ -102,5 +105,8 @@ struct FieldGuideInteractorTests {
         func checkIsBirdsEmpty() throws -> Bool { true }
         func syncBookmarks() async throws {}
         func toggleBookmark(for id: Int) async throws -> Bool { true }
+        func fetchRecentBirdSearches() async throws -> [Local.RecentBirdSearch] { [] }
+        func upsertRecentBirdSearch(birdID: Int) async throws {}
+        func deleteRecentBirdSearch(id: UUID) async throws {}
     }
 }
