@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import saerok
 
@@ -67,6 +68,10 @@ struct MapInteractorTests {
         }
 
         func fetchNearbyCollections(_ request: Local.NearbyRequest) async throws -> [Local.NearbyCollectionSummary] { [] }
+
+        func fetchRecentMapSearches() async throws -> [Local.RecentMapSearch] { [] }
+        func upsertRecentPlaceSearch(_ place: Local.KakaoPlace) async throws {}
+        func deleteRecentMapSearch(id: UUID) async throws {}
     }
 }
 
