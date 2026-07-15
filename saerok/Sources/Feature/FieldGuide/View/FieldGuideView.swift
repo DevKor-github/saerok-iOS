@@ -89,6 +89,7 @@ private extension FieldGuideView {
         static let headerTopPadding: CGFloat = 16
         static let navBarSpacerHeight: CGFloat = SRSpacing.navBarSpacer
         static let scrollableID: String = "scrollable"
+        static let scrollIndicatorInset: CGFloat = 3
     }
 
     var loadedView: some View {
@@ -181,6 +182,7 @@ private extension FieldGuideView {
                     )
                 }
             }
+            .contentMargins(.trailing, Constants.scrollIndicatorInset, for: .scrollIndicators)
             .onChange(of: scrollToTopTrigger) { _, _ in
                 withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
             }

@@ -97,6 +97,7 @@ private extension CollectionView {
         static let navBarSpacerHeight: CGFloat = SRSpacing.navBarSpacer
         static let scrollableID = "CollectionView"
         static let backgroundColor: Color = .red
+        static let scrollIndicatorInset: CGFloat = 3
     }
     
     @ViewBuilder
@@ -170,6 +171,7 @@ private extension CollectionView {
                         )
                     }
                 }
+                .contentMargins(.trailing, Constants.scrollIndicatorInset, for: .scrollIndicators)
                 .refreshable { await viewModel.refresh() }
                 .onChange(of: scrollToTopTrigger) { _, _ in
                     withAnimation { proxy.scrollTo(Constants.scrollableID, anchor: .top) }
