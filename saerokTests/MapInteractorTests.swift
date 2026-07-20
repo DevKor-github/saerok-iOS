@@ -9,14 +9,14 @@ struct MapInteractorTests {
 
     // MARK: address
 
-    @Test("address: documents가 비어있으면 빈 문자열 반환")
+    @Test("좌표에 해당하는 주소 결과가 없으면 빈 문자열을 반환한다")
     func addressReturnsEmptyWhenNoDocuments() async throws {
         let interactor = MapInteractorImpl(repository: StubMapRepository(addressDocuments: []))
         let result = try await interactor.address(for: 127.0, latitude: 37.5)
         #expect(result == "")
     }
 
-    @Test("address: 첫 번째 document의 행정구역을 공백으로 조인하여 반환")
+    @Test("첫 번째 주소 결과의 행정구역을 공백으로 이어 붙여 반환한다")
     func addressJoinsRegionNames() async throws {
         let address = DTO.Address.stub(region1: "서울특별시", region2: "강남구", region3: "역삼동")
         let document = DTO.KakaoAddress(roadAddress: nil, address: address)
@@ -25,7 +25,7 @@ struct MapInteractorTests {
         #expect(result == "서울특별시 강남구 역삼동")
     }
 
-    @Test("address: roadAddress만 있고 address가 nil이면 빈 문자열 반환")
+    @Test("도로명 주소만 있고 지번 주소가 없으면 빈 문자열을 반환한다")
     func addressReturnsEmptyWhenAddressIsNil() async throws {
         let document = DTO.KakaoAddress(roadAddress: nil, address: nil)
         let interactor = MapInteractorImpl(repository: StubMapRepository(addressDocuments: [document]))
@@ -35,15 +35,16 @@ struct MapInteractorTests {
 
     // MARK: search
 
-    @Test("search: repository 결과를 Local.KakaoPlace로 변환")
+    @Test("장소를 검색하면 결과가 Local.KakaoPlace 목록으로 변환되어 반환된다")
     func searchReturnsCorrectPlaceCount() async throws {
         let places = [DTO.KakaoPlace.stub(id: "1"), .stub(id: "2"), .stub(id: "3")]
         let interactor = MapInteractorImpl(repository: StubMapRepository(searchDocuments: places))
         let result = try await interactor.search(keyword: "공원")
-        #expect(result.count == 3)
+        #expect(result.map(\.id) == [1, 2, 3])
+        #expect(result.map(\.placeName) == ["장소1", "장소2", "장소3"])
     }
 
-    @Test("search: 결과가 없으면 빈 배열 반환")
+    @Test("장소 검색 결과가 없으면 빈 배열을 반환한다")
     func searchReturnsEmptyWhenNoResults() async throws {
         let interactor = MapInteractorImpl(repository: StubMapRepository(searchDocuments: []))
         let result = try await interactor.search(keyword: "존재하지않는장소")

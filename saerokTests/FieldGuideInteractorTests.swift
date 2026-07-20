@@ -9,7 +9,7 @@ struct FieldGuideInteractorTests {
 
     // MARK: refreshFieldGuide — 동기화 조건
 
-    @Test("refreshFieldGuide: DB가 비어있으면 무조건 동기화")
+    @Test("도감 DB가 비어 있으면 최신 여부와 관계없이 서버 동기화를 수행한다")
     func refreshSyncsWhenEmpty() async throws {
         let spy = SpyBirdsRepository(isEmpty: true, isUpToDate: true)
         let interactor = FieldGuideInteractorImpl(repository: spy)
@@ -17,7 +17,7 @@ struct FieldGuideInteractorTests {
         #expect(spy.fetchAndStoreBirdsCallCount == 1)
     }
 
-    @Test("refreshFieldGuide: DB가 있고 최신 상태이면 동기화 생략")
+    @Test("도감 DB가 있고 최신 상태이면 서버 동기화를 생략한다")
     func refreshSkipsWhenNotEmptyAndUpToDate() async throws {
         let spy = SpyBirdsRepository(isEmpty: false, isUpToDate: true)
         let interactor = FieldGuideInteractorImpl(repository: spy)
@@ -25,7 +25,7 @@ struct FieldGuideInteractorTests {
         #expect(spy.fetchAndStoreBirdsCallCount == 0)
     }
 
-    @Test("refreshFieldGuide: DB가 있고 서버 변경이 있으면 동기화")
+    @Test("도감 DB가 있어도 서버에 변경 사항이 있으면 동기화를 수행한다")
     func refreshSyncsWhenOutdated() async throws {
         let spy = SpyBirdsRepository(isEmpty: false, isUpToDate: false)
         let interactor = FieldGuideInteractorImpl(repository: spy)
@@ -35,7 +35,7 @@ struct FieldGuideInteractorTests {
 
     // MARK: refreshFieldGuide — 에러 매핑
 
-    @Test("refreshFieldGuide: BirdsRepositoryError는 .repositoryError로 변환")
+    @Test("동기화 중 Repository 에러가 발생하면 repositoryError로 감싸서 던진다")
     func refreshMapsRepositoryError() async throws {
         let throwing = ThrowingBirdsRepository(error: .failedToSaveBirds)
         let interactor = FieldGuideInteractorImpl(repository: throwing)
@@ -49,7 +49,7 @@ struct FieldGuideInteractorTests {
 
     // MARK: loadBirdDetails
 
-    @Test("loadBirdDetails: 새가 없으면 birdNotFound 에러")
+    @Test("존재하지 않는 새의 상세를 조회하면 birdNotFound 에러를 던진다")
     @MainActor
     func loadBirdDetailsThrowsWhenNotFound() throws {
         let interactor = FieldGuideInteractorImpl(repository: SpyBirdsRepository(isEmpty: false, isUpToDate: true, bird: nil))
@@ -58,7 +58,7 @@ struct FieldGuideInteractorTests {
         }
     }
 
-    @Test("loadBirdDetails: 새가 있으면 올바른 bird 반환")
+    @Test("존재하는 새의 상세를 조회하면 해당 새를 반환한다")
     @MainActor
     func loadBirdDetailsReturnsBird() throws {
         let bird = Local.Bird.mockData

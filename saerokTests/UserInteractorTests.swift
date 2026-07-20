@@ -9,14 +9,14 @@ struct UserInteractorTests {
 
     // MARK: hasUnreadNotifications
 
-    @Test("hasUnreadNotifications: unreadCount가 0이면 false")
+    @Test("읽지 않은 알림이 하나도 없으면 거짓을 반환한다")
     func hasUnreadNotificationsReturnsFalseWhenZero() async throws {
         let interactor = UserInteractorImpl(repository: SpyUserRepository(unreadCount: 0))
         let result = try await interactor.hasUnreadNotifications()
         #expect(result == false)
     }
 
-    @Test("hasUnreadNotifications: unreadCount가 0보다 크면 true")
+    @Test("읽지 않은 알림이 하나라도 있으면 참을 반환한다")
     func hasUnreadNotificationsReturnsTrueWhenPositive() async throws {
         let interactor = UserInteractorImpl(repository: SpyUserRepository(unreadCount: 3))
         let result = try await interactor.hasUnreadNotifications()
@@ -25,7 +25,7 @@ struct UserInteractorTests {
 
     // MARK: checkNicknameAvailability
 
-    @Test("checkNicknameAvailability: isAvailable와 reason을 그대로 전달")
+    @Test("닉네임이 사용 가능하면 가능 여부와 사유를 그대로 전달한다")
     func checkNicknameAvailabilityPassesThrough() async throws {
         let response = DTO.CheckNicknameResponse(isAvailable: true, reason: nil)
         let interactor = UserInteractorImpl(repository: SpyUserRepository(nicknameCheck: response))
@@ -34,7 +34,7 @@ struct UserInteractorTests {
         #expect(reason == nil)
     }
 
-    @Test("checkNicknameAvailability: 사용 불가 사유도 그대로 전달")
+    @Test("닉네임이 사용 불가하면 불가 사유도 그대로 전달한다")
     func checkNicknameAvailabilityPassesThroughReason() async throws {
         let response = DTO.CheckNicknameResponse(isAvailable: false, reason: "이미 사용 중인 닉네임입니다")
         let interactor = UserInteractorImpl(repository: SpyUserRepository(nicknameCheck: response))
@@ -45,9 +45,10 @@ struct UserInteractorTests {
 
     // MARK: blockUser
 
-    @Test("blockUser: userId를 로컬 저장소에 저장하고 API를 호출")
+    @Test("유저를 차단하면 차단 목록을 로컬에 저장하고 차단 API를 호출한다")
     func blockUserStoresLocallyAndCallsAPI() async throws {
         let blockedUserIdsKey = "BlockedUserIds"
+        UserDefaults.standard.removeObject(forKey: blockedUserIdsKey)
         defer { UserDefaults.standard.removeObject(forKey: blockedUserIdsKey) }
 
         let spy = SpyUserRepository()
@@ -59,9 +60,10 @@ struct UserInteractorTests {
         #expect(spy.blockUserCalledWithId == 42)
     }
 
-    @Test("blockUser: API 호출 전에 로컬 저장이 먼저 완료됨")
+    @Test("유저를 차단할 때 API 호출 전에 로컬 저장이 먼저 완료된다")
     func blockUserStoresBeforeAPICall() async throws {
         let blockedUserIdsKey = "BlockedUserIds"
+        UserDefaults.standard.removeObject(forKey: blockedUserIdsKey)
         defer { UserDefaults.standard.removeObject(forKey: blockedUserIdsKey) }
 
         let spy = SpyUserRepository()

@@ -8,7 +8,7 @@ struct CommunityInteractorTests {
 
     // MARK: fetchMain
 
-    @Test("fetchMain: pending/recent/popular 목록을 각각 반환")
+    @Test("커뮤니티 메인을 조회하면 동정대기·최신·인기 목록이 섞이지 않고 각각 반환된다")
     func fetchMainCombinesAllLists() async throws {
         let repo = StubCommunityRepository(
             pendingItems: [.stub(collectionId: 1)],
@@ -18,38 +18,38 @@ struct CommunityInteractorTests {
         let interactor = CommunityInteractorImpl(repository: repo)
         let result = try await interactor.fetchMain()
 
-        #expect(result.pendingCollections.count == 1)
-        #expect(result.recentCollections.count == 2)
-        #expect(result.popularCollections.count == 1)
+        #expect(result.pendingCollections.map(\.id) == [1])
+        #expect(result.recentCollections.map(\.id) == [2, 3])
+        #expect(result.popularCollections.map(\.id) == [4])
     }
 
     // MARK: fetchItems
 
-    @Test("fetchItems(type: .popular): popularCollections 반환")
+    @Test("인기 타입으로 목록을 조회하면 인기 컬렉션 목록을 반환한다")
     func fetchItemsPopular() async throws {
         let repo = StubCommunityRepository(popularItems: [.stub(collectionId: 1), .stub(collectionId: 2)])
         let interactor = CommunityInteractorImpl(repository: repo)
         let result = try await interactor.fetchItems(type: .popular, page: nil, size: nil)
-        #expect(result.count == 2)
+        #expect(result.map(\.id) == [1, 2])
     }
 
-    @Test("fetchItems(type: .recent): recentCollections 반환")
+    @Test("최신 타입으로 목록을 조회하면 최신 컬렉션 목록을 반환한다")
     func fetchItemsRecent() async throws {
         let repo = StubCommunityRepository(recentItems: [.stub(collectionId: 10)])
         let interactor = CommunityInteractorImpl(repository: repo)
         let result = try await interactor.fetchItems(type: .recent, page: nil, size: nil)
-        #expect(result.count == 1)
+        #expect(result.map(\.id) == [10])
     }
 
-    @Test("fetchItems(type: .suggestion): pendingCollections 반환")
+    @Test("동정 요청 타입으로 목록을 조회하면 동정 대기 컬렉션 목록을 반환한다")
     func fetchItemsSuggestion() async throws {
         let repo = StubCommunityRepository(pendingItems: [.stub(collectionId: 5), .stub(collectionId: 6), .stub(collectionId: 7)])
         let interactor = CommunityInteractorImpl(repository: repo)
         let result = try await interactor.fetchItems(type: .suggestion, page: nil, size: nil)
-        #expect(result.count == 3)
+        #expect(result.map(\.id) == [5, 6, 7])
     }
 
-    @Test("fetchItems(type: .board): 빈 배열 반환")
+    @Test("게시판 타입으로 목록을 조회하면 빈 배열을 반환한다")
     func fetchItemsBoardReturnsEmpty() async throws {
         let interactor = CommunityInteractorImpl(repository: StubCommunityRepository())
         let result = try await interactor.fetchItems(type: .board, page: nil, size: nil)
@@ -58,7 +58,7 @@ struct CommunityInteractorTests {
 
     // MARK: search
 
-    @Test("search(.all): 컬렉션과 유저를 모두 포함한 결과 반환")
+    @Test("전체 대상으로 검색하면 컬렉션과 유저를 모두 포함한 결과를 반환한다")
     func searchAllReturnsCombinedResult() async throws {
         let repo = StubCommunityRepository(
             searchCollections: [.stub(collectionId: 1)],
@@ -71,7 +71,7 @@ struct CommunityInteractorTests {
         #expect(result.users.count == 1)
     }
 
-    @Test("search(.collection): users가 비어 있고 collectionsCount가 컬렉션 수와 일치")
+    @Test("컬렉션만 검색하면 유저 목록은 비어 있고 컬렉션 수만 집계된다")
     func searchCollectionSetsCorrectCounts() async throws {
         let repo = StubCommunityRepository(
             searchCollectionItems: [.stub(collectionId: 1), .stub(collectionId: 2)]
@@ -84,7 +84,7 @@ struct CommunityInteractorTests {
         #expect(result.usersCount == 0)
     }
 
-    @Test("search(.user): collections가 비어 있고 usersCount가 유저 수와 일치")
+    @Test("유저만 검색하면 컬렉션 목록은 비어 있고 유저 수만 집계된다")
     func searchUserSetsCorrectCounts() async throws {
         let repo = StubCommunityRepository(
             searchUserItems: [.stub(userId: 1), .stub(userId: 2), .stub(userId: 3)]

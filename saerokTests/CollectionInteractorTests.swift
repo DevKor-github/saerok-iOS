@@ -9,7 +9,7 @@ struct CollectionInteractorTests {
 
     // MARK: fetchMyCollections
 
-    @Test("fetchMyCollections: 최신순 정렬")
+    @Test("내 컬렉션 목록을 조회하면 생성일 기준 최신순으로 정렬되어 반환된다")
     func fetchMyCollectionsSortedByDate() async throws {
         let interactor = CollectionInteractorImpl(repository: StubCollectionRepository(
             summaries: [
@@ -19,13 +19,12 @@ struct CollectionInteractorTests {
             ]
         ))
         let collections = try await interactor.fetchMyCollections()
-        let dates = collections.map(\.createdAt)
-        #expect(dates == dates.sorted(by: >))
+        #expect(collections.map(\.id) == [2, 3, 1])
     }
 
     // MARK: editCollection
 
-    @Test("editCollection: collectionID가 없으면 collectionNotFound 에러")
+    @Test("컬렉션 ID가 없는 채로 수정을 요청하면 collectionNotFound 에러를 던진다")
     func editCollectionThrowsWhenIdIsNil() async {
         let interactor = CollectionInteractorImpl(repository: StubCollectionRepository())
         let draft = Local.CollectionDraft(collectionID: nil)
@@ -39,7 +38,7 @@ struct CollectionInteractorTests {
 
     // MARK: createCollection
 
-    @Test("createCollection: image가 nil이면 invalidImageData 에러")
+    @Test("이미지가 없는 채로 컬렉션 생성을 요청하면 invalidImageData 에러를 던진다")
     func createCollectionThrowsWhenImageIsNil() async {
         let interactor = CollectionInteractorImpl(repository: StubCollectionRepository())
         let draft = Local.CollectionDraft(collectionID: nil)
@@ -53,17 +52,17 @@ struct CollectionInteractorTests {
 
     // MARK: fetchComments
 
-    @Test("fetchComments: 차단 기능 비활성화 시 댓글 전체 반환")
+    @Test("차단 기능이 비활성화되어 있으면 댓글 목록 전체를 그대로 반환한다")
     func fetchCommentsReturnsAllWhenBlockingIsDisabled() async throws {
         let stub = [Local.CollectionComment.stub(id: 1), .stub(id: 2), .stub(id: 3)]
         let interactor = CollectionInteractorImpl(repository: StubCollectionRepository(comments: stub))
         let result = try await interactor.fetchComments(1)
-        #expect(result.count == 3)
+        #expect(result.map(\.id) == [1, 2, 3])
     }
 
     // MARK: fetchLikeUsers
 
-    @Test("fetchLikeUsers: DTO items를 Local.UserSummary로 올바르게 변환")
+    @Test("좋아요 유저 목록을 조회하면 DTO 항목이 Local.UserSummary로 변환되어 반환된다")
     func fetchLikeUsersMapsCorrectly() async throws {
         let likeUsers = DTO.CollectionLikeUsersResponse(items: [
             .init(userId: 10, nickname: "user10", profileImageUrl: ""),
@@ -71,9 +70,8 @@ struct CollectionInteractorTests {
         ])
         let interactor = CollectionInteractorImpl(repository: StubCollectionRepository(likeUsers: likeUsers))
         let result = try await interactor.fetchLikeUsers(1)
-        #expect(result.count == 2)
-        #expect(result[0].id == 10)
-        #expect(result[1].id == 20)
+        #expect(result.map(\.id) == [10, 20])
+        #expect(result.map(\.nickname) == ["user10", "user20"])
     }
 
     // MARK: - Stub
@@ -111,7 +109,7 @@ struct CollectionInteractorTests {
 private extension Local.CollectionSummary {
     static func stub(id: Int, createdAt: Date) -> Self {
         .init(
-            id: 0,
+            id: id,
             imageURL: nil,
             thumbnailImageURL: nil,
             birdName: nil,
