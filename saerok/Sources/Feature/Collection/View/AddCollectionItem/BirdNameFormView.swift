@@ -38,9 +38,17 @@ extension CollectionFormView {
         
         private var birdNameRow: some View {
             HStack {
-                Text(draft.bird?.name ?? "새 이름을 입력해주세요")
-                    .foregroundStyle(draft.bird != nil ? .primary : .tertiary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 6) {
+                    Text(draft.bird?.name ?? "새 이름을 입력해주세요")
+                        .foregroundStyle(draft.bird != nil ? .primary : .tertiary)
+                        .lineLimit(1)
+
+                    if draft.bird?.isProtected == true {
+                        protectedSpeciesTag
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
                 Image.SRIconSet.searchSecondary
                     .frame(.default)
                     .foregroundStyle(.border)
@@ -53,6 +61,16 @@ extension CollectionFormView {
             .opacity(draft.isUnknownBird ? 0.4 : 1)
             .onTapGesture(perform: onTapFindBird)
             // coordinator.push(CollectionFormView.Route.findBird)
+        }
+
+        private var protectedSpeciesTag: some View {
+            Text("보호종")
+                .font(.SRFontSet.caption3_2)
+                .foregroundStyle(.srGray)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 1)
+                .background(Color.srLightGray)
+                .clipShape(RoundedRectangle(cornerRadius: 5))
         }
         
         private var unknownBirdButtonRow: some View {

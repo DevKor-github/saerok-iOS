@@ -87,6 +87,7 @@ extension Image {
         case shieldBlueDefault
         case shieldBlueSelected
         case shieldYellowDefault
+        case shieldYellowReverse
         case freeboardAdd
         
         // MARK: Tabbar
@@ -239,6 +240,7 @@ extension Image.SRIconSet {
         case .shieldBlueDefault: return Image(.shieldBlueDefault)
         case .shieldBlueSelected: return Image(.shieldBlueSelected)
         case .shieldYellowDefault: return Image(.shieldYellow)
+        case .shieldYellowReverse: return Image(.shieldYellowRev)
         case .freeboardAdd: return Image(.freeboardAdd)
             
         case .dogam: return Image(.dogam)

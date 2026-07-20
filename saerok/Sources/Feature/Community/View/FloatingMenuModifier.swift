@@ -60,9 +60,11 @@ struct FloatingMenuView: View {
                 saerokAction()
                 showMenu.toggle()
             } label: {
-                Image(.comAddsaerokButton)
-                    .resizable()
-                    .frame(width: 62, height: 62)
+                iconWithTitle("새록") {
+                    Image(.comAddsaerokButton)
+                        .resizable()
+                        .frame(width: 62, height: 62)
+                }
             }
             .offset(x: showMenu ? -10 : 0, y: showMenu ? -80 : 0)
             .opacity(showMenu ? 1 : 0)
@@ -73,9 +75,15 @@ struct FloatingMenuView: View {
                 postAction()
                 showMenu.toggle()
             } label: {
-                Image(.comPostButton)
-                    .resizable()
-                    .frame(width: 62, height: 62)
+                iconWithTitle("도란도란") {
+                    Circle()
+                        .fill(Color.srWhite)
+                        .frame(width: 62, height: 62)
+                        .overlay {
+                            Image.SRIconSet.freeboardAdd
+                                .frame(size: .init(width: 40, height: 40), tintColor: .splash)
+                        }
+                }
             }
             .offset(x: showMenu ? -80 : 0, y: showMenu ? -10 : 0)
             .opacity(showMenu ? 1 : 0)
@@ -95,4 +103,14 @@ struct FloatingMenuView: View {
         .frame(width: 80, height: 80)
         .buttonStyle(.plain)
     }
+    
+    func iconWithTitle(_ title: String, @ViewBuilder image: () -> some View) -> some View {
+        VStack(spacing: 6) {
+            image()
+            Text(title)
+                .font(.SRFontSet.caption0)
+                .foregroundStyle(.srWhite)
+        }
+    }
 }
+

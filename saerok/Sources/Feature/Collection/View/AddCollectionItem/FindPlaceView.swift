@@ -88,7 +88,7 @@ struct FindPlaceView: View {
         }
         .sheet(isPresented: $showingSheet) {
             PlaceDetailSheet(address: collectionDraft.address, text: $collectionDraft.locationAlias, submitButtonTapped)
-                .presentationDetents([.height(340)])
+                .presentationDetents([.height(430)])
         }
         .regainSwipeBack()
     }
@@ -260,6 +260,9 @@ private extension FindPlaceView {
                     .padding(.leading, SRSpacing.screenHorizontal / 2)
                 
                 Spacer()
+
+                protectedSpeciesLocationNotice
+                    .padding(.bottom, 16)
                 
                 Button("발견 장소 등록", action: {
                     text = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -271,6 +274,38 @@ private extension FindPlaceView {
                 .disabled(text.isEmpty)
             }
             .padding(SRSpacing.screenHorizontal)
+        }
+
+        private var protectedSpeciesLocationNotice: some View {
+            HStack(spacing: 16) {
+                Image.SRIconSet.shieldYellowReverse
+                    .frame(.large)
+                    .frame(width: 42, height: 42)
+                    .background(Color.pointLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("보호종 장소 등록")
+                        .font(.SRFontSet.body4_3)
+                        .foregroundStyle(.srDarkGray)
+
+                    Text("보호종으로 확인되는 새록의 위치 정보는\n추후 관리자에 의해 가려질 수 있어요.")
+                        .font(.SRFontSet.caption1)
+                        .foregroundStyle(.secondary)
+                        .lineSpacing(2)
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.srWhite)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.srLightGray, lineWidth: 1)
+            }
         }
     }
 }
